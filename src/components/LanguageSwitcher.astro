@@ -1,8 +1,9 @@
 ---
 import { getRelativeLocaleUrl } from 'astro:i18n';
-import { languages, langAttr, defaultLang, resolveLocale } from '../i18n/ui';
+import { languages, langAttr, defaultLang, resolveLocale, useTranslations } from '../i18n/ui';
 
 const current = resolveLocale(Astro.currentLocale);
+const t = useTranslations(current);
 
 // Strip the current locale prefix to get the locale-neutral path.
 // The default locale (zh-hant) is served at the root, without a prefix.
@@ -28,7 +29,7 @@ const items = Object.entries(languages).map(([code, label]) => ({
 }));
 ---
 
-<nav class="language-switcher" aria-label="Language">
+<nav class="language-switcher" aria-label={t.a11y.language}>
 	<ul>
 		{
 			items.map((item) => (
@@ -37,7 +38,7 @@ const items = Object.entries(languages).map(([code, label]) => ({
 						href={item.href}
 						hreflang={langAttr[item.code as keyof typeof langAttr]}
 						lang={langAttr[item.code as keyof typeof langAttr]}
-						aria-current={item.isCurrent ? 'true' : undefined}
+						aria-current={item.isCurrent ? 'page' : undefined}
 						class:list={['language-switcher__link', { 'is-current': item.isCurrent }]}
 					>
 						{item.label}

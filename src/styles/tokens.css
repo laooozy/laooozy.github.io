@@ -75,6 +75,7 @@
   --leading-tight: 1.1;
   --leading-snug: 1.3;
   --leading-normal: 1.65;
+  --leading-relaxed: 1.75;
 
   /* Display tracking floor is -0.04em; -0.03em reads tight but legible. */
   --tracking-display: -0.03em;

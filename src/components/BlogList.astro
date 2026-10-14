@@ -55,7 +55,7 @@ const pageLabel = pagination
 
 	{
 		(tags.length > 0 || periods.length > 0) && (
-			<nav class="blog-filters" aria-label={t.blog.allPosts}>
+			<nav class="blog-filters" aria-label={t.blog.filters}>
 				{periods.length > 0 && (
 					<div class="blog-filters__group">
 						<span class="blog-filters__label">{t.blog.byDate}</span>
@@ -223,7 +223,8 @@ const pageLabel = pagination
 	.chip--active {
 		color: var(--text-on-accent);
 		border-color: transparent;
-		background: var(--accent-gradient);
+		/* Solid --accent, not the gradient: dark-on-#7c3aed only reaches 3.47:1. */
+		background: var(--accent);
 		font-weight: 600;
 	}
 

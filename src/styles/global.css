@@ -26,6 +26,14 @@ body {
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /*
+   * Horizontal-overflow guard. `clip` (not `hidden`) so the body is not turned
+   * into a scroll container — the sticky top bar keeps sticking to the viewport
+   * instead of to an overflow ancestor. `break-word` stops an unbreakable run
+   * (a long handle, a URL) from poking past the 375px viewport.
+   */
+  overflow-x: clip;
+  overflow-wrap: break-word;
 }
 
 h1,
@@ -123,7 +131,8 @@ button {
   z-index: var(--z-tooltip);
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
-  background: var(--accent-gradient);
+  /* Solid --accent, not the gradient: dark-on-#7c3aed only reaches 3.47:1. */
+  background: var(--accent);
   color: var(--text-on-accent);
   font-weight: 600;
   text-decoration: none;

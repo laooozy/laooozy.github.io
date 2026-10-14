@@ -29,7 +29,7 @@ const readLabel = t.blog.readTime.replace(
 );
 ---
 
-<nav class="post-back">
+<nav class="post-back" aria-label={t.blog.backToIndex}>
 	<a class="post-back__link" href={blogIndexPath(locale)}>
 		← {t.blog.backToIndex}
 	</a>
@@ -128,7 +128,8 @@ const readLabel = t.blog.readTime.replace(
 
 	.post__tag:hover,
 	.post__tag:focus-visible {
-		background: var(--accent-gradient);
+		/* Solid --accent, not the gradient: dark-on-#7c3aed only reaches 3.47:1. */
+		background: var(--accent);
 		color: var(--text-on-accent);
 	}
 

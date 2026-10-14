@@ -119,6 +119,7 @@ export const ui = {
       heading: "最新文章",
       cta: "閱讀更多",
       allPosts: "所有文章",
+      filters: "文章篩選",
       byDate: "依時間",
       byTag: "依標籤",
       prev: "上一頁",
@@ -152,7 +153,11 @@ export const ui = {
       backHome: "回到首頁",
     },
     button: { readMore: "閱讀更多", viewAll: "查看全部" },
-    a11y: { skipToContent: "跳至主要內容", primaryNav: "主選單" },
+    a11y: {
+      skipToContent: "跳至主要內容",
+      primaryNav: "主選單",
+      language: "語言",
+    },
     footer: { rights: "版權所有" },
   },
   "zh-hans": {
@@ -217,6 +222,7 @@ export const ui = {
       heading: "最新文章",
       cta: "阅读更多",
       allPosts: "所有文章",
+      filters: "文章筛选",
       byDate: "按时间",
       byTag: "按标签",
       prev: "上一页",
@@ -250,7 +256,11 @@ export const ui = {
       backHome: "回到首页",
     },
     button: { readMore: "阅读更多", viewAll: "查看全部" },
-    a11y: { skipToContent: "跳至主要内容", primaryNav: "主菜单" },
+    a11y: {
+      skipToContent: "跳至主要内容",
+      primaryNav: "主菜单",
+      language: "语言",
+    },
     footer: { rights: "版权所有" },
   },
   en: {
@@ -319,6 +329,7 @@ export const ui = {
       heading: "Latest posts",
       cta: "Read more",
       allPosts: "All posts",
+      filters: "Filter posts",
       byDate: "By date",
       byTag: "By tag",
       prev: "Previous",
@@ -353,7 +364,11 @@ export const ui = {
       backHome: "Back to home",
     },
     button: { readMore: "Read more", viewAll: "View all" },
-    a11y: { skipToContent: "Skip to main content", primaryNav: "Primary" },
+    a11y: {
+      skipToContent: "Skip to main content",
+      primaryNav: "Primary",
+      language: "Language",
+    },
     footer: { rights: "All rights reserved" },
   },
 } as const;
