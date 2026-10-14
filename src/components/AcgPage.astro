@@ -1,0 +1,215 @@
+---
+/**
+ * AcgPage — the ACG / coser-photography intro page, shared by all three
+ * locales.
+ *
+ * Every user-facing string comes from src/i18n/ui.ts; the page renders inside
+ * BaseLayout (see the thin locale routes in src/pages). No photography is
+ * hosted here — the work lives on Instagram, which this page links out to.
+ */
+import Card from "./Card.astro";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import { contactIdentity, resolveLocale, useTranslations } from "../i18n/ui";
+
+const locale = resolveLocale(Astro.currentLocale);
+const t = useTranslations(locale);
+
+const homeHref = getRelativeLocaleUrl(locale);
+const igHandle = `@${contactIdentity.acgIg}`;
+const igHref = `https://instagram.com/${contactIdentity.acgIg}`;
+
+const approach = t.acgPage.approach;
+---
+
+<div class="acg">
+	<nav class="acg-back">
+		<a class="acg-back__link" href={homeHref}>← {t.acgPage.back}</a>
+	</nav>
+
+	<header class="acg-hero">
+		<h1 class="acg-hero__title">{t.acg.heading}</h1>
+		<p class="acg-hero__lead">{t.acgPage.introLead}</p>
+	</header>
+
+	<section class="acg-section" aria-labelledby="intro-heading">
+		<h2 id="intro-heading" class="acg-section__title">
+			{t.acgPage.introHeading}
+		</h2>
+		<p class="acg-section__body">{t.acgPage.introBody}</p>
+	</section>
+
+	<section class="acg-section" aria-labelledby="approach-heading">
+		<h2 id="approach-heading" class="acg-section__title">
+			{t.acgPage.approachHeading}
+		</h2>
+		<ul class="acg-approach">
+			{
+				approach.map((item) => (
+					<li class="acg-approach__item">
+						<Card>
+							<h3 class="acg-approach__title">{item.title}</h3>
+							<p class="acg-approach__body">{item.body}</p>
+						</Card>
+					</li>
+				))
+			}
+		</ul>
+	</section>
+
+	<section class="acg-section" aria-labelledby="commission-heading">
+		<h2 id="commission-heading" class="acg-section__title">
+			{t.acgPage.commissionHeading}
+		</h2>
+		<p class="acg-section__lead">{t.acgPage.commissionLead}</p>
+		<ul class="acg-commission">
+			{
+				t.acgPage.commissionPoints.map((point) => (
+					<li class="acg-commission__item">{point}</li>
+				))
+			}
+		</ul>
+	</section>
+
+	<section class="acg-section" aria-labelledby="follow-heading">
+		<h2 id="follow-heading" class="acg-section__title">
+			{t.acgPage.followHeading}
+		</h2>
+		<Card href={igHref} class="acg-follow">
+			<p class="acg-follow__note">{t.acgPage.followNote}</p>
+			<span class="acg-follow__handle">{igHandle}</span>
+			<span class="acg-follow__cta">{t.acgPage.followCta} →</span>
+		</Card>
+	</section>
+</div>
+
+<style>
+	.acg {
+		display: grid;
+		gap: clamp(var(--space-8), 8vw, var(--space-11));
+	}
+
+	.acg-back {
+		margin: calc(-1 * var(--space-4)) 0 0;
+	}
+
+	.acg-back__link {
+		font-size: var(--text-sm);
+		font-weight: 500;
+		color: var(--accent);
+		text-decoration: none;
+	}
+
+	.acg-back__link:hover {
+		color: var(--text);
+	}
+
+	.acg-hero__title {
+		margin: 0 0 var(--space-4);
+		font-size: clamp(var(--text-3xl), 7vw, var(--text-4xl));
+		font-weight: 700;
+		line-height: var(--leading-tight);
+		letter-spacing: var(--tracking-display);
+		background: var(--accent-gradient);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+	}
+
+	.acg-hero__lead {
+		margin: 0;
+		max-width: var(--container-narrow);
+		font-size: clamp(var(--text-lg), 2.5vw, var(--text-2xl));
+		color: var(--text-muted);
+	}
+
+	.acg-section__title {
+		margin: 0 0 var(--space-4);
+	}
+
+	.acg-section__lead {
+		max-width: var(--measure);
+		margin: 0 0 var(--space-4);
+		color: var(--text-muted);
+	}
+
+	.acg-section__body {
+		max-width: var(--measure);
+		margin: 0;
+		font-size: var(--text-lg);
+		line-height: var(--leading-normal);
+		color: var(--text);
+	}
+
+	.acg-approach {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+		gap: var(--space-5);
+		list-style: none;
+	}
+
+	.acg-approach__title {
+		margin: 0 0 var(--space-2);
+		font-size: var(--text-lg);
+	}
+
+	.acg-approach__body {
+		margin: 0;
+		color: var(--text-muted);
+	}
+
+	.acg-commission {
+		display: grid;
+		gap: var(--space-3);
+		max-width: var(--measure);
+		list-style: none;
+	}
+
+	.acg-commission__item {
+		position: relative;
+		padding-inline-start: var(--space-5);
+		color: var(--text);
+	}
+
+	.acg-commission__item::before {
+		content: "";
+		position: absolute;
+		inset-inline-start: 0;
+		inset-block-start: 0.6em;
+		width: 0.4rem;
+		height: 0.4rem;
+		border-radius: var(--radius-pill);
+		background: var(--accent-gradient);
+	}
+
+	.acg-follow {
+		max-width: var(--container-narrow);
+	}
+
+	.acg-follow__note {
+		margin: 0 0 var(--space-4);
+		color: var(--text);
+	}
+
+	.acg-follow__handle {
+		display: block;
+		margin-bottom: var(--space-4);
+		font-family: var(--font-mono);
+		font-size: var(--text-lg);
+		letter-spacing: var(--tracking-tight);
+		color: var(--text);
+	}
+
+	.acg-follow__cta {
+		font-weight: 600;
+		color: var(--accent);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.acg-hero__title {
+			background: none;
+			-webkit-text-fill-color: currentColor;
+			color: var(--text);
+		}
+	}
+</style>

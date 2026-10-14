@@ -73,6 +73,41 @@ export const ui = {
       note: "我以 coser 的身分拍照，也是剛起步的業餘攝影新手。",
       cta: "看看我的 ACG 介紹",
     },
+    acgPage: {
+      title: "ACG｜coser 攝影",
+      description: "以 coser 的身分拍照——一個剛拿起相機的業餘攝影新手。",
+      back: "回到首頁",
+      introHeading: "Coser 攝影",
+      introLead: "我以 coser 的身分拍照，也是剛拿起相機的業餘新手。",
+      introBody:
+        "2026 年 8 月，我擁有了第一台相機。到現在為止一切都還在學——構圖、光線，還有跟 coser 之間的溝通，都是每天慢慢練習的事。",
+      approachHeading: "我的拍攝方式",
+      approach: [
+        {
+          title: "先聊，再拍",
+          body: "開拍前我喜歡先跟 coser 聊聊角色與想要的氛圍，讓照片更接近對方心裡想像的樣子。",
+        },
+        {
+          title: "慢慢來",
+          body: "我不趕著拍完下一個場景，寧願花時間等一個對的光線與表情。",
+        },
+        {
+          title: "還在學",
+          body: "坦白說我還是新手，會出錯、也會邊拍邊調整，但每一次都想比上一次好一點。",
+        },
+      ],
+      commissionHeading: "委託與合作",
+      commissionLead: "目前的我：",
+      commissionPoints: [
+        "目前沒有收費的私人約拍。",
+        "朋友之間，免費。",
+        "還不算圈內人，只是一個喜歡拍照的 coser。",
+        "私訊我都會回，歡迎聊聊。",
+      ],
+      followHeading: "追蹤我的作品",
+      followNote: "作品與約拍資訊，主要都放在 Instagram。",
+      followCta: "在 Instagram 看更多",
+    },
     blog: {
       heading: "最新文章",
       cta: "閱讀更多",
@@ -129,6 +164,41 @@ export const ui = {
       heading: "ACG",
       note: "我以 coser 的身份拍照，也是刚起步的业余摄影新手。",
       cta: "看看我的 ACG 介绍",
+    },
+    acgPage: {
+      title: "ACG｜coser 摄影",
+      description: "以 coser 的身份拍照——一个刚拿起相机的业余摄影新手。",
+      back: "回到首页",
+      introHeading: "Coser 摄影",
+      introLead: "我以 coser 的身份拍照，也是刚拿起相机的业余新手。",
+      introBody:
+        "2026 年 8 月，我拥有了第一台相机。到现在为止一切都还在学——构图、光线，还有跟 coser 之间的沟通，都是每天慢慢练习的事。",
+      approachHeading: "我的拍摄方式",
+      approach: [
+        {
+          title: "先聊，再拍",
+          body: "开拍前我喜欢先跟 coser 聊聊角色与想要的氛围，让照片更接近对方心里想像的样子。",
+        },
+        {
+          title: "慢慢来",
+          body: "我不赶着拍完下一个场景，宁愿花时间等一个对的光线与表情。",
+        },
+        {
+          title: "还在学",
+          body: "坦白说我还是新手，会出错、也会边拍边调整，但每一次都想比上一次好一点。",
+        },
+      ],
+      commissionHeading: "委托与合作",
+      commissionLead: "现在的我：",
+      commissionPoints: [
+        "目前没有收费的私人约拍。",
+        "朋友之间，免费。",
+        "还不算圈内人，只是一个喜欢拍照的 coser。",
+        "私信我都会回，欢迎聊聊。",
+      ],
+      followHeading: "关注我的作品",
+      followNote: "作品与约拍信息，主要都放在 Instagram。",
+      followCta: "在 Instagram 看更多",
     },
     blog: {
       heading: "最新文章",
@@ -188,6 +258,43 @@ export const ui = {
       heading: "ACG",
       note: "I shoot as a coser and I'm a newcomer to amateur photography.",
       cta: "See my ACG intro",
+    },
+    acgPage: {
+      title: "ACG | Coser photography",
+      description:
+        "I shoot as a coser — an amateur who has only just picked up a camera.",
+      back: "Back to home",
+      introHeading: "Coser photography",
+      introLead:
+        "I shoot as a coser, and I'm an amateur who has only just picked up a camera.",
+      introBody:
+        "I got my first camera in August 2026. Everything is still a work in progress — composition, light, and talking with the coser are all things I practise a little more each day.",
+      approachHeading: "How I shoot",
+      approach: [
+        {
+          title: "We talk first",
+          body: "Before we shoot I like to chat with the coser about the character and the mood they want, so the photos come closer to what they have in mind.",
+        },
+        {
+          title: "Slow and steady",
+          body: "I'm in no rush to get to the next scene; I'd rather wait for the right light and the right expression.",
+        },
+        {
+          title: "Still learning",
+          body: "Honestly, I'm still new — I'll make mistakes and adjust as I go, but I want each shoot to be a little better than the last.",
+        },
+      ],
+      commissionHeading: "Commissions & collaboration",
+      commissionLead: "Where I am right now:",
+      commissionPoints: [
+        "No paid private shoots for now.",
+        "Free between friends.",
+        "Not really in the scene — just a coser who likes taking photos.",
+        "I reply to every DM, so feel free to reach out.",
+      ],
+      followHeading: "Follow my work",
+      followNote: "My photos and shoot updates mostly live on Instagram.",
+      followCta: "See more on Instagram",
     },
     blog: {
       heading: "Latest posts",
