@@ -4,7 +4,7 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://laoozy.github.io',
+  site: 'https://laooozy.github.io',
   // The i18n fallback redirect route for `/en` and `/zh-hans` collides with the
   // explicit `src/pages/{en,zh-hans}/index.astro` routes (the explicit page has
   // higher priority and wins; the generated fallback stub is dropped). That is

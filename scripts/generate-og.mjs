@@ -5,8 +5,8 @@ import sharp from "sharp";
 
 const WIDTH = 1200;
 const HEIGHT = 630;
-const BRAND = "laoozy";
-const DOMAIN = "laoozy.github.io";
+const BRAND = "laooozy";
+const DOMAIN = "laooozy.github.io";
 const PUBLIC_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "public");
 
 function buildSvg() {

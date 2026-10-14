@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="laoozy">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="laooozy">
   <defs>
     <radialGradient id="glowA" cx="12%" cy="-12%" r="85%">
       <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.55"/>
@@ -24,8 +24,8 @@
         fill="rgba(255,255,255,0.03)" stroke="rgba(168,85,247,0.35)" stroke-width="2"/>
   <g font-family="'Sora','Segoe UI',system-ui,-apple-system,sans-serif">
     <circle cx="112" cy="150" r="9" fill="url(#accent)"/>
-    <text x="138" y="161" font-size="30" font-weight="500" fill="#a1a1aa" letter-spacing="1">laoozy.github.io</text>
-    <text x="100" y="392" font-size="168" font-weight="700" fill="url(#wordmark)" letter-spacing="-4">laoozy</text>
+    <text x="138" y="161" font-size="30" font-weight="500" fill="#a1a1aa" letter-spacing="1">laooozy.github.io</text>
+    <text x="100" y="392" font-size="168" font-weight="700" fill="url(#wordmark)" letter-spacing="-4">laooozy</text>
     <rect x="104" y="440" width="300" height="9" rx="4.5" fill="url(#accent)"/>
   </g>
 </svg>
