@@ -8,6 +8,7 @@
  * shipped to the client for DOM paging.
  */
 import Card from "./Card.astro";
+import SearchModal from "./SearchModal.astro";
 import { useTranslations, type Locale } from "../i18n/ui";
 import { blogPostPath, formatPostDate, type Post } from "../lib/blog";
 
@@ -49,6 +50,7 @@ const pageLabel = pagination
 <section class="blog-index" aria-labelledby="blog-heading">
 	<header class="blog-index__header">
 		<h1 id="blog-heading" class="blog-index__title">{heading}</h1>
+		<SearchModal locale={locale} />
 	</header>
 
 	{
@@ -152,8 +154,17 @@ const pageLabel = pagination
 </section>
 
 <style>
-	.blog-index__title {
+	.blog-index__header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-4);
 		margin-bottom: var(--space-6);
+	}
+
+	.blog-index__title {
+		margin: 0;
 	}
 
 	.blog-filters {

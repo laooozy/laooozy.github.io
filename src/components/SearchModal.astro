@@ -1,0 +1,539 @@
+---
+/**
+ * SearchModal — client-side full-text search over the built site.
+ *
+ * Powered by Pagefind: the index lives in the static `/pagefind/` bundle that
+ * `pagefind --site dist` writes after `astro build`, so search works entirely
+ * in the browser with no server endpoint and no third-party service. The
+ * runtime is imported lazily the first time the modal opens, which keeps it out
+ * of the initial JS payload.
+ *
+ * Accessibility: the modal is a native `<dialog>` opened with `showModal()`, so
+ * focus is trapped and `Esc` closes it for free; the trigger advertises
+ * `aria-haspopup="dialog"`, the dialog is labelled by its heading, and results
+ * / empty / loading states are announced through an `aria-live` region.
+ * `data-pagefind-ignore` keeps the search chrome itself out of the index.
+ */
+import { useTranslations, type Locale } from "../i18n/ui";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<div
+	class="search"
+	data-search
+	data-pagefind-ignore
+	data-label-hint={t.search.hint}
+	data-label-searching={t.search.searching}
+	data-label-no-results={t.search.noResults}
+	data-label-result-count={t.search.resultCount}
+>
+	<button
+		type="button"
+		class="search__trigger"
+		data-search-open
+		aria-haspopup="dialog"
+		aria-expanded="false"
+	>
+		<svg
+			class="search__icon"
+			aria-hidden="true"
+			viewBox="0 0 24 24"
+			width="18"
+			height="18"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+		>
+			<circle cx="11" cy="11" r="7"></circle>
+			<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+		</svg>
+		<span class="search__label">{t.search.trigger}</span>
+		<kbd class="search__kbd" data-search-kbd aria-hidden="true">Ctrl K</kbd>
+	</button>
+
+	<dialog
+		class="search-modal"
+		data-search-dialog
+		aria-labelledby="search-modal-title"
+	>
+		<div class="search-modal__panel">
+			<div class="search-modal__head">
+				<h2 class="search-modal__title" id="search-modal-title">
+					{t.search.title}
+				</h2>
+				<button
+					type="button"
+					class="search-modal__close"
+					data-search-close
+					aria-label={t.search.close}
+				>
+					<svg
+						aria-hidden="true"
+						viewBox="0 0 24 24"
+						width="18"
+						height="18"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<line x1="18" y1="6" x2="6" y2="18"></line>
+						<line x1="6" y1="6" x2="18" y2="18"></line>
+					</svg>
+				</button>
+			</div>
+
+			<div class="search-modal__field">
+				<label class="search-modal__visually-hidden" for="search-modal-input">
+					{t.search.placeholder}
+				</label>
+				<input
+					id="search-modal-input"
+					class="search-modal__input"
+					data-search-input
+					type="search"
+					placeholder={t.search.placeholder}
+					autocomplete="off"
+					autocapitalize="off"
+					spellcheck="false"
+				/>
+			</div>
+
+			<p class="search-modal__status" data-search-status aria-live="polite">
+				{t.search.hint}
+			</p>
+
+			<div class="search-results" data-search-results></div>
+		</div>
+	</dialog>
+</div>
+
+<script>
+	/*
+	 * Pagefind runtime wiring.
+	 *
+	 * The `@vite-ignore` + variable import keeps Vite from trying to resolve
+	 * `/pagefind/pagefind.js` at build time — that file is emitted by the
+	 * post-build `pagefind` step, not present in `src/` or `public/`. Pagefind
+	 * reads `<html lang>` on init and loads the matching language index, so on
+	 * this (zh-hant) page it searches the Traditional-Chinese content.
+	 */
+	const PAGEFIND_PATH = "/pagefind/pagefind.js";
+	const MAX_RESULTS = 8;
+	const DEBOUNCE_MS = 160;
+
+	type PagefindModule = {
+		options(options: Record<string, unknown>): Promise<void>;
+		preload(query: string): void;
+		search(
+			query: string,
+		): Promise<{ results: Array<{ data(): Promise<PagefindResult> }> }>;
+	};
+
+	type PagefindResult = {
+		url: string;
+		excerpt?: string;
+		meta?: { title?: string };
+	};
+
+	let pagefindPromise: Promise<PagefindModule> | null = null;
+
+	function loadPagefind(): Promise<PagefindModule> {
+		if (!pagefindPromise) {
+			pagefindPromise = import(/* @vite-ignore */ PAGEFIND_PATH)
+				.then(async (mod) => {
+					const pagefind = mod as PagefindModule;
+					await pagefind.options({});
+					return pagefind;
+				})
+				.catch((error) => {
+					pagefindPromise = null;
+					throw error;
+				});
+		}
+		return pagefindPromise;
+	}
+
+	const isApple = /Mac|iPhone|iPad|iPod/.test(navigator.userAgent);
+
+	document.querySelectorAll<HTMLElement>("[data-search]").forEach((root) => {
+		const trigger = root.querySelector<HTMLButtonElement>("[data-search-open]");
+		const dialog = root.querySelector<HTMLDialogElement>("[data-search-dialog]");
+		const closeButton = root.querySelector<HTMLButtonElement>("[data-search-close]");
+		const input = root.querySelector<HTMLInputElement>("[data-search-input]");
+		const status = root.querySelector<HTMLElement>("[data-search-status]");
+		const resultsBox = root.querySelector<HTMLElement>("[data-search-results]");
+		const kbd = root.querySelector<HTMLElement>("[data-search-kbd]");
+
+		if (!trigger || !dialog || !input || !status || !resultsBox) return;
+
+		const hintText = root.dataset.labelHint ?? "";
+		const searchingText = root.dataset.labelSearching ?? "";
+		const noResultsText = root.dataset.labelNoResults ?? "";
+		const countTemplate = root.dataset.labelResultCount ?? "{count}";
+
+		if (kbd) kbd.textContent = isApple ? "⌘K" : "Ctrl K";
+
+		let debounceTimer: number | undefined;
+		let searchSeq = 0;
+
+		const openModal = () => {
+			if (!dialog.open) dialog.showModal();
+			trigger.setAttribute("aria-expanded", "true");
+			// Warm the index while the user starts typing.
+			loadPagefind().catch(() => {});
+			input.focus();
+		};
+
+		const closeModal = () => {
+			if (dialog.open) dialog.close();
+		};
+
+		const renderResults = (items: PagefindResult[]) => {
+			resultsBox.replaceChildren();
+			const list = document.createElement("ul");
+			list.className = "search-results__list";
+			for (const item of items) {
+				const li = document.createElement("li");
+				li.className = "search-results__item";
+
+				const link = document.createElement("a");
+				link.className = "search-results__link";
+				link.href = item.url;
+
+				const title = document.createElement("h3");
+				title.className = "search-results__title";
+				title.textContent = item.meta?.title || item.url;
+				link.append(title);
+
+				const excerpt = document.createElement("p");
+				excerpt.className = "search-results__excerpt";
+				// Pagefind's excerpt has HTML entities encoded and only adds <mark>
+				// tags, so it is documented as safe to assign as innerHTML.
+				excerpt.innerHTML = item.excerpt ?? "";
+				link.append(excerpt);
+
+				li.append(link);
+				list.append(li);
+			}
+			resultsBox.append(list);
+		};
+
+		const runSearch = async (query: string, seq: number) => {
+			try {
+				const pagefind = await loadPagefind();
+				if (seq !== searchSeq) return;
+				pagefind.preload(query);
+				const search = await pagefind.search(query);
+				if (seq !== searchSeq) return;
+				const data = await Promise.all(
+					search.results.slice(0, MAX_RESULTS).map((item) => item.data()),
+				);
+				if (seq !== searchSeq) return;
+
+				if (data.length === 0) {
+					resultsBox.replaceChildren();
+					status.textContent = noResultsText;
+					return;
+				}
+				status.textContent = countTemplate.replace(
+					"{count}",
+					String(search.results.length),
+				);
+				renderResults(data);
+			} catch {
+				if (seq !== searchSeq) return;
+				resultsBox.replaceChildren();
+				status.textContent = noResultsText;
+			}
+		};
+
+		input.addEventListener("input", () => {
+			const query = input.value.trim();
+			const seq = ++searchSeq;
+			window.clearTimeout(debounceTimer);
+
+			if (query.length === 0) {
+				resultsBox.replaceChildren();
+				status.textContent = hintText;
+				return;
+			}
+
+			status.textContent = searchingText;
+			debounceTimer = window.setTimeout(() => runSearch(query, seq), DEBOUNCE_MS);
+		});
+
+		// Keyboard shortcuts: ⌘K (macOS) / Ctrl+K (elsewhere) open, from anywhere.
+		document.addEventListener("keydown", (event) => {
+			if (
+				(event.metaKey || event.ctrlKey) &&
+				!event.altKey &&
+				(event.key === "k" || event.key === "K")
+			) {
+				event.preventDefault();
+				openModal();
+			}
+		});
+
+		// Clicking the backdrop (the dialog element itself, outside the panel)
+		// dismisses the modal.
+		dialog.addEventListener("click", (event) => {
+			if (event.target === dialog) closeModal();
+		});
+
+		dialog.addEventListener("close", () => {
+			trigger.setAttribute("aria-expanded", "false");
+			trigger.focus();
+		});
+
+		trigger.addEventListener("click", openModal);
+		closeButton?.addEventListener("click", closeModal);
+	});
+</script>
+
+<style>
+	.search {
+		display: inline-flex;
+	}
+
+	.search__trigger {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-3);
+		border: 1px solid color-mix(in oklab, var(--glass-border) 55%, transparent);
+		border-radius: var(--radius-pill);
+		background: var(--surface);
+		color: var(--text-muted);
+		font-family: var(--font-body);
+		font-size: var(--text-sm);
+		cursor: pointer;
+		transition: color var(--dur-fast) var(--ease-out),
+			border-color var(--dur-fast) var(--ease-out),
+			background-color var(--dur-fast) var(--ease-out);
+	}
+
+	.search__trigger:hover,
+	.search__trigger:focus-visible {
+		color: var(--text);
+		border-color: var(--glass-border-strong);
+		background: var(--surface-hover);
+	}
+
+	.search__trigger:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 3px;
+	}
+
+	.search__kbd {
+		padding: 0 var(--space-2);
+		border: 1px solid color-mix(in oklab, var(--glass-border) 45%, transparent);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		color: var(--text-muted);
+	}
+
+	/* Full-viewport transparent shell so the panel sits in the top layer. */
+	.search-modal {
+		width: 100%;
+		max-width: 100%;
+		height: 100%;
+		max-height: 100%;
+		margin: 0;
+		padding: var(--space-4);
+		border: none;
+		background: transparent;
+		color: var(--text);
+	}
+
+	.search-modal[open] {
+		display: grid;
+		grid-template-columns: 1fr;
+		justify-items: center;
+		align-content: start;
+		padding-top: clamp(var(--space-8), 12vh, var(--space-11));
+	}
+
+	.search-modal::backdrop {
+		background: color-mix(in oklab, var(--bg-deep) 72%, transparent);
+		-webkit-backdrop-filter: blur(6px);
+		backdrop-filter: blur(6px);
+	}
+
+	.search-modal__panel {
+		width: min(100%, 40rem);
+		max-height: min(70vh, 40rem);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+		padding: var(--space-6);
+		border: 1px solid var(--glass-border);
+		border-radius: var(--radius-lg);
+		background: color-mix(in oklab, var(--bg-elevated) 92%, transparent);
+		-webkit-backdrop-filter: blur(var(--glass-blur));
+		backdrop-filter: blur(var(--glass-blur));
+		box-shadow: var(--glass-glow);
+	}
+
+	.search-modal__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-4);
+	}
+
+	.search-modal__title {
+		margin: 0;
+		font-size: var(--text-xl);
+	}
+
+	.search-modal__close {
+		display: inline-flex;
+		padding: var(--space-2);
+		border: 1px solid transparent;
+		border-radius: var(--radius-md);
+		background: transparent;
+		color: var(--text-muted);
+		cursor: pointer;
+	}
+
+	.search-modal__close:hover,
+	.search-modal__close:focus-visible {
+		color: var(--text);
+		border-color: var(--glass-border-strong);
+	}
+
+	.search-modal__close:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+
+	.search-modal__field {
+		display: flex;
+	}
+
+	.search-modal__visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+
+	.search-modal__input {
+		width: 100%;
+		padding: var(--space-3) var(--space-4);
+		border: 1px solid color-mix(in oklab, var(--glass-border) 60%, transparent);
+		border-radius: var(--radius-md);
+		background: var(--surface);
+		color: var(--text);
+		font-family: var(--font-body);
+		font-size: var(--text-base);
+	}
+
+	.search-modal__input::placeholder {
+		color: var(--text-muted);
+	}
+
+	.search-modal__input:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 1px;
+		border-color: var(--glass-border-strong);
+	}
+
+	.search-modal__status {
+		margin: 0;
+		font-size: var(--text-sm);
+		color: var(--text-muted);
+	}
+
+	.search-results {
+		overflow-y: auto;
+	}
+
+	.search-results__list {
+		display: grid;
+		gap: var(--space-3);
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.search-results__link {
+		display: block;
+		padding: var(--space-3) var(--space-4);
+		border: 1px solid color-mix(in oklab, var(--glass-border) 40%, transparent);
+		border-radius: var(--radius-md);
+		background: var(--surface);
+		color: var(--text);
+		text-decoration: none;
+		transition: border-color var(--dur-fast) var(--ease-out),
+			background-color var(--dur-fast) var(--ease-out);
+	}
+
+	.search-results__link:hover,
+	.search-results__link:focus-visible {
+		border-color: var(--glass-border-strong);
+		background: var(--surface-hover);
+	}
+
+	.search-results__link:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+
+	.search-results__title {
+		margin: 0 0 var(--space-1);
+		font-size: var(--text-base);
+	}
+
+	.search-results__excerpt {
+		margin: 0;
+		font-size: var(--text-sm);
+		color: var(--text-muted);
+	}
+
+	.search-results__excerpt :global(mark) {
+		background: var(--accent-soft);
+		color: var(--text);
+		border-radius: 2px;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.search-modal[open] .search-modal__panel {
+			animation: search-panel-in var(--dur-base) var(--ease-out);
+		}
+	}
+
+	@keyframes search-panel-in {
+		from {
+			opacity: 0;
+			transform: translateY(-8px);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.search__trigger,
+		.search-results__link {
+			transition: none;
+		}
+	}
+</style>
