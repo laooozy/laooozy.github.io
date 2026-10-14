@@ -81,6 +81,25 @@ export function blogPostPath(lang: Locale, slug: string): string {
   return `${localePrefix(lang)}/blog/${slug}/`;
 }
 
+/**
+ * Estimate reading time (whole minutes, minimum 1) from a markdown body.
+ *
+ * CJK scripts are counted per glyph (~400 glyphs/min) and Latin script per
+ * word (~200 words/min); the two budgets are summed so mixed prose stays fair.
+ */
+export function estimateReadingTime(body: string | undefined): number {
+  const text = body ?? "";
+  const cjk = (
+    text.match(/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/g) ?? []
+  ).length;
+  const latin = (
+    text
+      .replace(/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/g, " ")
+      .match(/[A-Za-z0-9]+/g) ?? []
+  ).length;
+  return Math.max(1, Math.ceil(cjk / 400 + latin / 200));
+}
+
 const EN_MONTHS = [
   "January",
   "February",
