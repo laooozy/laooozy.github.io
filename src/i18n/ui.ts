@@ -49,6 +49,13 @@ export const langAttr = {
   en: "en",
 } as const;
 
+/** Open Graph locale (`og:locale`) for each site locale. */
+export const ogLocale = {
+  "zh-hant": "zh_TW",
+  "zh-hans": "zh_CN",
+  en: "en_US",
+} as const;
+
 export const ui = {
   "zh-hant": {
     nav: { about: "關於", acg: "ACG", blog: "文章", contact: "聯絡" },
@@ -137,6 +144,12 @@ export const ui = {
       intro: "想聊攝影、遊戲，或只是打聲招呼，都可以從這裡找到我。",
       instagramLabel: "Instagram",
       emailLabel: "Email",
+    },
+    notFound: {
+      title: "找不到頁面",
+      heading: "找不到頁面",
+      body: "你要找的頁面不存在，或已經被移動了。",
+      backHome: "回到首頁",
     },
     button: { readMore: "閱讀更多", viewAll: "查看全部" },
     a11y: { skipToContent: "跳至主要內容", primaryNav: "主選單" },
@@ -229,6 +242,12 @@ export const ui = {
       intro: "想聊摄影、游戏，或只是打个招呼，都可以从这里找到我。",
       instagramLabel: "Instagram",
       emailLabel: "Email",
+    },
+    notFound: {
+      title: "找不到页面",
+      heading: "找不到页面",
+      body: "你要找的页面不存在，或已经被移动了。",
+      backHome: "回到首页",
     },
     button: { readMore: "阅读更多", viewAll: "查看全部" },
     a11y: { skipToContent: "跳至主要内容", primaryNav: "主菜单" },
@@ -326,6 +345,12 @@ export const ui = {
         "Want to talk photography or games, or just say hi? You can reach me here.",
       instagramLabel: "Instagram",
       emailLabel: "Email",
+    },
+    notFound: {
+      title: "Page not found",
+      heading: "Page not found",
+      body: "The page you're looking for doesn't exist or may have moved.",
+      backHome: "Back to home",
     },
     button: { readMore: "Read more", viewAll: "View all" },
     a11y: { skipToContent: "Skip to main content", primaryNav: "Primary" },

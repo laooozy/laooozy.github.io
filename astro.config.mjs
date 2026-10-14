@@ -1,9 +1,16 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://laooozy.github.io',
+  site: 'https://laoozy.github.io',
+  // The i18n fallback redirect route for `/en` and `/zh-hans` collides with the
+  // explicit `src/pages/{en,zh-hans}/index.astro` routes (the explicit page has
+  // higher priority and wins; the generated fallback stub is dropped). That is
+  // the intended behaviour, so silence the otherwise-noisy prerender warning.
+  prerenderConflictBehavior: 'ignore',
+  integrations: [sitemap()],
   i18n: {
     // Lowercase codes: Astro normalises locale codes to lowercase in URLs.
     // BCP-47 casing for the <html lang> attribute lives in src/i18n/ui.ts.

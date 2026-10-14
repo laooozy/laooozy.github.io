@@ -35,7 +35,7 @@ const items = Object.entries(languages).map(([code, label]) => ({
 				<li>
 					<a
 						href={item.href}
-						hreflang={item.code}
+						hreflang={langAttr[item.code as keyof typeof langAttr]}
 						lang={langAttr[item.code as keyof typeof langAttr]}
 						aria-current={item.isCurrent ? 'true' : undefined}
 						class:list={['language-switcher__link', { 'is-current': item.isCurrent }]}

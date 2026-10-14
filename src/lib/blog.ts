@@ -27,6 +27,18 @@ export async function getPostsByLocale(lang: Locale): Promise<Post[]> {
   );
 }
 
+/**
+ * Posts to show for a locale's blog views. When a locale has no posts of its
+ * own (untranslated content), it falls back to the default locale's posts —
+ * the site rule is "untranslated → show Traditional Chinese". Post links stay
+ * locale-prefixed and resolve through Astro's i18n fallback redirect.
+ */
+export async function getPostsWithFallback(lang: Locale): Promise<Post[]> {
+  const posts = await getPostsByLocale(lang);
+  if (posts.length > 0 || lang === defaultLang) return posts;
+  return getPostsByLocale(defaultLang);
+}
+
 /** Unique tags across a post set, sorted for stable output. */
 export function collectTags(posts: Post[]): string[] {
   const tags = new Set<string>();

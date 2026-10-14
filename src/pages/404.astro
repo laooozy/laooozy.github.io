@@ -1,0 +1,84 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Card from "../components/Card.astro";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import { resolveLocale, useTranslations } from "../i18n/ui";
+
+const locale = resolveLocale(Astro.currentLocale);
+const t = useTranslations(locale);
+const homeHref = getRelativeLocaleUrl(locale);
+---
+
+<BaseLayout
+	title={t.notFound.title}
+	description={t.notFound.body}
+	noAlternates
+>
+	<section class="not-found" aria-labelledby="notfound-heading">
+		<p class="not-found__code" aria-hidden="true">404</p>
+		<Card class="not-found__card">
+			<h1 id="notfound-heading" class="not-found__title">
+				{t.notFound.heading}
+			</h1>
+			<p class="not-found__body">{t.notFound.body}</p>
+			<a class="not-found__link" href={homeHref}>{t.notFound.backHome} →</a>
+		</Card>
+	</section>
+</BaseLayout>
+
+<style>
+	.not-found {
+		display: grid;
+		justify-items: center;
+		gap: var(--space-6);
+		padding-block: clamp(var(--space-8), 10vw, var(--space-11));
+		text-align: center;
+	}
+
+	.not-found__code {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: clamp(var(--text-4xl), 18vw, 8rem);
+		font-weight: 700;
+		line-height: 1;
+		letter-spacing: var(--tracking-display);
+		background: var(--accent-gradient);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+	}
+
+	.not-found__card {
+		max-width: var(--container-narrow);
+		text-align: center;
+	}
+
+	.not-found__title {
+		margin: 0 0 var(--space-3);
+	}
+
+	.not-found__body {
+		margin: 0 0 var(--space-5);
+		color: var(--text-muted);
+	}
+
+	.not-found__link {
+		font-weight: 600;
+		color: var(--accent);
+		text-decoration: none;
+	}
+
+	.not-found__link:hover,
+	.not-found__link:focus-visible {
+		color: var(--text);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.not-found__code {
+			background: none;
+			-webkit-text-fill-color: currentColor;
+			color: var(--text);
+		}
+	}
+</style>

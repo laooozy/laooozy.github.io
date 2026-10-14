@@ -10,6 +10,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
+    "gen:og": "node scripts/generate-og.mjs",
     "pagefind": "pagefind --site dist",
     "deploy": "npm run build && npm run pagefind && gh-pages -d dist -b gh-pages --dotfiles"
   },
@@ -18,8 +19,10 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@astrojs/sitemap": "^3.7.4",
     "gh-pages": "^6.3.0",
     "pagefind": "^1.5.2",
+    "sharp": "^0.35.5",
     "typescript": "^6.0.3"
   }
 }

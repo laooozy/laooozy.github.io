@@ -11,14 +11,14 @@ import {
   collectPeriods,
   collectTags,
   formatPeriodLabel,
-  getPostsByLocale,
+  getPostsWithFallback,
   matchesPeriod,
 } from "../../../../lib/blog";
 
 const locale = "zh-hans" as const;
 
 export async function getStaticPaths() {
-  const posts = await getPostsByLocale("zh-hans");
+  const posts = await getPostsWithFallback("zh-hans");
   return collectPeriods(posts).map((period) => ({
     params: { period },
     props: { period },
@@ -27,7 +27,7 @@ export async function getStaticPaths() {
 
 const { period } = Astro.props;
 
-const allPosts = await getPostsByLocale(locale);
+const allPosts = await getPostsWithFallback(locale);
 const posts = allPosts.filter((post) => matchesPeriod(post, period));
 const tags = collectTags(allPosts).map((tag) => ({
   label: tag,
