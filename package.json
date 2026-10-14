@@ -9,13 +9,16 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "pagefind": "pagefind --site dist",
+    "deploy": "npm run build && npm run pagefind && gh-pages -d dist -b gh-pages --dotfiles"
   },
   "dependencies": {
     "astro": "^7.3.8"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "gh-pages": "^6.3.0",
     "typescript": "^6.0.3"
   }
 }
