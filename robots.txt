@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://laooozy.github.io/sitemap-index.xml
