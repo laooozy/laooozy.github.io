@@ -1,0 +1,49 @@
+---
+import { getRelativeLocaleUrl } from 'astro:i18n';
+import { languages, langAttr, defaultLang, resolveLocale } from '../i18n/ui';
+
+const current = resolveLocale(Astro.currentLocale);
+
+// Strip the current locale prefix to get the locale-neutral path.
+// The default locale (zh-hant) is served at the root, without a prefix.
+let path = Astro.url.pathname;
+for (const loc of Object.keys(languages)) {
+  if (loc === defaultLang) continue;
+  if (path === `/${loc}` || path === `/${loc}/`) {
+    path = '/';
+    break;
+  }
+  if (path.startsWith(`/${loc}/`)) {
+    path = path.slice(loc.length + 1);
+    break;
+  }
+}
+const rel = path.replace(/^\//, '').replace(/\/$/, '');
+
+const items = Object.entries(languages).map(([code, label]) => ({
+  code,
+  label,
+  href: getRelativeLocaleUrl(code, rel),
+  isCurrent: code === current,
+}));
+---
+
+<nav class="language-switcher" aria-label="Language">
+	<ul>
+		{
+			items.map((item) => (
+				<li>
+					<a
+						href={item.href}
+						hreflang={item.code}
+						lang={langAttr[item.code as keyof typeof langAttr]}
+						aria-current={item.isCurrent ? 'true' : undefined}
+						class:list={['language-switcher__link', { 'is-current': item.isCurrent }]}
+					>
+						{item.label}
+					</a>
+				</li>
+			))
+		}
+	</ul>
+</nav>

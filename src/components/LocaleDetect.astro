@@ -1,0 +1,70 @@
+---
+import { getRelativeLocaleUrl } from 'astro:i18n';
+import { languages, defaultLang, resolveLocale } from '../i18n/ui';
+
+const currentLocale = resolveLocale(Astro.currentLocale);
+
+// Locale-neutral path (the default locale is served at the root, unprefixed).
+let path = Astro.url.pathname;
+for (const loc of Object.keys(languages)) {
+  if (loc === defaultLang) continue;
+  if (path === `/${loc}` || path === `/${loc}/`) {
+    path = '/';
+    break;
+  }
+  if (path.startsWith(`/${loc}/`)) {
+    path = path.slice(loc.length + 1);
+    break;
+  }
+}
+const rel = path.replace(/^\//, '').replace(/\/$/, '');
+
+// Pre-compute the equivalent URL in every locale so the client script only has
+// to pick one (no string surgery in the browser).
+const targets: Record<string, string> = {};
+for (const loc of Object.keys(languages)) {
+  targets[loc] = getRelativeLocaleUrl(loc, rel);
+}
+---
+
+<script define:vars={{ targets, currentLocale }}>
+	(function () {
+		var STORAGE_KEY = 'locale';
+		try {
+			// First visit only: once a choice is stored, never auto-redirect again.
+			if (localStorage.getItem(STORAGE_KEY)) return;
+
+			var langs =
+				navigator.languages && navigator.languages.length
+					? navigator.languages
+					: [navigator.language || ''];
+
+			var detected = null;
+			for (var i = 0; i < langs.length; i++) {
+				var l = String(langs[i]).toLowerCase();
+				if (l.indexOf('en') === 0) {
+					detected = 'en';
+					break;
+				}
+				if (l === 'zh-cn' || l === 'zh-sg') {
+					detected = 'zh-hans';
+					break;
+				}
+				if (l.indexOf('zh') === 0) {
+					detected = 'zh-hant';
+					break;
+				}
+			}
+			if (!detected) detected = 'zh-hant';
+
+			// Store BEFORE redirecting so the redirected page's guard stops us looping.
+			localStorage.setItem(STORAGE_KEY, detected);
+
+			if (detected !== currentLocale && targets[detected]) {
+				location.replace(targets[detected]);
+			}
+		} catch (e) {
+			/* localStorage unavailable — stay on the served locale */
+		}
+	})();
+</script>
