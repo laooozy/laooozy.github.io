@@ -1,0 +1,345 @@
+---
+/**
+ * HomePage — the single-page home, shared by all three locales.
+ *
+ * Sections, in order: Hero → About (#about) → ACG entry (#acg) → latest posts
+ * (#blog) → Contact (#contact). Every user-facing string comes from
+ * src/i18n/ui.ts; the page renders inside BaseLayout (see the thin locale
+ * routes in src/pages).
+ */
+import Card from "./Card.astro";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import {
+  contactIdentity,
+  games,
+  resolveLocale,
+  useTranslations,
+  vtubers,
+} from "../i18n/ui";
+import {
+  blogIndexPath,
+  blogPostPath,
+  formatPostDate,
+  getPostsByLocale,
+} from "../lib/blog";
+
+interface Interest {
+  key: string;
+  label: string;
+  note: string;
+  items: readonly string[];
+}
+
+const locale = resolveLocale(Astro.currentLocale);
+const t = useTranslations(locale);
+
+const latest = (await getPostsByLocale("zh-hant")).slice(0, 4);
+const acgHref = getRelativeLocaleUrl(locale, "acg");
+const allPostsHref = blogIndexPath(locale).replace(/\/$/, "");
+
+const interests: Interest[] = [
+  {
+    key: "photography",
+    label: t.home.interests.photography,
+    note: t.home.interests.photographyNote,
+    items: [],
+  },
+  {
+    key: "games",
+    label: t.home.interests.games,
+    note: t.home.interests.gamesNote,
+    items: games,
+  },
+  {
+    key: "vtuber",
+    label: t.home.interests.vtuber,
+    note: t.home.interests.vtuberNote,
+    items: vtubers,
+  },
+];
+
+const contacts = [
+  {
+    key: "instagram",
+    label: t.contact.instagramLabel,
+    handle: `@${contactIdentity.personalIg}`,
+    href: `https://instagram.com/${contactIdentity.personalIg}`,
+  },
+  {
+    key: "instagram-acg",
+    label: t.contact.instagramLabel,
+    handle: `@${contactIdentity.acgIg}`,
+    href: `https://instagram.com/${contactIdentity.acgIg}`,
+  },
+  {
+    key: "email",
+    label: t.contact.emailLabel,
+    handle: contactIdentity.email,
+    href: `mailto:${contactIdentity.email}`,
+  },
+];
+---
+
+<div class="home">
+	<section class="hero">
+		<h1 class="hero__title">{t.home.title}</h1>
+		<p class="hero__tagline">{t.home.tagline}</p>
+	</section>
+
+	<section id="about" class="section" aria-labelledby="about-heading">
+		<h2 id="about-heading" class="section__title">{t.about.heading}</h2>
+		<p class="section__lead">{t.home.intro}</p>
+
+		<h3 class="interests__heading">{t.home.interestsHeading}</h3>
+		<ul class="interests">
+			{
+				interests.map((interest) => (
+					<li class="interests__item">
+						<Card class="interest">
+							<h4 class="interest__label">{interest.label}</h4>
+							<p class="interest__note">{interest.note}</p>
+							{interest.items.length > 0 && (
+								<ul class="interest__chips">
+									{interest.items.map((item) => (
+										<li class="interest__chip">{item}</li>
+									))}
+								</ul>
+							)}
+						</Card>
+					</li>
+				))
+			}
+		</ul>
+	</section>
+
+	<section id="acg" class="section" aria-labelledby="acg-heading">
+		<h2 id="acg-heading" class="section__title">{t.acg.heading}</h2>
+		<Card href={acgHref} class="acg-card">
+			<p class="acg-card__note">{t.acg.note}</p>
+			<span class="acg-card__cta">{t.acg.cta} →</span>
+		</Card>
+	</section>
+
+	<section id="blog" class="section" aria-labelledby="blog-heading">
+		<div class="section__head">
+			<h2 id="blog-heading" class="section__title">{t.blog.heading}</h2>
+			<a class="section__more" href={allPostsHref}>{t.button.viewAll} →</a>
+		</div>
+
+		{
+			latest.length > 0 ? (
+				<ul class="latest">
+					{latest.map((post) => (
+						<li class="latest__item">
+							<Card href={blogPostPath(locale, post.id)}>
+								<time
+									class="latest__date"
+									datetime={post.data.date.toISOString()}
+								>
+									{formatPostDate(post.data.date, locale)}
+								</time>
+								<h3 class="latest__title">{post.data.title}</h3>
+								<p class="latest__desc">{post.data.description}</p>
+							</Card>
+						</li>
+					))}
+				</ul>
+			) : (
+				<p class="section__lead">{t.blog.empty}</p>
+			)
+		}
+	</section>
+
+	<section id="contact" class="section" aria-labelledby="contact-heading">
+		<h2 id="contact-heading" class="section__title">{t.contact.heading}</h2>
+		<p class="section__lead">{t.contact.intro}</p>
+		<ul class="contact">
+			{
+				contacts.map((contact) => (
+					<li class="contact__item">
+						<span class="contact__label">{contact.label}</span>
+						<a class="contact__link" href={contact.href}>
+							{contact.handle}
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</section>
+</div>
+
+<style>
+	.home {
+		display: grid;
+		gap: clamp(var(--space-9), 10vw, var(--space-12));
+	}
+
+	.hero {
+		padding-block: clamp(var(--space-6), 6vw, var(--space-9));
+	}
+
+	.hero__title {
+		margin: 0 0 var(--space-4);
+		font-size: var(--text-hero);
+		font-weight: 700;
+		letter-spacing: var(--tracking-display);
+		background: var(--accent-gradient);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+	}
+
+	.hero__tagline {
+		margin: 0;
+		max-width: var(--container-narrow);
+		font-size: clamp(var(--text-lg), 2.5vw, var(--text-2xl));
+		color: var(--text-muted);
+	}
+
+	.section {
+		scroll-margin-top: var(--space-10);
+	}
+
+	.section__title {
+		margin: 0 0 var(--space-4);
+	}
+
+	.section__head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-4);
+		margin-bottom: var(--space-5);
+	}
+
+	.section__head .section__title {
+		margin-bottom: 0;
+	}
+
+	.section__lead {
+		max-width: var(--measure);
+		color: var(--text-muted);
+	}
+
+	.section__more {
+		font-size: var(--text-sm);
+		font-weight: 500;
+		text-decoration: none;
+	}
+
+	.interests__heading {
+		margin: var(--space-6) 0 var(--space-4);
+		font-size: var(--text-sm);
+		font-weight: 600;
+		letter-spacing: var(--tracking-wide);
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+
+	.interests {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+		gap: var(--space-5);
+		list-style: none;
+	}
+
+	.interest__label {
+		margin: 0 0 var(--space-2);
+		font-size: var(--text-lg);
+	}
+
+	.interest__note {
+		margin: 0;
+		color: var(--text-muted);
+	}
+
+	.interest__chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin-top: var(--space-4);
+		list-style: none;
+	}
+
+	.interest__chip {
+		padding: 0 var(--space-2);
+		border-radius: var(--radius-sm);
+		background: var(--accent-soft);
+		color: var(--text);
+		font-size: var(--text-xs);
+	}
+
+	.acg-card__note {
+		margin: 0 0 var(--space-4);
+		color: var(--text);
+	}
+
+	.acg-card__cta {
+		font-weight: 600;
+		color: var(--accent);
+	}
+
+	.latest {
+		display: grid;
+		gap: var(--space-5);
+		list-style: none;
+	}
+
+	.latest__date {
+		display: block;
+		margin-bottom: var(--space-2);
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		letter-spacing: var(--tracking-wide);
+		color: var(--text-muted);
+	}
+
+	.latest__title {
+		margin: 0 0 var(--space-2);
+		font-size: var(--text-xl);
+	}
+
+	.latest__desc {
+		margin: 0;
+		color: var(--text-muted);
+	}
+
+	.contact {
+		display: grid;
+		gap: var(--space-3);
+		margin-top: var(--space-5);
+		list-style: none;
+	}
+
+	.contact__item {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-2) var(--space-4);
+	}
+
+	.contact__label {
+		min-width: 6rem;
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		letter-spacing: var(--tracking-wide);
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+
+	.contact__link {
+		font-size: var(--text-lg);
+		font-weight: 500;
+		text-decoration: none;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero__title {
+			background: none;
+			-webkit-text-fill-color: currentColor;
+			color: var(--text);
+		}
+	}
+</style>
