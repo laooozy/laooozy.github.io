@@ -1,0 +1,156 @@
+---
+import "../styles/tokens.css";
+import "../styles/global.css";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import LanguageSwitcher from "../components/LanguageSwitcher.astro";
+import LocaleDetect from "../components/LocaleDetect.astro";
+import { langAttr, resolveLocale, useTranslations } from "../i18n/ui";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+const locale = resolveLocale(Astro.currentLocale);
+const t = useTranslations(locale);
+
+const homeHref = getRelativeLocaleUrl(locale);
+const pageTitle = title ? `${title} · ${t.home.title}` : t.home.title;
+const metaDescription = description ?? t.home.tagline;
+const year = new Date().getFullYear();
+
+const navItems = [
+  { href: "#about", label: t.nav.about },
+  { href: "#acg", label: t.nav.acg },
+  { href: "#blog", label: t.nav.blog },
+  { href: "#contact", label: t.nav.contact },
+];
+---
+
+<!doctype html>
+<html lang={langAttr[locale]}>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="generator" content={Astro.generator} />
+		<meta name="theme-color" content="#0a0a0f" />
+		<meta name="description" content={metaDescription} />
+		<title>{pageTitle}</title>
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+		/>
+	</head>
+	<body>
+		<a class="skip-link" href="#main">{t.a11y.skipToContent}</a>
+
+		<header class="site-header">
+			<div class="site-header__inner container">
+				<a class="brand" href={homeHref}>{t.home.title}</a>
+				<nav class="site-nav" aria-label={t.a11y.primaryNav}>
+					<ul class="site-nav__list">
+						{
+							navItems.map((item) => (
+								<li>
+									<a class="site-nav__link" href={item.href}>
+										{item.label}
+									</a>
+								</li>
+							))
+						}
+					</ul>
+				</nav>
+				<LanguageSwitcher />
+			</div>
+		</header>
+
+		<main id="main" class="site-main">
+			<div class="container">
+				<slot />
+			</div>
+		</main>
+
+		<footer class="site-footer">
+			<div class="site-footer__inner container">
+				<p class="site-footer__copy">© {year} {t.home.title} · {t.footer.rights}</p>
+			</div>
+		</footer>
+
+		<LocaleDetect />
+	</body>
+</html>
+
+<style>
+	.site-header {
+		position: relative;
+		z-index: var(--z-sticky);
+		padding-block: var(--space-4);
+		border-bottom: 1px solid color-mix(in oklab, var(--glass-border) 55%, transparent);
+		background: color-mix(in oklab, var(--bg-base) 72%, transparent);
+		-webkit-backdrop-filter: blur(var(--glass-blur));
+		backdrop-filter: blur(var(--glass-blur));
+	}
+
+	.site-header__inner {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: var(--space-4) var(--space-5);
+	}
+
+	.brand {
+		font-family: var(--font-display);
+		font-size: var(--text-lg);
+		font-weight: 700;
+		letter-spacing: var(--tracking-tight);
+		color: var(--text);
+		text-decoration: none;
+	}
+
+	.brand:hover {
+		color: var(--accent);
+	}
+
+	.site-nav {
+		margin-inline-start: auto;
+	}
+
+	.site-nav__list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-5);
+		list-style: none;
+	}
+
+	.site-nav__link {
+		font-size: var(--text-sm);
+		font-weight: 500;
+		color: var(--text-muted);
+		text-decoration: none;
+	}
+
+	.site-nav__link:hover {
+		color: var(--text);
+	}
+
+	.site-main {
+		padding-block: clamp(var(--space-8), 8vw, var(--space-11));
+	}
+
+	.site-footer {
+		border-top: 1px solid color-mix(in oklab, var(--glass-border) 40%, transparent);
+		padding-block: var(--space-6);
+	}
+
+	.site-footer__copy {
+		max-width: none;
+		margin: 0;
+		font-size: var(--text-sm);
+		color: var(--text-muted);
+	}
+</style>

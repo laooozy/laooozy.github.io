@@ -1,30 +1,15 @@
 ---
-import { langAttr, resolveLocale, useTranslations } from '../i18n/ui';
-import LanguageSwitcher from '../components/LanguageSwitcher.astro';
-import LocaleDetect from '../components/LocaleDetect.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Card from '../components/Card.astro';
+import { resolveLocale, useTranslations } from '../i18n/ui';
 
 const locale = resolveLocale(Astro.currentLocale);
 const t = useTranslations(locale);
 ---
 
-<!doctype html>
-<html lang={langAttr[locale]}>
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>{t.home.title}</title>
-	</head>
-	<body>
-		<header>
-			<LanguageSwitcher />
-		</header>
-		<main>
-			<h1>{t.home.title}</h1>
-			<p>{t.home.tagline}</p>
-		</main>
-		<LocaleDetect />
-	</body>
-</html>
+<BaseLayout>
+	<Card>
+		<h1>{t.home.title}</h1>
+		<p>{t.home.tagline}</p>
+	</Card>
+</BaseLayout>

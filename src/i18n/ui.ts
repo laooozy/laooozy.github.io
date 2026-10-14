@@ -37,6 +37,8 @@ export const ui = {
     blog: { heading: "最新文章", cta: "閱讀更多" },
     contact: { heading: "聯絡我" },
     button: { readMore: "閱讀更多", viewAll: "查看全部" },
+    a11y: { skipToContent: "跳至主要內容", primaryNav: "主選單" },
+    footer: { rights: "版權所有" },
   },
   "zh-hans": {
     nav: { about: "关于", acg: "ACG", blog: "文章", contact: "联系" },
@@ -49,6 +51,8 @@ export const ui = {
     blog: { heading: "最新文章", cta: "阅读更多" },
     contact: { heading: "联系我" },
     button: { readMore: "阅读更多", viewAll: "查看全部" },
+    a11y: { skipToContent: "跳至主要内容", primaryNav: "主菜单" },
+    footer: { rights: "版权所有" },
   },
   en: {
     nav: { about: "About", acg: "ACG", blog: "Blog", contact: "Contact" },
@@ -61,6 +65,8 @@ export const ui = {
     blog: { heading: "Latest posts", cta: "Read more" },
     contact: { heading: "Get in touch" },
     button: { readMore: "Read more", viewAll: "View all" },
+    a11y: { skipToContent: "Skip to main content", primaryNav: "Primary" },
+    footer: { rights: "All rights reserved" },
   },
 } as const;
 
