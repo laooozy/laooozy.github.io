@@ -26,3 +26,6 @@ pnpm-debug.log*
 # omo state (never commit)
 .omo/
 .codegraph
+
+# playwright mcp artifacts
+.playwright-mcp/

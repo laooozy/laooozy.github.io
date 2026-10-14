@@ -49,7 +49,7 @@ const navItems = [
 	<body>
 		<a class="skip-link" href="#main">{t.a11y.skipToContent}</a>
 
-		<header class="site-header">
+		<header class="site-header" data-site-header>
 			<div class="site-header__inner container">
 				<a class="brand" href={homeHref}>{t.home.title}</a>
 				<nav class="site-nav" aria-label={t.a11y.primaryNav}>
@@ -82,18 +82,77 @@ const navItems = [
 		</footer>
 
 		<LocaleDetect />
+
+		<script>
+			/*
+			 * Scroll-hiding top bar. Single-direction only:
+			 *  - shown by default and whenever at/near the top;
+			 *  - hidden ONLY while the page scrolls DOWN;
+			 *  - ANY upward movement reveals it immediately (no threshold).
+			 * Independent of LocaleDetect (that script only redirects locales).
+			 */
+			const header = document.querySelector<HTMLElement>('[data-site-header]');
+			if (header) {
+				const TOP_OFFSET = 8; // px — "near the top" always shows the bar
+				const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+				let lastY = window.scrollY;
+				let ticking = false;
+
+				const update = () => {
+					const y = window.scrollY;
+					const delta = y - lastY;
+
+					if (reduceMotion.matches || y <= TOP_OFFSET) {
+						// Reduced motion, or at/near the top: always visible.
+						header.removeAttribute('data-hidden');
+					} else if (delta > 0) {
+						// Scrolling down → hide.
+						header.setAttribute('data-hidden', '');
+					} else if (delta < 0) {
+						// Scrolling up → reveal immediately, no threshold.
+						header.removeAttribute('data-hidden');
+					}
+
+					lastY = y;
+					ticking = false;
+				};
+
+				const onScroll = () => {
+					if (ticking) return;
+					ticking = true;
+					requestAnimationFrame(update);
+				};
+
+				window.addEventListener('scroll', onScroll, { passive: true });
+				reduceMotion.addEventListener('change', update);
+				update();
+			}
+		</script>
 	</body>
 </html>
 
 <style>
+	/*
+	 * Sticky (not fixed) so the header keeps its own place in the flow: the
+	 * document reserves its height and there is zero layout shift when it
+	 * slides away. Hiding is a GPU-composited transform, never a height change.
+	 */
 	.site-header {
-		position: relative;
+		position: sticky;
+		top: 0;
 		z-index: var(--z-sticky);
 		padding-block: var(--space-4);
 		border-bottom: 1px solid color-mix(in oklab, var(--glass-border) 55%, transparent);
 		background: color-mix(in oklab, var(--bg-base) 72%, transparent);
 		-webkit-backdrop-filter: blur(var(--glass-blur));
 		backdrop-filter: blur(var(--glass-blur));
+		transform: translateY(0);
+		will-change: transform;
+		transition: transform var(--dur-base) var(--ease-out);
+	}
+
+	.site-header[data-hidden] {
+		transform: translateY(-100%);
 	}
 
 	.site-header__inner {
@@ -152,5 +211,18 @@ const navItems = [
 		margin: 0;
 		font-size: var(--text-sm);
 		color: var(--text-muted);
+	}
+
+	/*
+	 * Reduced motion: the bar never hides and never animates — it simply stays
+	 * put. The rule also matches the hidden state so it always wins over
+	 * `.site-header[data-hidden]` regardless of script timing.
+	 */
+	@media (prefers-reduced-motion: reduce) {
+		.site-header,
+		.site-header[data-hidden] {
+			transform: none;
+			transition: none;
+		}
 	}
 </style>
