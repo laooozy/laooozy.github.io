@@ -1,0 +1,51 @@
+---
+/**
+ * en blog index — served at `/en/blog/`. Same pagination rules as the default
+ * locale; shows only `lang: "en"` posts (empty until en translations exist).
+ */
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import BlogList from "../../../components/BlogList.astro";
+import { useTranslations } from "../../../i18n/ui";
+import {
+  blogArchivePath,
+  blogTagPath,
+  collectPeriods,
+  collectTags,
+  formatPeriodLabel,
+  getPostsByLocale,
+  PAGE_SIZE,
+} from "../../../lib/blog";
+
+const locale = "en" as const;
+
+export async function getStaticPaths({ paginate }: { paginate: import("astro").PaginateFunction }) {
+  const posts = await getPostsByLocale("en");
+  return paginate(posts, { pageSize: PAGE_SIZE });
+}
+
+const t = useTranslations(locale);
+const { page } = Astro.props;
+
+const allPosts = await getPostsByLocale(locale);
+const tags = collectTags(allPosts).map((tag) => ({
+  label: tag,
+  href: blogTagPath(locale, tag),
+}));
+const periods = collectPeriods(allPosts)
+  .filter((period) => period.length === 4)
+  .map((period) => ({
+    label: formatPeriodLabel(period, locale),
+    href: blogArchivePath(locale, period),
+  }));
+---
+
+<BaseLayout title={t.blog.heading}>
+	<BlogList
+		posts={page.data}
+		locale={locale}
+		heading={t.blog.heading}
+		tags={tags}
+		periods={periods}
+		pagination={page}
+	/>
+</BaseLayout>

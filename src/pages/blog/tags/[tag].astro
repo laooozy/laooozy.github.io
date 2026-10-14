@@ -1,0 +1,51 @@
+---
+/**
+ * zh-hant tag pages — `/blog/tags/[tag]/` (default locale, unprefixed).
+ * Tag is the raw tag string; Astro percent-encodes it in the URL.
+ */
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import BlogList from "../../../components/BlogList.astro";
+import { useTranslations } from "../../../i18n/ui";
+import {
+  blogArchivePath,
+  blogTagPath,
+  collectPeriods,
+  collectTags,
+  formatPeriodLabel,
+  getPostsByLocale,
+} from "../../../lib/blog";
+
+const locale = "zh-hant" as const;
+
+export async function getStaticPaths() {
+  const posts = await getPostsByLocale("zh-hant");
+  return collectTags(posts).map((tag) => ({ params: { tag }, props: { tag } }));
+}
+
+const t = useTranslations(locale);
+const { tag } = Astro.props;
+
+const allPosts = await getPostsByLocale(locale);
+const posts = allPosts.filter((post) => post.data.tags.includes(tag));
+const tags = collectTags(allPosts).map((name) => ({
+  label: name,
+  href: blogTagPath(locale, name),
+  active: name === tag,
+}));
+const periods = collectPeriods(allPosts)
+  .filter((period) => period.length === 4)
+  .map((period) => ({
+    label: formatPeriodLabel(period, locale),
+    href: blogArchivePath(locale, period),
+  }));
+---
+
+<BaseLayout title={`${t.blog.byTag} · ${tag}`}>
+	<BlogList
+		posts={posts}
+		locale={locale}
+		heading={`#${tag}`}
+		tags={tags}
+		periods={periods}
+	/>
+</BaseLayout>

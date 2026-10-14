@@ -1,0 +1,50 @@
+---
+/**
+ * zh-hant date archive — `/blog/archive/[period]/` where period is `YYYY` or
+ * `YYYY-MM`. Build-time date filtering, linked from the index filter chips.
+ */
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import BlogList from "../../../components/BlogList.astro";
+import {
+  blogArchivePath,
+  blogTagPath,
+  collectPeriods,
+  collectTags,
+  formatPeriodLabel,
+  getPostsByLocale,
+  matchesPeriod,
+} from "../../../lib/blog";
+
+const locale = "zh-hant" as const;
+
+export async function getStaticPaths() {
+  const posts = await getPostsByLocale("zh-hant");
+  return collectPeriods(posts).map((period) => ({
+    params: { period },
+    props: { period },
+  }));
+}
+
+const { period } = Astro.props;
+const allPosts = await getPostsByLocale(locale);
+const posts = allPosts.filter((post) => matchesPeriod(post, period));
+const tags = collectTags(allPosts).map((tag) => ({
+  label: tag,
+  href: blogTagPath(locale, tag),
+}));
+const periods = collectPeriods(allPosts).map((key) => ({
+  label: formatPeriodLabel(key, locale),
+  href: blogArchivePath(locale, key),
+  active: key === period,
+}));
+---
+
+<BaseLayout title={formatPeriodLabel(period, locale)}>
+	<BlogList
+		posts={posts}
+		locale={locale}
+		heading={formatPeriodLabel(period, locale)}
+		tags={tags}
+		periods={periods}
+	/>
+</BaseLayout>
