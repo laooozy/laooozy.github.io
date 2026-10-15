@@ -6,6 +6,7 @@ import LanguageSwitcher from "../components/LanguageSwitcher.astro";
 import Container from "../components/layout/Container.astro";
 import LinkButton from "@/components/LinkButton";
 import { alternateUrls } from "../lib/locale";
+import { SITE_INDEXABLE } from "../lib/seo";
 import { langAttr, ogLocale, resolveLocale, useTranslations } from "../i18n/ui";
 
 interface Props {
@@ -54,6 +55,11 @@ const navItems = [
 		<meta name="generator" content={Astro.generator} />
 		<meta name="theme-color" content="#0a0a0f" />
 		<meta name="description" content={metaDescription} />
+		{/*
+		 * While SITE_INDEXABLE is false the whole site is kept out of search
+		 * engines. Flip it to true in src/lib/seo.ts to emit nothing here.
+		 */}
+		{!SITE_INDEXABLE && <meta name="robots" content="noindex, nofollow" />}
 		<title>{pageTitle}</title>
 		<link rel="canonical" href={canonical} />
 		{
