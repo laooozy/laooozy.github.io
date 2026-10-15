@@ -1,0 +1,87 @@
+---
+/**
+ * Chip — a small pill. Two visually distinct roles, never mixed:
+ *
+ *  - variant="tag"    NON-interactive label (muted surface, no hover, no href).
+ *                     Used for post tags and interest items.
+ *  - variant="filter" a CONTROL (outlined when idle, filled when active).
+ *                     Used for filter/segment controls. Give it an `href` for
+ *                     links, or leave it off to render a <button>.
+ *
+ * Props
+ *  - label: string
+ *  - href?: string            renders an <a>; active links get aria-current
+ *  - active?: boolean         filled control state (filters only)
+ *  - variant?: "tag" | "filter"   default: "tag"
+ *  - class?: string
+ */
+interface Props {
+  label: string;
+  href?: string;
+  active?: boolean;
+  variant?: "tag" | "filter";
+  class?: string;
+}
+const { label, href, active = false, variant = "tag", class: className } = Astro.props;
+const isFilter = variant === "filter";
+const Tag = href ? "a" : isFilter ? "button" : "span";
+---
+
+<Tag
+  class:list={["chip", `chip--${variant}`, active && "is-active", className]}
+  {...href ? { href } : {}}
+  {...Tag === "button" ? { type: "button" } : {}}
+  {...active && href ? { "aria-current": "page" } : undefined}
+  {...active && Tag === "button" ? { "aria-pressed": "true" } : undefined}
+>
+  {label}
+</Tag>
+
+<style>
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 0.2rem 0.6rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-pill);
+    font-size: var(--text-xs);
+    line-height: 1.6;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .chip--tag {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.09);
+    color: var(--text-muted);
+  }
+
+  .chip--filter {
+    padding-block: 0.35rem;
+    background: var(--surface);
+    border-color: var(--glass-border);
+    color: var(--text);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+
+  .chip--filter:hover {
+    background: var(--accent-surface);
+    border-color: var(--glass-border-strong);
+    color: var(--text);
+  }
+
+  .chip--filter.is-active,
+  .chip--filter.is-active:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--text-on-accent);
+    font-weight: 600;
+  }
+</style>

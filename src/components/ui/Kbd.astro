@@ -1,0 +1,38 @@
+---
+/**
+ * Kbd — a keyboard key / shortcut hint.
+ *
+ * Props
+ *  - keys: string      the label, e.g. "⌘K" or "Ctrl K"
+ *  - class?: string
+ *
+ * Presentational only. Platform detection (⌘ vs Ctrl) belongs to the caller —
+ * SearchModal already swaps the glyph via `navigator.platform`.
+ */
+interface Props {
+  keys: string;
+  class?: string;
+}
+const { keys, class: className } = Astro.props;
+---
+
+<kbd class:list={["kbd", className]}>{keys}</kbd>
+
+<style>
+  .kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.6em;
+    padding: 0.08em 0.45em;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-bottom-width: 2px;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+</style>

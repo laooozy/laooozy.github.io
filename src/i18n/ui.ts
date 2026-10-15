@@ -63,6 +63,10 @@ export const ui = {
       title: "laooozy",
       tagline: "攝影、遊戲，與我寫下的一些東西。",
       intro: "嗨，我是 laooozy，住在香港。最近喜歡跑步和拍攝。",
+      nowLabel: "最近",
+      nowText: "練跑，也練習用相機留住光。",
+      baseLabel: "據點",
+      baseValue: "香港",
       interestsHeading: "興趣",
       interests: {
         photography: "攝影",
@@ -155,6 +159,7 @@ export const ui = {
     a11y: {
       skipToContent: "跳至主要內容",
       primaryNav: "主選單",
+      quickLinks: "快速連結",
       language: "語言",
     },
     footer: { rights: "版權所有" },
@@ -165,6 +170,10 @@ export const ui = {
       title: "laooozy",
       tagline: "摄影、游戏，以及我写下的一些东西。",
       intro: "嗨，我是 laooozy，住在香港。最近喜欢跑步和拍摄。",
+      nowLabel: "最近",
+      nowText: "练跑，也练习用相机留住光。",
+      baseLabel: "据点",
+      baseValue: "香港",
       interestsHeading: "兴趣",
       interests: {
         photography: "摄影",
@@ -257,6 +266,7 @@ export const ui = {
     a11y: {
       skipToContent: "跳至主要内容",
       primaryNav: "主菜单",
+      quickLinks: "快速链接",
       language: "语言",
     },
     footer: { rights: "版权所有" },
@@ -268,6 +278,10 @@ export const ui = {
       tagline: "Photography, games, and a few things I write down.",
       intro:
         "Hi, I'm laooozy, based in Hong Kong — into running and photography these days.",
+      nowLabel: "Now",
+      nowText: "Running, and learning to hold light with a camera.",
+      baseLabel: "Based in",
+      baseValue: "Hong Kong",
       interestsHeading: "Interests",
       interests: {
         photography: "Photography",
@@ -365,6 +379,7 @@ export const ui = {
     a11y: {
       skipToContent: "Skip to main content",
       primaryNav: "Primary",
+      quickLinks: "Quick links",
       language: "Language",
     },
     footer: { rights: "All rights reserved" },

@@ -28,13 +28,15 @@ const isInteractive = interactive || Boolean(href);
 		padding: var(--space-6);
 		border: 1px solid var(--glass-border);
 		border-radius: var(--radius-lg);
-		background: var(--surface);
+		background-color: var(--surface);
+		background-image: var(--card-bg);
+		box-shadow: var(--card-inset);
 		-webkit-backdrop-filter: blur(var(--glass-blur));
 		backdrop-filter: blur(var(--glass-blur));
 		color: var(--text);
 		text-decoration: none;
-		transition: border-color var(--dur-base) var(--ease-out),
-			background-color var(--dur-base) var(--ease-out),
+		transition:
+			border-color var(--dur-base) var(--ease-out),
 			box-shadow var(--dur-base) var(--ease-out),
 			transform var(--dur-base) var(--ease-out);
 	}
@@ -42,8 +44,7 @@ const isInteractive = interactive || Boolean(href);
 	.card--interactive:hover,
 	.card--interactive:focus-visible {
 		border-color: var(--glass-border-strong);
-		background: var(--surface-hover);
-		box-shadow: var(--glass-glow);
+		box-shadow: var(--card-inset), var(--shadow-lift);
 		transform: translateY(-3px);
 	}
 

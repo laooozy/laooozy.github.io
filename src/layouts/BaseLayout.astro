@@ -3,6 +3,7 @@ import "../styles/tokens.css";
 import "../styles/global.css";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import LanguageSwitcher from "../components/LanguageSwitcher.astro";
+import Container from "../components/layout/Container.astro";
 import LinkButton from "@/components/LinkButton";
 import { alternateUrls } from "../lib/locale";
 import { langAttr, ogLocale, resolveLocale, useTranslations } from "../i18n/ui";
@@ -121,9 +122,9 @@ const navItems = [
 		</header>
 
 		<main id="main" class="site-main">
-			<div class="container">
+			<Container>
 				<slot />
-			</div>
+			</Container>
 		</main>
 
 		<footer class="site-footer">

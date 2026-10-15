@@ -1,0 +1,57 @@
+---
+import type { HTMLTag } from "astro/types";
+
+/**
+ * Cluster — 1D horizontal flow that wraps, with a token gap.
+ *
+ * Props
+ *  - gap?: 1..12        default: 3
+ *  - align?: "start" | "center" | "end" | "baseline"   default: "center"
+ *  - justify?: "start" | "center" | "end" | "between"   default: "start"
+ *  - as?: string        element tag, default: "div"
+ *  - class?: string
+ *
+ * Ideal for tag rows, meta rails and link rows. Use `justify="between"` for a
+ * heading + action pair. Prefer this over Grid when the layout is one line that
+ * simply needs to wrap on small screens.
+ */
+interface Props {
+  gap?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+  align?: "start" | "center" | "end" | "baseline";
+  justify?: "start" | "center" | "end" | "between";
+  as?: HTMLTag;
+  class?: string;
+}
+const {
+  gap = 3,
+  align = "center",
+  justify = "start",
+  as: Tag = "div",
+  class: className,
+} = Astro.props;
+const justifyValue =
+  justify === "between"
+    ? "space-between"
+    : justify === "center"
+      ? "center"
+      : justify === "end"
+        ? "flex-end"
+        : "flex-start";
+---
+
+<Tag
+  class:list={["cluster", className]}
+  style={`--cluster-gap: var(--space-${gap}); --cluster-align: ${align}; --cluster-justify: ${justifyValue}`}
+>
+  <slot />
+</Tag>
+
+<style>
+  .cluster {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: var(--cluster-align);
+    justify-content: var(--cluster-justify);
+    gap: var(--cluster-gap);
+  }
+</style>

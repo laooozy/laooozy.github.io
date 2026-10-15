@@ -39,12 +39,37 @@
   --glass-blur: 16px;
   --glass-glow: 0 0 30px -8px rgba(168, 85, 247, 0.5);
 
+  /*
+   * Card surface. A real surface has a top-down gradient (lit from above) plus
+   * a 1px inner highlight on its top edge — that is what separates "a card"
+   * from "an outlined rectangle". `--card-bg` is a background-IMAGE layer: put
+   * it over `--surface` so the glass blur still reads. Depth at rest is surface
+   * + border only; the drop shadow is reserved for the interactive hover lift.
+   */
+  --card-bg: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.055) 0%,
+    rgba(255, 255, 255, 0.018) 100%
+  );
+  --card-inset: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  /* Soft brand-coloured lift for interactive surfaces. Tight spread keeps it a
+   * lift, not a "ghost card" halo. */
+  --shadow-lift: 0 14px 30px -18px rgba(124, 58, 237, 0.6);
+
   /* ------------------------------------------------------------------ *
    * Colour — accent
    * ------------------------------------------------------------------ */
   --accent: #a855f7;
   --accent-2: #7c3aed;
   --accent-soft: rgba(168, 85, 247, 0.14);
+  /*
+   * shadcn/ui calls a *hover surface* `--accent`; the brand colour is `--accent`
+   * too, so the two names collided and every `hover:bg-accent` painted solid
+   * purple. shadcn's accent now maps to these tinted surfaces (see global.css
+   * @theme), while the brand purple stays on `--accent` / `--primary`.
+   */
+  --accent-surface: rgba(168, 85, 247, 0.14);
+  --accent-surface-hover: rgba(168, 85, 247, 0.22);
   --accent-gradient: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
   --text-on-accent: #0a0a0f;
 
@@ -52,7 +77,9 @@
    * Colour — text (contrast checked against --bg-base; AA minimum)
    * ------------------------------------------------------------------ */
   --text: #ededf2;
-  --text-muted: #a1a1aa;
+  /* Bumped from #a1a1aa: the old muted read as washed-out gray on the
+   * near-black base. ~10:1 against --bg-base, still visibly below --text. */
+  --text-muted: #b4b4c2;
 
   /* ------------------------------------------------------------------ *
    * Typography

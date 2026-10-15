@@ -1,0 +1,61 @@
+---
+/**
+ * Heading — a display heading on the brand type scale.
+ *
+ * Props
+ *  - level?: 1 | 2 | 3 | 4        default: 2 (renders the matching <hN>)
+ *  - size?: "hero" | "xl" | "lg" | "md"   optional size override
+ *  - tone?: "default" | "muted"
+ *  - class?: string
+ *
+ * Global element styles already cover the base scale; `size` is for the few
+ * places that need to break it (e.g. a hero wordmark).
+ */
+interface Props {
+  level?: 1 | 2 | 3 | 4;
+  size?: "hero" | "xl" | "lg" | "md";
+  tone?: "default" | "muted";
+  class?: string;
+}
+const { level = 2, size, tone = "default", class: className } = Astro.props;
+const Tag = `h${level}`;
+---
+
+<Tag
+  class:list={[
+    "heading",
+    size && `heading--${size}`,
+    tone === "muted" && "heading--muted",
+    className,
+  ]}
+>
+  <slot />
+</Tag>
+
+<style>
+  .heading {
+    margin: 0;
+  }
+
+  .heading--muted {
+    color: var(--text-muted);
+  }
+
+  .heading--md {
+    font-size: var(--text-xl);
+  }
+
+  .heading--lg {
+    font-size: var(--text-2xl);
+  }
+
+  .heading--xl {
+    font-size: var(--text-3xl);
+  }
+
+  .heading--hero {
+    font-size: var(--text-hero);
+    font-weight: 700;
+    letter-spacing: var(--tracking-display);
+  }
+</style>

@@ -218,7 +218,13 @@ button {
   --color-border: var(--border);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
+  /*
+   * shadcn's `--accent` is a hover surface, NOT the brand colour. Point it at
+   * the tinted purple surface so `bg-accent` / `hover:bg-accent` read as a
+   * subtle highlight. Brand purple lives on `--primary` (and the brand's own
+   * `--accent` token in tokens.css).
+   */
+  --color-accent: var(--accent-surface);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -246,10 +252,12 @@ button {
  * defined in tokens.css. This site is dark-only, so :root and .dark carry the
  * SAME colours — there is no light theme to fall back to.
  *
- * --accent is intentionally set to the brand purple (#a855f7), not shadcn's
- * grey hover surface: global.css and every component read `var(--accent)`, so
- * the brand accent must win. shadcn surfaces that use `bg-accent` therefore
- * paint purple, which is exactly the brand's look.
+ * Accent split (bug fix): shadcn's `--accent` means "hover surface", but the
+ * brand also names its purple `--accent`. Mapping shadcn's accent to #a855f7
+ * made `hover:bg-accent` paint solid purple. shadcn's accent now resolves to
+ * the tinted surface `--accent-surface` via the @theme block above; the brand
+ * purple is NOT re-declared here so tokens.css stays the single source for
+ * `var(--accent)`. Brand purple remains the shadcn `--primary`.
  */
 :root {
   --background: #0a0a0f;
@@ -263,9 +271,8 @@ button {
   --secondary: #1b1b26;
   --secondary-foreground: #ededf2;
   --muted: #16161f;
-  --muted-foreground: #a1a1aa;
-  --accent: #a855f7;
-  --accent-foreground: #0a0a0f;
+  --muted-foreground: var(--text-muted);
+  --accent-foreground: #ededf2;
   --destructive: #f87171;
   --border: rgba(168, 85, 247, 0.35);
   --input: rgba(255, 255, 255, 0.08);
@@ -299,9 +306,8 @@ button {
   --secondary: #1b1b26;
   --secondary-foreground: #ededf2;
   --muted: #16161f;
-  --muted-foreground: #a1a1aa;
-  --accent: #a855f7;
-  --accent-foreground: #0a0a0f;
+  --muted-foreground: var(--text-muted);
+  --accent-foreground: #ededf2;
   --destructive: #f87171;
   --border: rgba(168, 85, 247, 0.35);
   --input: rgba(255, 255, 255, 0.08);

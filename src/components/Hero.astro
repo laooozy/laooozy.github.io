@@ -1,0 +1,316 @@
+---
+/**
+ * Hero — the home masthead. The fold's anchor: who this is, what's happening
+ * now, and the way in.
+ *
+ * Props
+ *  - title: string                     the wordmark (rendered as <h1>)
+ *  - tagline: string                   one-line description
+ *  - nowLabel?: string                 small status label, e.g. "Now"
+ *  - nowText?: string                  the "now" line beside the status dot
+ *  - links?: { label; href }[]         compact quick-link row (Blog / ACG / …)
+ *  - linksLabel?: string               aria-label for the quick-link nav
+ *  - meta?: { label; value }[]         right-column spec rows (Base / Now / …)
+ *  - class?: string
+ *
+ * Two columns ≥60rem (text + spec panel), stacked below. The spec panel and a
+ * single soft aurora glow are the "featured visual" — no photos are hosted.
+ */
+interface HeroLink {
+  label: string;
+  href: string;
+}
+interface HeroMeta {
+  label: string;
+  value: string;
+}
+interface Props {
+  title: string;
+  tagline: string;
+  nowLabel?: string;
+  nowText?: string;
+  links?: HeroLink[];
+  linksLabel?: string;
+  meta?: HeroMeta[];
+  class?: string;
+}
+const {
+  title,
+  tagline,
+  nowLabel,
+  nowText,
+  links = [],
+  linksLabel,
+  meta = [],
+  class: className,
+} = Astro.props;
+---
+
+<header class:list={["hero", className]}>
+  <div class="hero__main">
+    {
+      nowLabel && (
+        <p class="hero__status">
+          <span class="hero__dot" aria-hidden="true" />
+          <span class="hero__status-label">{nowLabel}</span>
+          {nowText && <span class="hero__status-text">{nowText}</span>}
+        </p>
+      )
+    }
+
+    <h1 class="hero__title">
+      {title}<span class="hero__period" aria-hidden="true">.</span>
+    </h1>
+
+    <p class="hero__tagline">{tagline}</p>
+
+    {
+      links.length > 0 && (
+        <nav class="hero__links" aria-label={linksLabel}>
+          <ul>
+            {links.map((link) => (
+              <li>
+                <a class="hero__link" href={link.href}>
+                  <span>{link.label}</span>
+                  <span class="hero__link-arrow" aria-hidden="true">
+                    →
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
+  </div>
+
+  {
+    meta.length > 0 && (
+      <dl class="hero__meta">
+        {meta.map((row) => (
+          <div class="hero__meta-row">
+            <dt>{row.label}</dt>
+            <dd>{row.value}</dd>
+          </div>
+        ))}
+      </dl>
+    )
+  }
+</header>
+
+<style>
+  .hero {
+    position: relative;
+    display: grid;
+    gap: var(--space-8);
+    padding-bottom: clamp(var(--space-4), 3vw, var(--space-6));
+  }
+
+  /* A single soft aurora behind the masthead — the brand's "featured visual". */
+  .hero::before {
+    content: "";
+    position: absolute;
+    top: -20%;
+    right: -12%;
+    z-index: 0;
+    width: min(38rem, 70vw);
+    aspect-ratio: 1;
+    border-radius: var(--radius-pill);
+    background: radial-gradient(circle, var(--accent-surface) 0%, transparent 62%);
+    pointer-events: none;
+  }
+
+  .hero__main,
+  .hero__meta {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero__main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-5);
+  }
+
+  .hero__status {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+  }
+
+  .hero__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: var(--radius-pill);
+    background: var(--accent);
+    box-shadow: 0 0 12px -2px var(--accent);
+  }
+
+  .hero__status-label {
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .hero__title {
+    margin: 0;
+    font-size: var(--text-hero);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: var(--tracking-display);
+    color: var(--text);
+  }
+
+  .hero__period {
+    color: var(--accent);
+  }
+
+  .hero__tagline {
+    max-width: 34ch;
+    margin: 0;
+    font-size: clamp(var(--text-lg), 2.2vw, var(--text-2xl));
+    line-height: var(--leading-snug);
+    color: var(--text-muted);
+    text-wrap: balance;
+  }
+
+  .hero__links ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .hero__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    color: var(--text);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    text-decoration: none;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+
+  .hero__link:hover {
+    background: var(--accent-surface);
+    border-color: var(--glass-border-strong);
+    color: var(--text);
+  }
+
+  .hero__link-arrow {
+    color: var(--accent);
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  .hero__link:hover .hero__link-arrow {
+    transform: translateX(3px);
+  }
+
+  .hero__meta {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    border-top: 1px solid color-mix(in oklab, var(--glass-border) 45%, transparent);
+  }
+
+  .hero__meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-5);
+    padding-block: var(--space-4);
+    border-bottom: 1px solid color-mix(in oklab, var(--glass-border) 25%, transparent);
+  }
+
+  .hero__meta-row dt {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+  }
+
+  .hero__meta-row dd {
+    margin: 0;
+    font-size: var(--text-base);
+    font-weight: 500;
+    color: var(--text);
+    text-align: right;
+  }
+
+  @media (min-width: 60rem) {
+    .hero {
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+      gap: var(--space-10);
+      align-items: center;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__main > * {
+      animation: hero-rise var(--dur-slow) var(--ease-out) both;
+    }
+
+    .hero__main > *:nth-child(2) {
+      animation-delay: 60ms;
+    }
+
+    .hero__main > *:nth-child(3) {
+      animation-delay: 120ms;
+    }
+
+    .hero__main > *:nth-child(4) {
+      animation-delay: 180ms;
+    }
+
+    .hero__meta {
+      animation: hero-fade var(--dur-slow) var(--ease-out) 120ms both;
+    }
+
+    .hero__dot {
+      animation: hero-pulse 2.4s var(--ease-out) infinite;
+    }
+  }
+
+  @keyframes hero-rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes hero-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes hero-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 var(--accent-surface);
+    }
+    50% {
+      box-shadow: 0 0 0 6px transparent;
+    }
+  }
+</style>

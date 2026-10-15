@@ -1,0 +1,78 @@
+---
+/**
+ * Section — a page band with a heading slot and consistent internal rhythm.
+ *
+ * Props
+ *  - id?: string        anchor id (also used to label the section)
+ *  - heading?: string   renders an <h2> + wires aria-labelledby
+ *  - lead?: string      supporting paragraph under the heading
+ *  - class?: string
+ *
+ * Slots
+ *  - default            the section body
+ *  - actions            optional top-right slot beside the heading (e.g. a
+ *                       "view all" link)
+ *
+ * Section owns its INTERNAL rhythm only — it sets no outer margin. Wrap
+ * sections in a Stack to control the gap between them.
+ */
+interface Props {
+  id?: string;
+  heading?: string;
+  lead?: string;
+  class?: string;
+}
+const { id, heading, lead, class: className } = Astro.props;
+const headingId = id ? `${id}-heading` : undefined;
+const hasActions = Astro.slots.has("actions");
+---
+
+<section
+  id={id}
+  class:list={["section", className]}
+  aria-labelledby={heading && headingId ? headingId : undefined}
+>
+  {
+    (heading || hasActions) && (
+      <div class="section__head">
+        {heading && (
+          <h2 id={headingId} class="section__title">
+            {heading}
+          </h2>
+        )}
+        {hasActions && (
+          <div class="section__actions">
+            <slot name="actions" />
+          </div>
+        )}
+      </div>
+    )
+  }
+  {lead && <p class="section__lead">{lead}</p>}
+  <div class="section__body"><slot /></div>
+</section>
+
+<style>
+  .section__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-5);
+    margin-bottom: var(--space-5);
+  }
+
+  .section__title {
+    margin: 0;
+  }
+
+  .section__lead {
+    max-width: var(--measure);
+    margin: 0 0 var(--space-6);
+    color: var(--text-muted);
+  }
+
+  .section__head + .section__lead {
+    margin-top: calc(var(--space-1) * -1);
+  }
+</style>
