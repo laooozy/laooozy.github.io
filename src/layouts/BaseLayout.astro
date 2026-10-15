@@ -3,6 +3,7 @@ import "../styles/tokens.css";
 import "../styles/global.css";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import LanguageSwitcher from "../components/LanguageSwitcher.astro";
+import LinkButton from "@/components/LinkButton";
 import { alternateUrls } from "../lib/locale";
 import { langAttr, ogLocale, resolveLocale, useTranslations } from "../i18n/ui";
 
@@ -45,7 +46,7 @@ const navItems = [
 ---
 
 <!doctype html>
-<html lang={langAttr[locale]}>
+<html lang={langAttr[locale]} class="dark">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -128,6 +129,7 @@ const navItems = [
 		<footer class="site-footer">
 			<div class="site-footer__inner container">
 				<p class="site-footer__copy">© {year} {t.home.title} · {t.footer.rights}</p>
+				<LinkButton href={`${homeHref}#contact`} label={t.nav.contact} />
 			</div>
 		</footer>
 
@@ -251,6 +253,14 @@ const navItems = [
 	.site-footer {
 		border-top: 1px solid color-mix(in oklab, var(--glass-border) 40%, transparent);
 		padding-block: var(--space-6);
+	}
+
+	.site-footer__inner {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: var(--space-4);
 	}
 
 	.site-footer__copy {

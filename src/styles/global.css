@@ -1,7 +1,18 @@
 /**
  * Global base styles. Consumes tokens from tokens.css; every value here is a
  * token reference, never a magic number.
+ *
+ * Tailwind v4 is pulled in first, then shadcn/ui's design tokens are mapped
+ * onto the brand palette further down. The brand tokens in tokens.css remain
+ * the single source of truth for colour, type, space and motion.
  */
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+/*---break---
+ */
+@custom-variant dark (&:is(.dark *));
+
 *,
 *::before,
 *::after {
@@ -181,5 +192,145 @@ button {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+/*---break---
+ */
+@theme inline {
+  /* Brand type: Sora for headings, Inter for body (tokens.css is source). */
+  --font-heading: var(--font-display);
+  --font-sans: var(--font-body);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+/*---break---
+ */
+/*
+ * Brand mapping. shadcn/ui's token names, re-pointed at the laooozy palette
+ * defined in tokens.css. This site is dark-only, so :root and .dark carry the
+ * SAME colours — there is no light theme to fall back to.
+ *
+ * --accent is intentionally set to the brand purple (#a855f7), not shadcn's
+ * grey hover surface: global.css and every component read `var(--accent)`, so
+ * the brand accent must win. shadcn surfaces that use `bg-accent` therefore
+ * paint purple, which is exactly the brand's look.
+ */
+:root {
+  --background: #0a0a0f;
+  --foreground: #ededf2;
+  --card: #12121a;
+  --card-foreground: #ededf2;
+  --popover: #12121a;
+  --popover-foreground: #ededf2;
+  --primary: #a855f7;
+  --primary-foreground: #0a0a0f;
+  --secondary: #1b1b26;
+  --secondary-foreground: #ededf2;
+  --muted: #16161f;
+  --muted-foreground: #a1a1aa;
+  --accent: #a855f7;
+  --accent-foreground: #0a0a0f;
+  --destructive: #f87171;
+  --border: rgba(168, 85, 247, 0.35);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: #a855f7;
+  --chart-1: #a855f7;
+  --chart-2: #7c3aed;
+  --chart-3: #c084fc;
+  --chart-4: #6d28d9;
+  --chart-5: #9333ea;
+  --radius: 0.625rem;
+  --sidebar: #0a0a0f;
+  --sidebar-foreground: #ededf2;
+  --sidebar-primary: #a855f7;
+  --sidebar-primary-foreground: #0a0a0f;
+  --sidebar-accent: rgba(168, 85, 247, 0.14);
+  --sidebar-accent-foreground: #ededf2;
+  --sidebar-border: rgba(168, 85, 247, 0.35);
+  --sidebar-ring: #a855f7;
+}
+/*---break---
+ */
+.dark {
+  --background: #0a0a0f;
+  --foreground: #ededf2;
+  --card: #12121a;
+  --card-foreground: #ededf2;
+  --popover: #12121a;
+  --popover-foreground: #ededf2;
+  --primary: #a855f7;
+  --primary-foreground: #0a0a0f;
+  --secondary: #1b1b26;
+  --secondary-foreground: #ededf2;
+  --muted: #16161f;
+  --muted-foreground: #a1a1aa;
+  --accent: #a855f7;
+  --accent-foreground: #0a0a0f;
+  --destructive: #f87171;
+  --border: rgba(168, 85, 247, 0.35);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: #a855f7;
+  --chart-1: #a855f7;
+  --chart-2: #7c3aed;
+  --chart-3: #c084fc;
+  --chart-4: #6d28d9;
+  --chart-5: #9333ea;
+  --radius: 0.625rem;
+  --sidebar: #0a0a0f;
+  --sidebar-foreground: #ededf2;
+  --sidebar-primary: #a855f7;
+  --sidebar-primary-foreground: #0a0a0f;
+  --sidebar-accent: rgba(168, 85, 247, 0.14);
+  --sidebar-accent-foreground: #ededf2;
+  --sidebar-border: rgba(168, 85, 247, 0.35);
+  --sidebar-ring: #a855f7;
+}
+/*---break---
+ */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
   }
 }

@@ -2,10 +2,14 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
+import tailwindcss from '@tailwindcss/vite';
+import react from '@astrojs/react';
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://laooozy.github.io',
-  integrations: [sitemap()],
+  integrations: [sitemap(), react()],
+
   i18n: {
     // Lowercase codes: Astro normalises locale codes to lowercase in URLs.
     // BCP-47 casing for the <html lang> attribute lives in src/i18n/ui.ts.
@@ -15,5 +19,9 @@ export default defineConfig({
       // Default locale (zh-hant) is served at the root, without a prefix.
       prefixDefaultLocale: false,
     },
+  },
+
+  vite: {
+    plugins: [tailwindcss()],
   },
 });
