@@ -1,16 +1,17 @@
 ---
 /**
  * zh-hant blog post — served unprefixed at `/blog/[slug]/` (default locale).
- * Drafts are excluded by `getPostsByLocale`.
+ * Content is language-agnostic, so every locale renders the same post set.
+ * Drafts are excluded by `getAllPosts`.
  */
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PostArticle from "../../components/PostArticle.astro";
-import { getPostsByLocale, type Post } from "../../lib/blog";
+import { getAllPosts, type Post } from "../../lib/blog";
 
 const locale = "zh-hant" as const;
 
 export async function getStaticPaths() {
-  const posts = await getPostsByLocale("zh-hant");
+  const posts = await getAllPosts();
   return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
 }
 

@@ -1,10 +1,15 @@
 /**
  * Blog data + URL helpers.
  *
- * The blog index is paginated PER LOCALE — Astro's `paginate()` does not fan
- * out across locales, so each `pages/<locale?>/blog/[...page].astro` route
- * calls these helpers with its own locale. Filtering is build-time only: the
- * page never ships the full post set to the browser for client-side paging.
+ * Content is LANGUAGE-AGNOSTIC: every locale shows the SAME set of posts,
+ * rendered with that locale's UI chrome. Post frontmatter may still carry a
+ * `lang`, but it never filters or hides a post — the getter ignores it.
+ *
+ * A locale's blog index is still paginated independently — Astro's
+ * `paginate()` does not fan out across locales, so each
+ * `pages/<locale?>/blog/[...page].astro` route paginates the same full set.
+ * Filtering is build-time only: the page never ships the full post set to the
+ * browser for client-side paging.
  */
 import { getCollection, type CollectionEntry } from "astro:content";
 import { defaultLang, languages, type Locale } from "../i18n/ui";
@@ -14,29 +19,18 @@ export type Post = CollectionEntry<"blog">;
 /** Posts shown per page (build-time pagination). */
 export const PAGE_SIZE = 4;
 
-/** Every non-draft post for one locale, newest first (`date` desc, title tie-break). */
-export async function getPostsByLocale(lang: Locale): Promise<Post[]> {
-  const posts = await getCollection(
-    "blog",
-    ({ data }) => data.lang === lang && !data.draft,
-  );
+/**
+ * Every non-draft post, regardless of its declared `lang`, newest first
+ * (`date` desc, title tie-break). This is the single source for every locale's
+ * blog index, tag, archive and post routes.
+ */
+export async function getAllPosts(): Promise<Post[]> {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
   return [...posts].sort(
     (a, b) =>
       b.data.date.getTime() - a.data.date.getTime() ||
       a.data.title.localeCompare(b.data.title),
   );
-}
-
-/**
- * Posts to show for a locale's blog views. When a locale has no posts of its
- * own (untranslated content), it falls back to the default locale's posts —
- * the site rule is "untranslated → show Traditional Chinese". Post links stay
- * locale-prefixed and resolve through Astro's i18n fallback redirect.
- */
-export async function getPostsWithFallback(lang: Locale): Promise<Post[]> {
-  const posts = await getPostsByLocale(lang);
-  if (posts.length > 0 || lang === defaultLang) return posts;
-  return getPostsByLocale(defaultLang);
 }
 
 /** Unique tags across a post set, sorted for stable output. */

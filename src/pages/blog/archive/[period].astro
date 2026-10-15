@@ -11,14 +11,14 @@ import {
   collectPeriods,
   collectTags,
   formatPeriodLabel,
-  getPostsByLocale,
+  getAllPosts,
   matchesPeriod,
 } from "../../../lib/blog";
 
 const locale = "zh-hant" as const;
 
 export async function getStaticPaths() {
-  const posts = await getPostsByLocale("zh-hant");
+  const posts = await getAllPosts();
   return collectPeriods(posts).map((period) => ({
     params: { period },
     props: { period },
@@ -26,7 +26,7 @@ export async function getStaticPaths() {
 }
 
 const { period } = Astro.props;
-const allPosts = await getPostsByLocale(locale);
+const allPosts = await getAllPosts();
 const posts = allPosts.filter((post) => matchesPeriod(post, period));
 const tags = collectTags(allPosts).map((tag) => ({
   label: tag,

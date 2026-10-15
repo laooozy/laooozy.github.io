@@ -12,21 +12,21 @@ import {
   collectPeriods,
   collectTags,
   formatPeriodLabel,
-  getPostsByLocale,
+  getAllPosts,
   PAGE_SIZE,
 } from "../../lib/blog";
 
 const locale = "zh-hant" as const;
 
 export async function getStaticPaths({ paginate }: { paginate: import("astro").PaginateFunction }) {
-  const posts = await getPostsByLocale("zh-hant");
+  const posts = await getAllPosts();
   return paginate(posts, { pageSize: PAGE_SIZE });
 }
 
 const t = useTranslations(locale);
 const { page } = Astro.props;
 
-const allPosts = await getPostsByLocale(locale);
+const allPosts = await getAllPosts();
 const tags = collectTags(allPosts).map((tag) => ({
   label: tag,
   href: blogTagPath(locale, tag),

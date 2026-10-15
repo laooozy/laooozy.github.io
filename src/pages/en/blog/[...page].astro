@@ -1,7 +1,8 @@
 ---
 /**
  * en blog index — served at `/en/blog/`. Same pagination rules as the default
- * locale; shows only `lang: "en"` posts (empty until en translations exist).
+ * locale; content is language-agnostic, so it lists every non-draft post with
+ * the English chrome.
  */
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import BlogList from "../../../components/BlogList.astro";
@@ -12,21 +13,21 @@ import {
   collectPeriods,
   collectTags,
   formatPeriodLabel,
-  getPostsWithFallback,
+  getAllPosts,
   PAGE_SIZE,
 } from "../../../lib/blog";
 
 const locale = "en" as const;
 
 export async function getStaticPaths({ paginate }: { paginate: import("astro").PaginateFunction }) {
-  const posts = await getPostsWithFallback("en");
+  const posts = await getAllPosts();
   return paginate(posts, { pageSize: PAGE_SIZE });
 }
 
 const t = useTranslations(locale);
 const { page } = Astro.props;
 
-const allPosts = await getPostsWithFallback(locale);
+const allPosts = await getAllPosts();
 const tags = collectTags(allPosts).map((tag) => ({
   label: tag,
   href: blogTagPath(locale, tag),

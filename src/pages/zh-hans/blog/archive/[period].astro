@@ -1,7 +1,7 @@
 ---
 /**
- * zh-hans date archive — `/zh-hans/blog/archive/[period]/`. Empty until
- * zh-hans posts exist.
+ * zh-hans date archive — `/zh-hans/blog/archive/[period]/`. Periods come from
+ * the shared, language-agnostic post set.
  */
 import BaseLayout from "../../../../layouts/BaseLayout.astro";
 import BlogList from "../../../../components/BlogList.astro";
@@ -11,14 +11,14 @@ import {
   collectPeriods,
   collectTags,
   formatPeriodLabel,
-  getPostsWithFallback,
+  getAllPosts,
   matchesPeriod,
 } from "../../../../lib/blog";
 
 const locale = "zh-hans" as const;
 
 export async function getStaticPaths() {
-  const posts = await getPostsWithFallback("zh-hans");
+  const posts = await getAllPosts();
   return collectPeriods(posts).map((period) => ({
     params: { period },
     props: { period },
@@ -27,7 +27,7 @@ export async function getStaticPaths() {
 
 const { period } = Astro.props;
 
-const allPosts = await getPostsWithFallback(locale);
+const allPosts = await getAllPosts();
 const posts = allPosts.filter((post) => matchesPeriod(post, period));
 const tags = collectTags(allPosts).map((tag) => ({
   label: tag,

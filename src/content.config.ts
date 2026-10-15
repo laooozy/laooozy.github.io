@@ -9,7 +9,9 @@ const blog = defineCollection({
     description: z.string(),
     date: z.coerce.date(),
     tags: z.array(z.string()).default([]),
-    lang: z.enum(["zh-hant", "zh-hans", "en"]),
+    // Optional: content is language-agnostic now, so a post need not declare a
+    // locale. Existing posts keep their value; it is simply not used to filter.
+    lang: z.enum(["zh-hant", "zh-hans", "en"]).optional(),
     draft: z.boolean().default(false),
     translationKey: z.string(),
   }),

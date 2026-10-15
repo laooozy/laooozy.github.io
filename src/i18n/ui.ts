@@ -62,8 +62,7 @@ export const ui = {
     home: {
       title: "laooozy",
       tagline: "攝影、遊戲，與我寫下的一些東西。",
-      intro:
-        "嗨，我是 laooozy。TODO(user): 在這裡補上一兩句自我介紹——例如你所在的城市、平常在做什麼。",
+      intro: "嗨，我是 laooozy，住在香港。最近喜歡跑步和拍攝。",
       interestsHeading: "興趣",
       interests: {
         photography: "攝影",
@@ -165,8 +164,7 @@ export const ui = {
     home: {
       title: "laooozy",
       tagline: "摄影、游戏，以及我写下的一些东西。",
-      intro:
-        "嗨，我是 laooozy。喜欢背着相机到处走、和朋友一起玩需要配合的游戏，也固定追几个虚拟主播。TODO(user): 在这里补上你所在的城市与平时在做的事。",
+      intro: "嗨，我是 laooozy，住在香港。最近喜欢跑步和拍摄。",
       interestsHeading: "兴趣",
       interests: {
         photography: "摄影",
@@ -269,7 +267,7 @@ export const ui = {
       title: "laooozy",
       tagline: "Photography, games, and a few things I write down.",
       intro:
-        "Hi, I'm laooozy. I carry a camera everywhere, play co-op games that need real teamwork, and follow a couple of VTubers. TODO(user): add your city and what you do day to day.",
+        "Hi, I'm laooozy, based in Hong Kong — into running and photography these days.",
       interestsHeading: "Interests",
       interests: {
         photography: "Photography",

@@ -20,7 +20,7 @@ import {
   blogIndexPath,
   blogPostPath,
   formatPostDate,
-  getPostsByLocale,
+  getAllPosts,
 } from "../lib/blog";
 
 interface Interest {
@@ -33,7 +33,7 @@ interface Interest {
 const locale = resolveLocale(Astro.currentLocale);
 const t = useTranslations(locale);
 
-const latest = (await getPostsByLocale("zh-hant")).slice(0, 4);
+const latest = (await getAllPosts()).slice(0, 4);
 const acgHref = getRelativeLocaleUrl(locale, "acg");
 const allPostsHref = blogIndexPath(locale).replace(/\/$/, "");
 

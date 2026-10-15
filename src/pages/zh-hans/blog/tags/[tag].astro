@@ -1,6 +1,7 @@
 ---
 /**
- * zh-hans tag pages — `/zh-hans/blog/tags/[tag]/`. Empty until zh-hans posts exist.
+ * zh-hans tag pages — `/zh-hans/blog/tags/[tag]/`. Tags come from the shared,
+ * language-agnostic post set.
  */
 import BaseLayout from "../../../../layouts/BaseLayout.astro";
 import BlogList from "../../../../components/BlogList.astro";
@@ -11,20 +12,20 @@ import {
   collectPeriods,
   collectTags,
   formatPeriodLabel,
-  getPostsWithFallback,
+  getAllPosts,
 } from "../../../../lib/blog";
 
 const locale = "zh-hans" as const;
 
 export async function getStaticPaths() {
-  const posts = await getPostsWithFallback("zh-hans");
+  const posts = await getAllPosts();
   return collectTags(posts).map((tag) => ({ params: { tag }, props: { tag } }));
 }
 
 const t = useTranslations(locale);
 const { tag } = Astro.props;
 
-const allPosts = await getPostsWithFallback(locale);
+const allPosts = await getAllPosts();
 const posts = allPosts.filter((post) => post.data.tags.includes(tag));
 const tags = collectTags(allPosts).map((name) => ({
   label: name,

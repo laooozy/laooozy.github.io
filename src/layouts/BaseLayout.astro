@@ -3,7 +3,6 @@ import "../styles/tokens.css";
 import "../styles/global.css";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import LanguageSwitcher from "../components/LanguageSwitcher.astro";
-import LocaleDetect from "../components/LocaleDetect.astro";
 import { alternateUrls } from "../lib/locale";
 import { langAttr, ogLocale, resolveLocale, useTranslations } from "../i18n/ui";
 
@@ -34,11 +33,14 @@ const xDefault =
   alternates.find((alt) => alt.locale === "zh-hant")?.href ?? canonical;
 const year = new Date().getFullYear();
 
+// Nav always targets the HOME page's sections, so from `/blog/` (or any
+// sub-page) an anchor like `#about` still resolves to the home hero sections.
+// `homeHref` is locale-aware (`/` for zh-hant, `/en/`, `/zh-hans/`).
 const navItems = [
-  { href: "#about", label: t.nav.about },
-  { href: "#acg", label: t.nav.acg },
-  { href: "#blog", label: t.nav.blog },
-  { href: "#contact", label: t.nav.contact },
+  { href: `${homeHref}#about`, label: t.nav.about },
+  { href: `${homeHref}#acg`, label: t.nav.acg },
+  { href: `${homeHref}#blog`, label: t.nav.blog },
+  { href: `${homeHref}#contact`, label: t.nav.contact },
 ];
 ---
 
@@ -129,15 +131,12 @@ const navItems = [
 			</div>
 		</footer>
 
-		<LocaleDetect />
-
 		<script>
 			/*
 			 * Scroll-hiding top bar. Single-direction only:
 			 *  - shown by default and whenever at/near the top;
 			 *  - hidden ONLY while the page scrolls DOWN;
 			 *  - ANY upward movement reveals it immediately (no threshold).
-			 * Independent of LocaleDetect (that script only redirects locales).
 			 */
 			const header = document.querySelector<HTMLElement>('[data-site-header]');
 			if (header) {
