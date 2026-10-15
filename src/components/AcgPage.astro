@@ -1,14 +1,28 @@
 ---
 /**
- * AcgPage — the ACG / coser-photography intro page, shared by all three
- * locales.
+ * AcgPage — the ACG / coser-photography page, shared by all three locales.
+ *
+ * Rebuilt on the reusable kit (layout primitives + UI + Card) so the page
+ * shares the home page's rhythm instead of falling back to bare heading→
+ * paragraph. Structure: masthead (intro) → photo wall (Instagram embeds) →
+ * approach → commission.
  *
  * Every user-facing string comes from src/i18n/ui.ts; the page renders inside
- * BaseLayout (see the thin locale routes in src/pages). No photography is
- * hosted here — the work lives on Instagram, which this page links out to.
+ * BaseLayout (which already wraps <main> in the Container — so this page must
+ * NOT nest a second Container). No photography is hosted here: the wall is
+ * composed of Instagram embeds resolved at build time (see InstagramEmbed.astro
+ * and src/data/instagram.ts), backed by link-out fallbacks.
  */
-import Card from "./Card.astro";
 import { getRelativeLocaleUrl } from "astro:i18n";
+import Card from "./Card.astro";
+import InstagramEmbed from "./InstagramEmbed.astro";
+import Section from "./layout/Section.astro";
+import Grid from "./layout/Grid.astro";
+import Stack from "./layout/Stack.astro";
+import Cluster from "./layout/Cluster.astro";
+import Heading from "./ui/Heading.astro";
+import Text from "./ui/Text.astro";
+import { instagramPosts } from "../data/instagram";
 import { contactIdentity, resolveLocale, useTranslations } from "../i18n/ui";
 
 const locale = resolveLocale(Astro.currentLocale);
@@ -19,133 +33,323 @@ const igHandle = `@${contactIdentity.acgIg}`;
 const igHref = `https://instagram.com/${contactIdentity.acgIg}`;
 
 const approach = t.acgPage.approach;
+const hasPhotos = instagramPosts.length > 0;
 ---
 
 <div class="acg">
-	<nav class="acg-back" aria-label={t.acgPage.back}>
-		<a class="acg-back__link" href={homeHref}>← {t.acgPage.back}</a>
+	<nav class="acg-rail" aria-label={t.acgPage.back}>
+		<a class="acg-back" href={homeHref}>
+			<span class="acg-back__arrow" aria-hidden="true">←</span>
+			<span>{t.acgPage.back}</span>
+		</a>
 	</nav>
 
-	<header class="acg-hero">
-		<h1 class="acg-hero__title">{t.acg.heading}</h1>
-		<p class="acg-hero__lead">{t.acgPage.introLead}</p>
+	<header class="acg-masthead">
+		<p class="acg-masthead__status">
+			<span class="acg-masthead__dot" aria-hidden="true"></span>
+			<span class="acg-masthead__handle">{igHandle}</span>
+			<span class="acg-masthead__sep" aria-hidden="true">·</span>
+			<span>{t.acg.heading}</span>
+		</p>
+
+		<Heading level={1} size="hero" class="acg-masthead__title">
+			{t.acgPage.introHeading}
+		</Heading>
+
+		<Stack gap={4} class="acg-masthead__intro">
+			<Text size="xl" tone="muted" measure>{t.acgPage.introLead}</Text>
+			<Text measure>{t.acgPage.introBody}</Text>
+		</Stack>
 	</header>
 
-	<section class="acg-section" aria-labelledby="intro-heading">
-		<h2 id="intro-heading" class="acg-section__title">
-			{t.acgPage.introHeading}
-		</h2>
-		<p class="acg-section__body">{t.acgPage.introBody}</p>
-	</section>
+	<Section id="work" heading={t.acgPage.followHeading} lead={t.acgPage.followNote}>
+		<Stack gap={6}>
+			{
+				hasPhotos ? (
+					<Grid min="19rem" gap={6} class="acg-wall">
+						{instagramPosts.map((url) => (
+							<InstagramEmbed url={url} />
+						))}
+					</Grid>
+				) : (
+					<a class="acg-empty" href={igHref} target="_blank" rel="noopener">
+						<span class="acg-empty__label">{t.acgPage.followCta}</span>
+						<span class="acg-empty__handle">{igHandle}</span>
+						<span class="acg-empty__arrow" aria-hidden="true">↗</span>
+					</a>
+				)
+			}
 
-	<section class="acg-section" aria-labelledby="approach-heading">
-		<h2 id="approach-heading" class="acg-section__title">
-			{t.acgPage.approachHeading}
-		</h2>
-		<ul class="acg-approach">
+			<Cluster gap={4}>
+				<a class="acg-cta" href={igHref} target="_blank" rel="noopener">
+					<span>{t.acgPage.followCta}</span>
+					<span class="acg-cta__arrow" aria-hidden="true">→</span>
+				</a>
+			</Cluster>
+		</Stack>
+	</Section>
+
+	<Section id="approach" heading={t.acgPage.approachHeading}>
+		<Grid min="16rem" gap={6} class="acg-approach">
 			{
 				approach.map((item) => (
-					<li class="acg-approach__item">
-						<Card>
-							<h3 class="acg-approach__title">{item.title}</h3>
-							<p class="acg-approach__body">{item.body}</p>
-						</Card>
-					</li>
+					<div class="acg-approach__item">
+						<h3 class="acg-approach__title">{item.title}</h3>
+						<Text tone="muted">{item.body}</Text>
+					</div>
 				))
 			}
-		</ul>
-	</section>
+		</Grid>
+	</Section>
 
-	<section class="acg-section" aria-labelledby="commission-heading">
-		<h2 id="commission-heading" class="acg-section__title">
-			{t.acgPage.commissionHeading}
-		</h2>
-		<p class="acg-section__lead">{t.acgPage.commissionLead}</p>
-		<ul class="acg-commission">
-			{
-				t.acgPage.commissionPoints.map((point) => (
-					<li class="acg-commission__item">{point}</li>
-				))
-			}
-		</ul>
-	</section>
-
-	<section class="acg-section" aria-labelledby="follow-heading">
-		<h2 id="follow-heading" class="acg-section__title">
-			{t.acgPage.followHeading}
-		</h2>
-		<Card href={igHref} class="acg-follow">
-			<p class="acg-follow__note">{t.acgPage.followNote}</p>
-			<span class="acg-follow__handle">{igHandle}</span>
-			<span class="acg-follow__cta">{t.acgPage.followCta} →</span>
+	<Section id="commission" heading={t.acgPage.commissionHeading}>
+		<Card class="acg-commission">
+			<Stack gap={5}>
+				<Text tone="muted">{t.acgPage.commissionLead}</Text>
+				<ul class="acg-commission__list">
+					{
+						t.acgPage.commissionPoints.map((point) => (
+							<li class="acg-commission__item">{point}</li>
+						))
+					}
+				</ul>
+				<Cluster gap={4}>
+					<a class="acg-cta" href={igHref} target="_blank" rel="noopener">
+						<span>{t.acgPage.followCta}</span>
+						<span class="acg-cta__arrow" aria-hidden="true">→</span>
+					</a>
+				</Cluster>
+			</Stack>
 		</Card>
-	</section>
+	</Section>
 </div>
+
+{
+	/*
+	 * Instagram's embed library — loaded ONCE for the whole page (guarded so it
+	 * is only emitted when there is at least one embed), never once per embed.
+	 * `is:inline` is required: Astro otherwise strips/bundles this external
+	 * script and the embeds never upgrade.
+	 *
+	 * GDPR note: this loads Meta's JS, which sets cookies/beacons. The
+	 * consent-correct pattern is a click-to-load gate — render the server-side
+	 * blockquotes (already privacy-safe: they are just <a> links until the
+	 * library runs) behind a "Load Instagram photos" button that injects this
+	 * same script on click. Left as the simple auto-load here; swap in that
+	 * gate when a consent banner ships.
+	 */
+	hasPhotos && (
+		<script is:inline async src="https://www.instagram.com/embed.js"></script>
+	)
+}
 
 <style>
 	.acg {
 		display: grid;
-		gap: clamp(var(--space-8), 8vw, var(--space-11));
+		gap: clamp(var(--space-9), 9vw, var(--space-12));
+	}
+
+	/* ---------------------------------------------------------------- *
+	 * Back rail — a full-size pill target, not a bare text link.
+	 * ---------------------------------------------------------------- */
+	.acg-rail {
+		margin-top: calc(-1 * var(--space-2));
 	}
 
 	.acg-back {
-		margin: calc(-1 * var(--space-4)) 0 0;
-	}
-
-	.acg-back__link {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		border: 1px solid var(--glass-border);
+		border-radius: var(--radius-pill);
+		background: var(--surface);
+		color: var(--text-muted);
 		font-size: var(--text-sm);
 		font-weight: 500;
-		color: var(--accent);
 		text-decoration: none;
+		transition:
+			background-color var(--dur-fast) var(--ease-out),
+			border-color var(--dur-fast) var(--ease-out),
+			color var(--dur-fast) var(--ease-out);
 	}
 
-	.acg-back__link:hover {
+	.acg-back:hover {
+		background: var(--accent-surface);
+		border-color: var(--glass-border-strong);
 		color: var(--text);
 	}
 
-	.acg-hero__title {
-		margin: 0 0 var(--space-4);
-		font-size: clamp(var(--text-3xl), 7vw, var(--text-4xl));
-		font-weight: 700;
-		line-height: var(--leading-tight);
-		letter-spacing: var(--tracking-display);
-		background: var(--accent-gradient);
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		color: transparent;
+	.acg-back__arrow {
+		color: var(--accent);
+		transition: transform var(--dur-base) var(--ease-out);
 	}
 
-	.acg-hero__lead {
-		margin: 0;
-		max-width: var(--container-narrow);
-		font-size: clamp(var(--text-lg), 2.5vw, var(--text-2xl));
-		color: var(--text-muted);
+	.acg-back:hover .acg-back__arrow {
+		transform: translateX(-3px);
 	}
 
-	.acg-section__title {
-		margin: 0 0 var(--space-4);
-	}
-
-	.acg-section__lead {
-		max-width: var(--measure);
-		margin: 0 0 var(--space-4);
-		color: var(--text-muted);
-	}
-
-	.acg-section__body {
-		max-width: var(--measure);
-		margin: 0;
-		font-size: var(--text-lg);
-		line-height: var(--leading-normal);
-		color: var(--text);
-	}
-
-	.acg-approach {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+	/* ---------------------------------------------------------------- *
+	 * Masthead
+	 * ---------------------------------------------------------------- */
+	.acg-masthead {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
 		gap: var(--space-5);
-		list-style: none;
+		padding-bottom: clamp(var(--space-2), 3vw, var(--space-6));
+	}
+
+	/* A single soft aurora — the brand's "featured visual" (hue = brand). */
+	.acg-masthead::before {
+		content: "";
+		position: absolute;
+		top: -30%;
+		left: -14%;
+		z-index: 0;
+		width: min(34rem, 68vw);
+		aspect-ratio: 1;
+		border-radius: var(--radius-pill);
+		background: radial-gradient(circle, var(--accent-surface) 0%, transparent 62%);
+		pointer-events: none;
+	}
+
+	.acg-masthead > * {
+		position: relative;
+		z-index: 1;
+	}
+
+	.acg-masthead__status {
+		display: inline-flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2);
+		margin: 0;
+		font-size: var(--text-sm);
+		color: var(--text-muted);
+	}
+
+	.acg-masthead__dot {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: var(--radius-pill);
+		background: var(--accent);
+		box-shadow: 0 0 12px -2px var(--accent);
+	}
+
+	.acg-masthead__handle {
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		letter-spacing: var(--tracking-wide);
+		color: var(--text);
+	}
+
+	.acg-masthead__sep {
+		color: var(--glass-border-strong);
+	}
+
+	.acg-masthead__title {
+		margin: 0;
+		max-width: 20ch;
+	}
+
+	.acg-masthead__intro {
+		max-width: var(--measure);
+	}
+
+	/* ---------------------------------------------------------------- *
+	 * Photo wall
+	 * ---------------------------------------------------------------- */
+	.acg-wall {
+		align-items: start;
+	}
+
+	/* Empty / no-posts state: one honest link-out panel. */
+	.acg-empty {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-6);
+		border: 1px solid var(--glass-border);
+		border-radius: var(--radius-lg);
+		background-color: var(--surface);
+		background-image: var(--card-bg);
+		box-shadow: var(--card-inset);
+		color: var(--text);
+		text-decoration: none;
+		transition:
+			border-color var(--dur-base) var(--ease-out),
+			background-color var(--dur-base) var(--ease-out);
+	}
+
+	.acg-empty:hover {
+		border-color: var(--glass-border-strong);
+		background-color: var(--surface-hover);
+	}
+
+	.acg-empty__label {
+		font-weight: 600;
+	}
+
+	.acg-empty__handle {
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+		color: var(--text-muted);
+	}
+
+	.acg-empty__arrow {
+		margin-inline-start: auto;
+		color: var(--accent);
+	}
+
+	/* ---------------------------------------------------------------- *
+	 * Shared CTA pill
+	 * ---------------------------------------------------------------- */
+	.acg-cta {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-3) var(--space-5);
+		border: 1px solid var(--glass-border);
+		border-radius: var(--radius-pill);
+		background-color: var(--accent);
+		color: var(--text-on-accent);
+		font-size: var(--text-sm);
+		font-weight: 600;
+		text-decoration: none;
+		transition:
+			transform var(--dur-base) var(--ease-out),
+			box-shadow var(--dur-base) var(--ease-out);
+	}
+
+	.acg-cta:hover,
+	.acg-cta:focus-visible {
+		color: var(--text-on-accent);
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-lift);
+	}
+
+	.acg-cta__arrow {
+		transition: transform var(--dur-base) var(--ease-out);
+	}
+
+	.acg-cta:hover .acg-cta__arrow {
+		transform: translateX(3px);
+	}
+
+	/* ---------------------------------------------------------------- *
+	 * Approach — ruled spec columns (no card chrome; keeps the rhythm
+	 * distinct from the photo wall and the commission panel).
+	 * ---------------------------------------------------------------- */
+	.acg-approach {
+		align-items: start;
+	}
+
+	.acg-approach__item {
+		padding-top: var(--space-4);
+		border-top: 1px solid color-mix(in oklab, var(--glass-border) 45%, transparent);
 	}
 
 	.acg-approach__title {
@@ -153,15 +357,16 @@ const approach = t.acgPage.approach;
 		font-size: var(--text-lg);
 	}
 
-	.acg-approach__body {
-		margin: 0;
-		color: var(--text-muted);
+	/* ---------------------------------------------------------------- *
+	 * Commission panel
+	 * ---------------------------------------------------------------- */
+	.acg-commission {
+		max-width: var(--container-narrow);
 	}
 
-	.acg-commission {
+	.acg-commission__list {
 		display: grid;
 		gap: var(--space-3);
-		max-width: var(--measure);
 		list-style: none;
 	}
 
@@ -175,41 +380,59 @@ const approach = t.acgPage.approach;
 		content: "";
 		position: absolute;
 		inset-inline-start: 0;
-		inset-block-start: 0.6em;
+		inset-block-start: 0.65em;
 		width: 0.4rem;
 		height: 0.4rem;
 		border-radius: var(--radius-pill);
-		background: var(--accent-gradient);
+		background: var(--accent);
 	}
 
-	.acg-follow {
-		max-width: var(--container-narrow);
+	/* ---------------------------------------------------------------- *
+	 * Motion — one orchestrated masthead entrance, opt-in only.
+	 * ---------------------------------------------------------------- */
+	@media (prefers-reduced-motion: no-preference) {
+		.acg-masthead > * {
+			animation: acg-rise var(--dur-slow) var(--ease-out) both;
+		}
+
+		.acg-masthead > *:nth-child(2) {
+			animation-delay: 60ms;
+		}
+
+		.acg-masthead > *:nth-child(3) {
+			animation-delay: 120ms;
+		}
+
+		.acg-masthead__dot {
+			animation: acg-pulse 2.4s var(--ease-out) infinite;
+		}
 	}
 
-	.acg-follow__note {
-		margin: 0 0 var(--space-4);
-		color: var(--text);
+	@keyframes acg-rise {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
 	}
 
-	.acg-follow__handle {
-		display: block;
-		margin-bottom: var(--space-4);
-		font-family: var(--font-mono);
-		font-size: var(--text-lg);
-		letter-spacing: var(--tracking-tight);
-		color: var(--text);
-	}
-
-	.acg-follow__cta {
-		font-weight: 600;
-		color: var(--accent);
+	@keyframes acg-pulse {
+		0%,
+		100% {
+			box-shadow: 0 0 0 0 var(--accent-surface);
+		}
+		50% {
+			box-shadow: 0 0 0 6px transparent;
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.acg-hero__title {
-			background: none;
-			-webkit-text-fill-color: currentColor;
-			color: var(--text);
+		.acg-cta:hover,
+		.acg-cta:focus-visible {
+			transform: none;
 		}
 	}
 </style>

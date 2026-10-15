@@ -1,0 +1,152 @@
+---
+/**
+ * InstagramEmbed — one Instagram post, resolved at BUILD time.
+ *
+ * Mechanism (verified 2026-06): Meta dropped the oEmbed *token* requirement,
+ * so the public endpoint can be called with no secret at build time.
+ *
+ *   GET https://graph.facebook.com/v25.0/instagram_oembed
+ *       ?url=<post-url>&omitscript=true
+ *   → 200 { html: "<blockquote class=\"instagram-media\">…" }
+ *
+ * `omitscript=true` returns the official blockquote WITHOUT a <script> tag, so
+ * we control when/how the Instagram library loads (once per page — see
+ * AcgPage.astro). A private / deleted / embed-disabled post returns HTTP 400
+ * with `code 24`; we then fall back to a plain link-out so an offline build or
+ * a bad permalink degrades gracefully instead of shipping an empty hole.
+ *
+ * Props
+ *  - url: string         public Instagram post permalink
+ *  - captioned?: boolean show the post caption (default true)
+ */
+interface Props {
+  url: string;
+  captioned?: boolean;
+}
+const { url, captioned = true } = Astro.props;
+
+const endpoint = new URL("https://graph.facebook.com/v25.0/instagram_oembed");
+endpoint.searchParams.set("url", url);
+endpoint.searchParams.set("omitscript", "true");
+if (!captioned) endpoint.searchParams.set("hidecaption", "true");
+
+let html = "";
+let failed = false;
+try {
+  const res = await fetch(endpoint);
+  if (res.ok) {
+    ({ html } = await res.json());
+  } else {
+    failed = true;
+  }
+} catch {
+  // Offline build or network error → render the link fallback.
+  failed = true;
+}
+---
+
+{
+  html ? (
+    <figure class="ig-embed" set:html={html} />
+  ) : (
+    <a
+      class="ig-fallback"
+      href={url}
+      target="_blank"
+      rel="noopener"
+      aria-label="View this post on Instagram"
+      data-embed-failed={failed ? "" : undefined}
+    >
+      <span class="ig-fallback__glyph" aria-hidden="true">
+        ↗
+      </span>
+      <span class="ig-fallback__label">View this post on Instagram</span>
+    </a>
+  )
+}
+
+<style>
+  /*
+   * Instagram's embed is always a LIGHT card, which would otherwise punch a
+   * white hole in the near-black page. Framing it on a brand surface (glass
+   * border + rounded, clipped corners) reads it as a deliberately mounted
+   * photo on the darkroom wall rather than a broken block.
+   */
+  .ig-embed {
+    margin: 0;
+    min-width: 0;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--surface);
+    box-shadow: var(--card-inset);
+    overflow: hidden;
+  }
+
+  /*
+   * The oEmbed blockquote arrives with LIGHT inline styles (background:#FFF …).
+   * Inline styles win over a stylesheet unless the rule is `!important`, so the
+   * overrides below keep the embed on-brand before the Instagram library swaps
+   * the blockquote for a themeable iframe. Values stay on brand tokens.
+   */
+  .ig-embed :global(blockquote.instagram-media) {
+    background: var(--surface) !important;
+    background-image: var(--card-bg) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--card-inset) !important;
+    color: var(--text) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .ig-embed :global(blockquote.instagram-media a) {
+    color: var(--text-muted) !important;
+  }
+
+  .ig-fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    min-height: 12rem;
+    padding: var(--space-6);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--surface);
+    background-image: var(--card-bg);
+    box-shadow: var(--card-inset);
+    color: var(--text);
+    text-align: center;
+    text-decoration: none;
+    transition:
+      border-color var(--dur-base) var(--ease-out),
+      background-color var(--dur-base) var(--ease-out);
+  }
+
+  .ig-fallback:hover,
+  .ig-fallback:focus-visible {
+    border-color: var(--glass-border-strong);
+    background-color: var(--surface-hover);
+    color: var(--text);
+  }
+
+  .ig-fallback__glyph {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-pill);
+    background: var(--accent-surface);
+    color: var(--accent);
+    font-size: var(--text-lg);
+  }
+
+  .ig-fallback__label {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+</style>
