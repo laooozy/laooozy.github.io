@@ -52,9 +52,28 @@ const Tag = href ? "a" : isFilter ? "button" : "span";
   }
 
   .chip--tag {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.09);
+    background: var(--surface);
+    border-color: color-mix(in oklab, var(--text) 10%, transparent);
     color: var(--text-muted);
+  }
+
+  /*
+   * A tag that is ALSO a link (a post page's "tagged" nav) still reads as a
+   * quiet label: it never fills with the accent the way a filter control does.
+   * Hover only lifts it toward --text, so tags and controls stay distinct.
+   */
+  a.chip--tag {
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+
+  a.chip--tag:hover,
+  a.chip--tag:focus-visible {
+    background: var(--surface-hover);
+    border-color: color-mix(in oklab, var(--text) 22%, transparent);
+    color: var(--text);
   }
 
   .chip--filter {

@@ -1,0 +1,102 @@
+---
+/**
+ * BlogFilters — the build-time filter tray for every blog listing.
+ *
+ * Two control groups:
+ *  - By tag: an "All posts" reset chip (filled while the index is unfiltered)
+ *    followed by every tag. Tags are the primary browsing axis, so this group
+ *    leads.
+ *  - By date: the year (and month) archives present in the set.
+ *
+ * Every chip here is a CONTROL (`Chip variant="filter"`): outlined at rest,
+ * tinted on hover, solid-accent when `active` — so a filter can never be
+ * mistaken for a post's tag label. A `Separator` closes the tray and divides it
+ * from the post list below.
+ *
+ * All copy is i18n-driven; the "All posts" href is derived from the locale, so
+ * the reset always lands on that locale's index.
+ */
+import ChipRow from "./ChipRow.astro";
+import Separator from "./ui/Separator.astro";
+import { useTranslations, type Locale } from "../i18n/ui";
+import { blogIndexPath } from "../lib/blog";
+
+interface FilterLink {
+  label: string;
+  href: string;
+  active?: boolean;
+}
+
+interface Props {
+  locale: Locale;
+  tags?: FilterLink[];
+  periods?: FilterLink[];
+  class?: string;
+}
+
+const { locale, tags = [], periods = [], class: className } = Astro.props;
+const t = useTranslations(locale);
+
+// The unfiltered index: no tag and no period is active.
+const noneActive =
+  !tags.some((item) => item.active) && !periods.some((item) => item.active);
+
+const tagItems: FilterLink[] = [
+  { label: t.blog.allPosts, href: blogIndexPath(locale), active: noneActive },
+  ...tags,
+];
+---
+
+<nav class:list={["blog-filters", className]} aria-label={t.blog.filters}>
+  <div class="blog-filters__groups">
+    {
+      tagItems.length > 1 && (
+        <div class="blog-filters__group">
+          <span class="blog-filters__label">{t.blog.byTag}</span>
+          <ChipRow variant="filter" items={tagItems} gap={2} />
+        </div>
+      )
+    }
+    {
+      periods.length > 0 && (
+        <div class="blog-filters__group">
+          <span class="blog-filters__label">{t.blog.byDate}</span>
+          <ChipRow variant="filter" items={periods} gap={2} />
+        </div>
+      )
+    }
+  </div>
+  <Separator class="blog-filters__rule" />
+</nav>
+
+<style>
+  .blog-filters__groups {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .blog-filters__group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+  }
+
+  .blog-filters__label {
+    min-width: 4.5rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /*
+   * The `Separator` is a child component, so Astro does not carry this
+   * component's scope id onto its root element; `:global()` keeps the rule
+   * effective.
+   */
+  :global(.blog-filters__rule) {
+    margin-top: var(--space-6);
+  }
+</style>

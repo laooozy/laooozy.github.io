@@ -1,0 +1,151 @@
+---
+/**
+ * PostRow — one post in a listing, as a wide horizontal entry.
+ *
+ * The listing's answer to a bare card grid: a fixed left rail carries the
+ * machine-readable meta (date + reading time) in mono, and the main column
+ * carries the title, one-line description and quiet tag labels. Reads like a
+ * journal index — dense, scannable, and it uses the full column instead of
+ * leaving a dead right-hand gap.
+ *
+ * It wraps the shared `Card` (so it inherits the glass surface, the top-edge
+ * highlight and the interactive hover lift) and stacks type with `Text` /
+ * `Heading` / `ChipRow`. Tags here are NON-interactive labels (`variant="tag"`),
+ * deliberately distinct from the filter controls above the list.
+ *
+ * Props
+ *  - href: string
+ *  - title: string
+ *  - description: string
+ *  - dateLabel: string       human date, already localised
+ *  - datetime: string        machine ISO date for <time datetime>
+ *  - readingTime?: string    localised, e.g. "約 3 分鐘閱讀"
+ *  - tags?: string[]
+ *  - headingLevel?: 2 | 3    default: 2 (page title is the h1)
+ *  - class?: string
+ */
+import Card from "./Card.astro";
+import ChipRow from "./ChipRow.astro";
+import Heading from "./ui/Heading.astro";
+import Text from "./ui/Text.astro";
+
+interface Props {
+  href: string;
+  title: string;
+  description: string;
+  dateLabel: string;
+  datetime: string;
+  readingTime?: string;
+  tags?: string[];
+  headingLevel?: 2 | 3;
+  class?: string;
+}
+const {
+  href,
+  title,
+  description,
+  dateLabel,
+  datetime,
+  readingTime,
+  tags = [],
+  headingLevel = 2,
+  class: className,
+} = Astro.props;
+---
+
+<Card href={href} class:list={["post-row", className]}>
+  <div class="post-row__inner">
+    <div class="post-row__rail">
+      <time class="post-row__date" datetime={datetime}>{dateLabel}</time>
+      {readingTime && <span class="post-row__reading">{readingTime}</span>}
+    </div>
+    <div class="post-row__main">
+      <Heading level={headingLevel} size="lg" class="post-row__title">
+        {title}
+      </Heading>
+      <Text tone="muted" class="post-row__desc">{description}</Text>
+      {
+        tags.length > 0 && (
+          <ChipRow
+            class="post-row__tags"
+            gap={2}
+            items={tags.map((label) => ({ label }))}
+          />
+        )
+      }
+    </div>
+  </div>
+</Card>
+
+<style>
+  .post-row__inner {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .post-row__rail {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2) var(--space-3);
+  }
+
+  .post-row__date,
+  .post-row__reading {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    color: var(--text-muted);
+  }
+
+  /* The date is the entry's anchor: it warms to the accent as the whole card
+   * is hovered, a small designed cue that the row is a link.
+   *
+   * `.post-row` lives on the `Card` root, and Astro does NOT carry this
+   * component's scope id onto a child component's root element — so the
+   * ancestor half of the selector must opt out of scoping via `:global()`. */
+  .post-row__date {
+    color: var(--text-muted);
+    transition: color var(--dur-base) var(--ease-out);
+  }
+
+  :global(.post-row:hover) .post-row__date,
+  :global(.post-row:focus-visible) .post-row__date {
+    color: var(--accent);
+  }
+
+  .post-row__main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  :global(.post-row__title) {
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  :global(.post-row__tags) {
+    margin-top: var(--space-1);
+  }
+
+  @media (min-width: 40rem) {
+    .post-row__inner {
+      grid-template-columns: 9.5rem minmax(0, 1fr);
+      gap: var(--space-6);
+      align-items: start;
+    }
+
+    .post-row__rail {
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .post-row__date {
+      transition: none;
+    }
+  }
+</style>

@@ -1,11 +1,20 @@
 ---
 /**
  * PostArticle — the shared renderer for a single blog post, reused by every
- * locale's `[slug]` route. Reuses the `Card` glass shell and shows the title,
- * date, estimate reading time, tag links, a back-to-index link, and the body.
+ * locale's `[slug]` route.
+ *
+ * Rather than framing the whole article in one oversized box, the piece is set
+ * as an editorial column: an honest reading measure (`--container-narrow`,
+ * centred), a back link, a masthead with the title / date / reading time /
+ * quiet tag links, a hairline rule, then the body with a comfortable heading
+ * rhythm. A single soft brand glow behind the masthead is the only ornament.
+ *
+ * Tags here are links to that locale's tag archives, but they keep the muted
+ * `variant="tag"` styling — never the accent fill of a filter control.
  */
 import { render } from "astro:content";
-import Card from "./Card.astro";
+import ChipRow from "./ChipRow.astro";
+import Cluster from "./layout/Cluster.astro";
 import { useTranslations, type Locale } from "../i18n/ui";
 import {
   blogIndexPath,
@@ -27,172 +36,213 @@ const readLabel = t.blog.readTime.replace(
   "{minutes}",
   String(estimateReadingTime(post.body)),
 );
+const tags = post.data.tags.map((tag) => ({
+  label: tag,
+  href: blogTagPath(locale, tag),
+}));
 ---
 
-<nav class="post-back" aria-label={t.blog.backToIndex}>
-	<a class="post-back__link" href={blogIndexPath(locale)}>
-		← {t.blog.backToIndex}
-	</a>
-</nav>
+<div class="post">
+  <nav class="post__back" aria-label={t.blog.backToIndex}>
+    <a class="post__back-link" href={blogIndexPath(locale)}>
+      <span aria-hidden="true">←</span>
+      {t.blog.backToIndex}
+    </a>
+  </nav>
 
-<Card>
-	<article class="post">
-		<header class="post__header">
-			<h1 class="post__title">{post.data.title}</h1>
-			<p class="post__meta">
-				<time class="post__date" datetime={post.data.date.toISOString()}>
-					{formatPostDate(post.data.date, locale)}
-				</time>
-				<span class="post__dot" aria-hidden="true">·</span>
-				<span class="post__reading">{readLabel}</span>
-			</p>
-			{
-				post.data.tags.length > 0 && (
-					<ul class="post__tags" aria-label={t.blog.tagged}>
-						{post.data.tags.map((tag) => (
-							<li>
-								<a class="post__tag" href={blogTagPath(locale, tag)}>
-									{tag}
-								</a>
-							</li>
-						))}
-					</ul>
-				)
-			}
-		</header>
+  <article class="post__article">
+    <header class="post__header">
+      <h1 class="post__title">{post.data.title}</h1>
+      <Cluster as="p" gap={3} align="baseline" class="post__meta">
+        <time class="post__date" datetime={post.data.date.toISOString()}>
+          {formatPostDate(post.data.date, locale)}
+        </time>
+        <span class="post__sep" aria-hidden="true">·</span>
+        <span class="post__reading">{readLabel}</span>
+      </Cluster>
+      {
+        tags.length > 0 && (
+          <ChipRow
+            class="post__tags"
+            gap={2}
+            ariaLabel={t.blog.tagged}
+            items={tags}
+          />
+        )
+      }
+    </header>
 
-		<div class="post__body">
-			<Content />
-		</div>
-	</article>
-</Card>
+    <div class="post__body">
+      <Content />
+    </div>
+  </article>
+</div>
 
 <style>
-	.post-back {
-		margin-bottom: var(--space-5);
-	}
+  .post {
+    max-width: var(--container-narrow);
+    margin-inline: auto;
+  }
 
-	.post-back__link {
-		font-size: var(--text-sm);
-		font-weight: 500;
-		color: var(--accent);
-		text-decoration: none;
-	}
+  .post__back {
+    margin-bottom: var(--space-5);
+  }
 
-	.post-back__link:hover {
-		color: var(--text);
-	}
+  .post__back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--accent);
+    text-decoration: none;
+  }
 
-	.post__header {
-		margin-bottom: var(--space-6);
-		padding-bottom: var(--space-5);
-		border-bottom: 1px solid
-			color-mix(in oklab, var(--glass-border) 40%, transparent);
-	}
+  .post__back-link:hover {
+    color: var(--text);
+  }
 
-	.post__title {
-		margin: 0 0 var(--space-3);
-		font-size: clamp(var(--text-2xl), 5vw, var(--text-3xl));
-		line-height: var(--leading-tight);
-	}
+  .post__back-link span {
+    transition: transform var(--dur-base) var(--ease-out);
+  }
 
-	.post__meta {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		gap: var(--space-2);
-		margin: 0;
-		font-family: var(--font-mono);
-		font-size: var(--text-xs);
-		letter-spacing: var(--tracking-wide);
-		color: var(--text-muted);
-	}
+  .post__back-link:hover span {
+    transform: translateX(-3px);
+  }
 
-	.post__tags {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-2);
-		margin-top: var(--space-4);
-		list-style: none;
-	}
+  .post__header {
+    position: relative;
+    padding-bottom: var(--space-6);
+    border-bottom: 1px solid
+      color-mix(in oklab, var(--glass-border) 40%, transparent);
+  }
 
-	.post__tag {
-		display: inline-block;
-		padding: 0 var(--space-2);
-		border-radius: var(--radius-sm);
-		background: var(--accent-soft);
-		color: var(--text);
-		font-size: var(--text-xs);
-		text-decoration: none;
-	}
+  /* A single soft aurora behind the masthead — the brand's featured visual. */
+  .post__header::before {
+    content: "";
+    position: absolute;
+    top: -55%;
+    left: -12%;
+    z-index: 0;
+    width: min(34rem, 80vw);
+    aspect-ratio: 1;
+    border-radius: var(--radius-pill);
+    background: radial-gradient(
+      circle,
+      var(--accent-surface) 0%,
+      transparent 62%
+    );
+    pointer-events: none;
+  }
 
-	.post__tag:hover,
-	.post__tag:focus-visible {
-		/* Solid --accent, not the gradient: dark-on-#7c3aed only reaches 3.47:1. */
-		background: var(--accent);
-		color: var(--text-on-accent);
-	}
+  .post__header > * {
+    position: relative;
+    z-index: 1;
+  }
 
-	.post__body {
-		max-width: var(--measure, 68ch);
-		color: var(--text);
-		line-height: var(--leading-relaxed);
-	}
+  .post__title {
+    margin: 0 0 var(--space-4);
+    font-size: clamp(var(--text-2xl), 5vw, var(--text-4xl));
+    line-height: var(--leading-tight);
+    text-wrap: balance;
+  }
 
-	.post__body :global(h2) {
-		margin: var(--space-8) 0 var(--space-3);
-		font-size: var(--text-xl);
-		line-height: var(--leading-tight);
-	}
+  /*
+   * `Cluster` and `ChipRow` are child components, so Astro does not carry this
+   * component's scope id onto their root elements — these overrides opt out of
+   * scoping via `:global()`.
+   */
+  :global(.post__meta) {
+    max-width: none;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    color: var(--text-muted);
+  }
 
-	.post__body :global(h3) {
-		margin: var(--space-6) 0 var(--space-2);
-		font-size: var(--text-lg);
-	}
+  :global(.post__tags) {
+    margin-top: var(--space-5);
+  }
 
-	.post__body :global(p) {
-		margin: 0 0 var(--space-4);
-	}
+  .post__body {
+    padding-top: var(--space-6);
+    max-width: var(--measure);
+    color: var(--text);
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+  }
 
-	.post__body :global(ul),
-	.post__body :global(ol) {
-		margin: 0 0 var(--space-4);
-		padding-inline-start: var(--space-6);
-	}
+  .post__body :global(h2) {
+    margin: var(--space-9) 0 var(--space-3);
+    font-size: var(--text-2xl);
+    line-height: var(--leading-tight);
+  }
 
-	.post__body :global(li) {
-		margin-bottom: var(--space-2);
-	}
+  .post__body :global(h3) {
+    margin: var(--space-7) 0 var(--space-2);
+    font-size: var(--text-xl);
+  }
 
-	.post__body :global(a) {
-		color: var(--accent);
-	}
+  .post__body :global(p) {
+    margin: 0 0 var(--space-4);
+  }
 
-	.post__body :global(blockquote) {
-		margin: 0 0 var(--space-4);
-		padding-inline-start: var(--space-4);
-		border-inline-start: 1px solid var(--glass-border-strong);
-		color: var(--text-muted);
-	}
+  .post__body :global(ul),
+  .post__body :global(ol) {
+    margin: 0 0 var(--space-4);
+    padding-inline-start: var(--space-6);
+  }
 
-	.post__body :global(code) {
-		font-family: var(--font-mono);
-		font-size: 0.9em;
-	}
+  .post__body :global(li) {
+    margin-bottom: var(--space-2);
+  }
 
-	.post__body :global(pre) {
-		overflow-x: auto;
-		padding: var(--space-4);
-		border: 1px solid var(--glass-border);
-		border-radius: var(--radius-md);
-		background: var(--surface);
-	}
+  .post__body :global(a) {
+    color: var(--accent);
+  }
 
-	.post__body > :global(:first-child) {
-		margin-top: 0;
-	}
+  .post__body :global(strong) {
+    font-weight: 600;
+    color: var(--text);
+  }
 
-	.post__body > :global(:last-child) {
-		margin-bottom: 0;
-	}
+  .post__body :global(blockquote) {
+    margin: var(--space-5) 0;
+    padding-inline-start: var(--space-5);
+    border-inline-start: 1px solid var(--glass-border-strong);
+    color: var(--text-muted);
+  }
+
+  .post__body :global(hr) {
+    height: 1px;
+    margin: var(--space-8) 0;
+    border: 0;
+    background: color-mix(in oklab, var(--glass-border) 45%, transparent);
+  }
+
+  .post__body :global(code) {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+
+  .post__body :global(pre) {
+    overflow-x: auto;
+    padding: var(--space-4);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+  }
+
+  .post__body :global(img) {
+    border-radius: var(--radius-md);
+  }
+
+  .post__body > :global(:first-child) {
+    margin-top: 0;
+  }
+
+  .post__body > :global(:last-child) {
+    margin-bottom: 0;
+  }
 </style>

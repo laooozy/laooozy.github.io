@@ -6,22 +6,28 @@
  *  - level?: 1 | 2 | 3 | 4        default: 2 (renders the matching <hN>)
  *  - size?: "hero" | "xl" | "lg" | "md"   optional size override
  *  - tone?: "default" | "muted"
+ *  - id?: string         DOM id (e.g. to wire a section's aria-labelledby)
  *  - class?: string
  *
  * Global element styles already cover the base scale; `size` is for the few
  * places that need to break it (e.g. a hero wordmark).
  */
+import type { HTMLTag } from "astro/types";
+
 interface Props {
   level?: 1 | 2 | 3 | 4;
   size?: "hero" | "xl" | "lg" | "md";
   tone?: "default" | "muted";
+  id?: string;
   class?: string;
 }
-const { level = 2, size, tone = "default", class: className } = Astro.props;
-const Tag = `h${level}`;
+const { level = 2, size, tone = "default", id, class: className } = Astro.props;
+// Typed as HTMLTag so a dynamic tag keeps its intrinsic props (id, class, …).
+const Tag: HTMLTag = `h${level}`;
 ---
 
 <Tag
+  id={id}
   class:list={[
     "heading",
     size && `heading--${size}`,
