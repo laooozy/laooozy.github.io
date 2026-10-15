@@ -96,12 +96,23 @@ bun run deploy
 That is shorthand for:
 
 ```sh
-bun run build && bun run pagefind && gh-pages -d dist -b gh-pages --dotfiles
+bun run build && bun run pagefind && \
+  GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=commit.gpgsign GIT_CONFIG_VALUE_0=false \
+  gh-pages -d dist -b gh-pages --dotfiles
 ```
 
 `gh-pages` pushes the contents of `dist/` to the `gh-pages` branch (including
 dotfiles), which GitHub Pages serves at <https://laooozy.github.io>. Changes are
 usually live within a minute of the push.
+
+> **Why `commit.gpgsign` is forced off:** `gh-pages` commits from a fresh clone in
+> a temp directory, which does **not** inherit this repo's local
+> `commit.gpgsign=false`. It would therefore fall back to the machine's global
+> `commit.gpgsign=true` and try to GPG-sign with your personal key — which fails
+> in a non-interactive shell (`gpg: signing failed: Timeout`) and aborts the
+> deploy. Signing is disabled here on purpose so the `gh-pages` commits carry the
+> repo's brand identity, **never** your personal signing key. Do not "fix" this by
+> removing the environment override.
 
 ## Adding a post
 

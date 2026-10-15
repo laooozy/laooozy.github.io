@@ -12,7 +12,7 @@
     "astro": "astro",
     "gen:og": "node scripts/generate-og.mjs",
     "pagefind": "pagefind --site dist",
-    "deploy": "bun run build && bun run pagefind && gh-pages -d dist -b gh-pages --dotfiles"
+    "deploy": "bun run build && bun run pagefind && GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=commit.gpgsign GIT_CONFIG_VALUE_0=false gh-pages -d dist -b gh-pages --dotfiles"
   },
   "dependencies": {
     "@astrojs/react": "^7.0.1",
