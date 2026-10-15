@@ -17,12 +17,10 @@
  * "View on Instagram" link instead of an embed (see InstagramEmbed.astro), so a
  * bad link degrades gracefully rather than breaking the build.
  *
- * NOTE: the two URLs below are *verified public* cosplay posts used to prove
- * the embed pipeline end-to-end. They are placeholders — swap them for the
- * owner's own permalinks before shipping the site publicly. Set the array to
- * `[]` to render the wall as link-out cards only.
+ * NOTE: the two URLs below are the owner's own Instagram permalinks. Set the
+ * array to `[]` to render the wall as link-out cards only.
  */
 export const instagramPosts: string[] = [
-  "https://www.instagram.com/gelograyson/p/CylLgMcyXpv/",
-  "https://www.instagram.com/alexwongphotographer/p/DG74zE-sPx-/",
+  "https://www.instagram.com/p/DdtBD23yLte/",
+  "https://www.instagram.com/p/Dcsnb5YyY0I/",
 ];
