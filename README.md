@@ -33,12 +33,12 @@ the root.
 ## Requirements
 
 - **Node.js >= 22.12.0** (see `engines` in `package.json`)
-- npm
+- bun
 
 Install dependencies once:
 
 ```sh
-npm install
+bun install
 ```
 
 ## Local development
@@ -58,31 +58,31 @@ astro dev stop     # shut it down
 ```
 
 The dev server serves the site at <http://localhost:4321> with hot reload. To run
-it in the foreground instead, use `npm run dev`.
+it in the foreground instead, use `bun run dev`.
 
 ## Build
 
 Build the production site into `dist/`:
 
 ```sh
-npm run build            # astro build  ->  dist/
-npm run pagefind         # pagefind --site dist   (generates the search index)
+bun run build            # astro build  ->  dist/
+bun run pagefind         # pagefind --site dist   (generates the search index)
 ```
 
-`npm run build` renders every page; `npm run pagefind` then indexes the rendered
+`bun run build` renders every page; `bun run pagefind` then indexes the rendered
 HTML in `dist/` so the site's client-side search has data. **The search index is
 generated against `dist/`, so always run `build` before `pagefind`.**
 
 Preview the production build locally:
 
 ```sh
-npm run preview
+bun run preview
 ```
 
 To regenerate Open Graph share images:
 
 ```sh
-npm run gen:og           # node scripts/generate-og.mjs
+bun run gen:og           # node scripts/generate-og.mjs
 ```
 
 ## Deploy
@@ -90,13 +90,13 @@ npm run gen:og           # node scripts/generate-og.mjs
 One command builds, indexes, and publishes to the `gh-pages` branch:
 
 ```sh
-npm run deploy
+bun run deploy
 ```
 
 That is shorthand for:
 
 ```sh
-npm run build && npm run pagefind && gh-pages -d dist -b gh-pages --dotfiles
+bun run build && bun run pagefind && gh-pages -d dist -b gh-pages --dotfiles
 ```
 
 `gh-pages` pushes the contents of `dist/` to the `gh-pages` branch (including
@@ -147,8 +147,8 @@ Notes:
 - Posts are listed newest-first (by `date`, title break on ties), paginated
   **4 per page** at build time.
 
-After adding a post, rebuild (`npm run build && npm run pagefind`) or re-run the
-dev server, then deploy with `npm run deploy`.
+After adding a post, rebuild (`bun run build && bun run pagefind`) or re-run the
+dev server, then deploy with `bun run deploy`.
 
 ## Internationalization
 
