@@ -93,28 +93,25 @@ export const ui = {
       introBody:
         "2026 年我第一次參加 ACGHK。用手機拍下的照片怎麼看都不滿意，於是我買了第一台相機，開始慢慢學。到現在構圖、光線，還有跟 cosplayer 之間的溝通，都還在每天練習。",
       approachHeading: "我的拍攝方式",
+      /*
+       * TODO(user): owner hasn't decided this content yet — replace the
+       * placeholder below with the real "approach" copy (title + body).
+       * The previous text was AI-invented; it was removed on purpose.
+       */
       approach: [
         {
-          title: "先聊，再拍",
-          body: "開拍前我喜歡先跟 cosplayer 聊聊角色與想要的氛圍，讓照片更接近對方心裡想像的樣子。",
-        },
-        {
-          title: "慢慢來",
-          body: "我不趕著拍完下一個場景，寧願花時間等一個對的光線與表情。",
-        },
-        {
-          title: "還在學",
-          body: "坦白說我還是新手，會出錯、也會邊拍邊調整，但每一次都想比上一次好一點。",
+          title: "內容待補",
+          body: "「我的拍攝方式」這段內容還沒決定，之後會補上。",
         },
       ],
       commissionHeading: "委託與合作",
-      commissionLead: "目前的我：",
-      commissionPoints: [
-        "目前沒有收費的私人約拍。",
-        "朋友之間，免費。",
-        "還不算圈內人，只是一個喜歡拍照的攝影新手。",
-        "私訊我都會回，歡迎聊聊。",
-      ],
+      /*
+       * TODO(user): owner hasn't decided this content yet — replace the
+       * placeholder lead + points below with the real commission copy.
+       * The previous text was AI-invented; it was removed on purpose.
+       */
+      commissionLead: "內容待補",
+      commissionPoints: ["「委託與合作」這段內容還沒決定，之後會補上。"],
       followHeading: "追蹤我的作品",
       followNote: "作品與約拍資訊，主要都放在 Instagram。",
       followCta: "在 Instagram 看更多",
@@ -201,28 +198,25 @@ export const ui = {
       introBody:
         "2026 年我第一次参加 ACGHK。用手机拍下的照片怎么看都不满意，于是我买了第一台相机，开始慢慢学。到现在构图、光线，还有跟 cosplayer 之间的沟通，都还在每天练习。",
       approachHeading: "我的拍摄方式",
+      /*
+       * TODO(user): owner hasn't decided this content yet — replace the
+       * placeholder below with the real "approach" copy (title + body).
+       * The previous text was AI-invented; it was removed on purpose.
+       */
       approach: [
         {
-          title: "先聊，再拍",
-          body: "开拍前我喜欢先跟 cosplayer 聊聊角色与想要的氛围，让照片更接近对方心里想像的样子。",
-        },
-        {
-          title: "慢慢来",
-          body: "我不赶着拍完下一个场景，宁愿花时间等一个对的光线与表情。",
-        },
-        {
-          title: "还在学",
-          body: "坦白说我还是新手，会出错、也会边拍边调整，但每一次都想比上一次好一点。",
+          title: "内容待补",
+          body: "「我的拍摄方式」这段内容还没决定，之后会补上。",
         },
       ],
       commissionHeading: "委托与合作",
-      commissionLead: "现在的我：",
-      commissionPoints: [
-        "目前没有收费的私人约拍。",
-        "朋友之间，免费。",
-        "还不算圈内人，只是一个喜欢拍照的摄影新手。",
-        "私信我都会回，欢迎聊聊。",
-      ],
+      /*
+       * TODO(user): owner hasn't decided this content yet — replace the
+       * placeholder lead + points below with the real commission copy.
+       * The previous text was AI-invented; it was removed on purpose.
+       */
+      commissionLead: "内容待补",
+      commissionPoints: ["「委托与合作」这段内容还没决定，之后会补上。"],
       followHeading: "关注我的作品",
       followNote: "作品与约拍信息，主要都放在 Instagram。",
       followCta: "在 Instagram 看更多",
@@ -313,27 +307,26 @@ export const ui = {
       introBody:
         "2026 was my first time at a convention — ACGHK. The photos I took on my phone looked bad, so I bought a camera and started learning. Composition, light, and talking with cosplayers are still things I practise a little more each day.",
       approachHeading: "How I shoot",
+      /*
+       * TODO(user): owner hasn't decided this content yet — replace the
+       * placeholder below with the real "approach" copy (title + body).
+       * The previous text was AI-invented; it was removed on purpose.
+       */
       approach: [
         {
-          title: "We talk first",
-          body: "Before we shoot I like to chat with the cosplayer about the character and the mood they want, so the photos come closer to what they have in mind.",
-        },
-        {
-          title: "Slow and steady",
-          body: "I'm in no rush to get to the next scene; I'd rather wait for the right light and the right expression.",
-        },
-        {
-          title: "Still learning",
-          body: "Honestly, I'm still new — I'll make mistakes and adjust as I go, but I want each shoot to be a little better than the last.",
+          title: "Coming soon",
+          body: "This section — how I shoot — hasn't been decided yet. It'll be added later.",
         },
       ],
       commissionHeading: "Commissions & collaboration",
-      commissionLead: "Where I am right now:",
+      /*
+       * TODO(user): owner hasn't decided this content yet — replace the
+       * placeholder lead + points below with the real commission copy.
+       * The previous text was AI-invented; it was removed on purpose.
+       */
+      commissionLead: "Coming soon",
       commissionPoints: [
-        "No paid private shoots for now.",
-        "Free between friends.",
-        "Not really in the scene yet — just a beginner who likes taking photos.",
-        "I reply to every DM, so feel free to reach out.",
+        "The commissions & collaboration section hasn't been decided yet. It'll be added later.",
       ],
       followHeading: "Follow my work",
       followNote: "My photos and shoot updates mostly live on Instagram.",

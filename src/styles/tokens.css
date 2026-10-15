@@ -155,6 +155,8 @@
   --z-base: 1;
   --z-dropdown: 100;
   --z-sticky: 200;
+  /* Portaled popovers (e.g. the language menu) must clear the sticky header. */
+  --z-popover: 250;
   --z-modal-backdrop: 300;
   --z-modal: 400;
   --z-toast: 500;

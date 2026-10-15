@@ -158,26 +158,9 @@ button {
 }
 
 /* Language switcher — base styling for the shared component. */
-.language-switcher ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  list-style: none;
-}
-
-.language-switcher__link {
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-  text-decoration: none;
-}
-
-.language-switcher__link:hover,
-.language-switcher__link.is-current {
-  color: var(--text);
-}
-
-.language-switcher__link.is-current {
-  font-weight: 600;
+.language-switcher {
+  display: inline-flex;
+  align-items: center;
 }
 
 @media (prefers-reduced-motion: reduce) {

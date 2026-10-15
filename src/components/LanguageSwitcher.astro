@@ -1,5 +1,6 @@
 ---
 import { getRelativeLocaleUrl } from 'astro:i18n';
+import LanguageMenu from './LanguageMenu';
 import { languages, langAttr, defaultLang, resolveLocale, useTranslations } from '../i18n/ui';
 
 const current = resolveLocale(Astro.currentLocale);
@@ -26,25 +27,17 @@ const items = Object.entries(languages).map(([code, label]) => ({
   label,
   href: getRelativeLocaleUrl(code, rel),
   isCurrent: code === current,
+  lang: langAttr[code as keyof typeof langAttr],
 }));
+
+const currentLabel = languages[current];
 ---
 
 <nav class="language-switcher" aria-label={t.a11y.language}>
-	<ul>
-		{
-			items.map((item) => (
-				<li>
-					<a
-						href={item.href}
-						hreflang={langAttr[item.code as keyof typeof langAttr]}
-						lang={langAttr[item.code as keyof typeof langAttr]}
-						aria-current={item.isCurrent ? 'page' : undefined}
-						class:list={['language-switcher__link', { 'is-current': item.isCurrent }]}
-					>
-						{item.label}
-					</a>
-				</li>
-			))
-		}
-	</ul>
+	<LanguageMenu
+		client:load
+		label={t.a11y.language}
+		currentLabel={currentLabel}
+		items={items}
+	/>
 </nav>
