@@ -12,6 +12,8 @@
     "astro": "astro",
     "gen:og": "node scripts/generate-og.mjs",
     "pagefind": "pagefind --site dist",
+    "test": "vitest run",
+    "typecheck": "astro check",
     "deploy": "bun run build && bun run pagefind && GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=commit.gpgsign GIT_CONFIG_VALUE_0=false gh-pages -d dist -b gh-pages --dotfiles"
   },
   "dependencies": {
@@ -38,6 +40,7 @@
     "pagefind": "^1.5.2",
     "shadcn": "^4.21.5",
     "sharp": "^0.35.5",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.5"
   }
 }
