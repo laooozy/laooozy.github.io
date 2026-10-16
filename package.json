@@ -11,10 +11,9 @@
     "preview": "astro preview",
     "astro": "astro",
     "gen:og": "node scripts/generate-og.mjs",
-    "pagefind": "pagefind --site dist",
+    "pagefind": "pagefind --site dist --force-language zh-hant",
     "test": "vitest run",
-    "typecheck": "astro check",
-    "deploy": "bun run build && bun run pagefind && GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=commit.gpgsign GIT_CONFIG_VALUE_0=false gh-pages -d dist -b gh-pages --dotfiles"
+    "typecheck": "astro check"
   },
   "dependencies": {
     "@astrojs/react": "^7.0.1",
