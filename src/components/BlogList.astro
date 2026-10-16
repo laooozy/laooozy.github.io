@@ -6,17 +6,17 @@
  * Composition (all from the reusable kit):
  *  - a masthead (`Heading` level 1 + the `SearchModal` trigger),
  *  - the build-time filter tray (`BlogFilters`),
- *  - the post list — one `PostRow` per post, a wide glass entry with a mono
- *    date rail,
+ *  - the post list — one `PostCard` (variant="row") per post, a wide glass
+ *    entry with a mono date rail,
  *  - `BlogPagination` when the set spans more than one page.
  *
  * Paging is build-time (driven by the `pagination` prop from Astro's
  * `paginate()`); no post data is shipped to the client for DOM paging. All copy
  * is i18n-driven.
  */
-import PostRow from "./PostRow.astro";
-import BlogFilters from "./BlogFilters.astro";
-import BlogPagination from "./BlogPagination.astro";
+import PostCard from "./PostCard";
+import BlogFilters from "./BlogFilters";
+import BlogPagination from "./BlogPagination";
 import SearchModal from "./SearchModal.astro";
 import Heading from "./ui/Heading";
 import Text from "./ui/Text";
@@ -77,7 +77,8 @@ const t = useTranslations(locale);
       <ul class="blog-list">
         {posts.map((post) => (
           <li>
-            <PostRow
+            <PostCard
+              variant="row"
               href={blogPostPath(locale, post.id)}
               title={post.data.title}
               description={post.data.description}
