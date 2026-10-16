@@ -19,7 +19,7 @@ import ChipRow from "./ChipRow";
 import Separator from "./ui/Separator";
 import type { FilterLink } from "./types";
 import { useTranslations, type Locale } from "../i18n/ui";
-import { blogIndexPath } from "../lib/blog";
+import { blogIndexPath } from "../lib/domain/posts";
 
 interface BlogFiltersProps {
   locale: Locale;
@@ -41,7 +41,7 @@ export default function BlogFilters({
     !tags.some((item) => item.active) && !periods.some((item) => item.active);
 
   const tagItems: FilterLink[] = [
-    { label: t.blog.allPosts, href: blogIndexPath(locale), active: noneActive },
+    { label: t.blog.allPosts, href: blogIndexPath(), active: noneActive },
     ...tags,
   ];
 

@@ -27,7 +27,7 @@ import {
   estimateReadingTime,
   formatPostDate,
   type Post,
-} from "../lib/blog";
+} from "../lib/domain/posts";
 
 interface Props {
   posts: Post[];
@@ -70,7 +70,7 @@ const t = useTranslations(locale);
           <li>
             <PostCard
               variant="row"
-              href={blogPostPath(locale, post.id)}
+              href={blogPostPath(post.id)}
               title={post.data.title}
               description={post.data.description}
               dateLabel={formatPostDate(post.data.date, locale)}

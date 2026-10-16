@@ -11,9 +11,9 @@ import {
   collectPeriods,
   collectTags,
   formatPeriodLabel,
-  getAllPosts,
   matchesPeriod,
-} from "../../../lib/blog";
+} from "../../../lib/domain/posts";
+import { getAllPosts } from "../../../lib/io/posts";
 
 const locale = "zh-hant" as const;
 
@@ -30,11 +30,11 @@ const allPosts = await getAllPosts();
 const posts = allPosts.filter((post) => matchesPeriod(post, period));
 const tags = collectTags(allPosts).map((tag) => ({
   label: tag,
-  href: blogTagPath(locale, tag),
+  href: blogTagPath(tag),
 }));
 const periods = collectPeriods(allPosts).map((key) => ({
   label: formatPeriodLabel(key, locale),
-  href: blogArchivePath(locale, key),
+  href: blogArchivePath(key),
   active: key === period,
 }));
 ---

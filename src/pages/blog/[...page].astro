@@ -12,9 +12,9 @@ import {
   collectPeriods,
   collectTags,
   formatPeriodLabel,
-  getAllPosts,
   PAGE_SIZE,
-} from "../../lib/blog";
+} from "../../lib/domain/posts";
+import { getAllPosts } from "../../lib/io/posts";
 
 const locale = "zh-hant" as const;
 
@@ -29,13 +29,13 @@ const { page } = Astro.props;
 const allPosts = await getAllPosts();
 const tags = collectTags(allPosts).map((tag) => ({
   label: tag,
-  href: blogTagPath(locale, tag),
+  href: blogTagPath(tag),
 }));
 const periods = collectPeriods(allPosts)
   .filter((period) => period.length === 4)
   .map((period) => ({
     label: formatPeriodLabel(period, locale),
-    href: blogArchivePath(locale, period),
+    href: blogArchivePath(period),
   }));
 ---
 

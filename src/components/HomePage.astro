@@ -26,8 +26,8 @@ import {
   blogIndexPath,
   blogPostPath,
   formatPostDate,
-  getAllPosts,
-} from "../lib/blog";
+} from "../lib/domain/posts";
+import { getAllPosts } from "../lib/io/posts";
 
 interface Interest {
   key: string;
@@ -41,7 +41,7 @@ const t = useTranslations(locale);
 
 const latest = (await getAllPosts()).slice(0, 4);
 const acgHref = "/acg/";
-const allPostsHref = blogIndexPath(locale).replace(/\/$/, "");
+const allPostsHref = blogIndexPath().replace(/\/$/, "");
 
 const interests: Interest[] = [
   {
@@ -150,7 +150,7 @@ const contacts = [
 				<Grid min="18rem" gap={5}>
 					{latest.map((post) => (
 						<PostCard
-							href={blogPostPath(locale, post.id)}
+							href={blogPostPath(post.id)}
 							title={post.data.title}
 							description={post.data.description}
 							dateLabel={formatPostDate(post.data.date, locale)}

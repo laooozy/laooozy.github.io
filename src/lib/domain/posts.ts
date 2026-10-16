@@ -1,37 +1,46 @@
 /**
- * Blog data + URL helpers.
+ * Blog post domain — PURE.
+ *
+ * No content-collection imports, no i18n runtime, no DOM: every function here
+ * is a plain data transform over an already-loaded post set. The I/O edge that
+ * actually reads the content collection lives in `../io/posts.ts`.
  *
  * Content is LANGUAGE-AGNOSTIC: every locale shows the SAME set of posts,
  * rendered with that locale's UI chrome. Post frontmatter may still carry a
  * `lang`, but it never filters or hides a post — the getter ignores it.
  *
- * A locale's blog index is still paginated independently — Astro's
- * `paginate()` does not fan out across locales, so each
- * `pages/<locale?>/blog/[...page].astro` route paginates the same full set.
- * Filtering is build-time only: the page never ships the full post set to the
- * browser for client-side paging.
+ * The site is single-URL: path builders are LOCALE-FREE. `formatPostDate` /
+ * `formatPeriodLabel` still take a `lang`, because they format *text*, not URLs.
  */
-import { getCollection, type CollectionEntry } from "astro:content";
-import { defaultLang, languages, type Locale } from "../i18n/ui";
+import type { Locale } from "../../i18n/types";
 
-export type Post = CollectionEntry<"blog">;
+/** Frontmatter shape of a blog post (mirrors the collection schema). */
+export interface PostData {
+  title: string;
+  description: string;
+  date: Date;
+  tags: string[];
+  lang?: Locale;
+  draft: boolean;
+  translationKey: string;
+}
+
+/**
+ * A blog post, structurally identical to the `blog` collection entry so it can
+ * flow from the I/O edge into `render()` without importing the content module.
+ */
+export interface Post {
+  id: string;
+  body?: string;
+  collection: "blog";
+  data: PostData;
+}
 
 /** Posts shown per page (build-time pagination). */
 export const PAGE_SIZE = 4;
 
-/**
- * Every non-draft post, regardless of its declared `lang`, newest first
- * (`date` desc, title tie-break). This is the single source for every locale's
- * blog index, tag, archive and post routes.
- */
-export async function getAllPosts(): Promise<Post[]> {
-  const posts = await getCollection("blog", ({ data }) => !data.draft);
-  return [...posts].sort(
-    (a, b) =>
-      b.data.date.getTime() - a.data.date.getTime() ||
-      a.data.title.localeCompare(b.data.title),
-  );
-}
+/** The three locale codes, in i18n declaration order. */
+export const LOCALES: readonly Locale[] = ["zh-hant", "zh-hans", "en"];
 
 /** Unique tags across a post set, sorted for stable output. */
 export function collectTags(posts: Post[]): string[] {
@@ -66,25 +75,24 @@ export function matchesPeriod(post: Post, period: string): boolean {
   return month === period;
 }
 
-/** URL prefix for a locale: `zh-hant` is served unprefixed at the root. */
-export function localePrefix(lang: Locale): string {
-  return lang === defaultLang ? "" : `/${lang}`;
+/** The unfiltered blog index. */
+export function blogIndexPath(): string {
+  return "/blog/";
 }
 
-export function blogIndexPath(lang: Locale): string {
-  return `${localePrefix(lang)}/blog/`;
+/** A single tag's listing. */
+export function blogTagPath(tag: string): string {
+  return `/blog/tags/${encodeURIComponent(tag)}/`;
 }
 
-export function blogTagPath(lang: Locale, tag: string): string {
-  return `${localePrefix(lang)}/blog/tags/${encodeURIComponent(tag)}/`;
+/** A `YYYY` or `YYYY-MM` date archive. */
+export function blogArchivePath(period: string): string {
+  return `/blog/archive/${period}/`;
 }
 
-export function blogArchivePath(lang: Locale, period: string): string {
-  return `${localePrefix(lang)}/blog/archive/${period}/`;
-}
-
-export function blogPostPath(lang: Locale, slug: string): string {
-  return `${localePrefix(lang)}/blog/${slug}/`;
+/** A single post. */
+export function blogPostPath(slug: string): string {
+  return `/blog/${slug}/`;
 }
 
 /**
@@ -137,6 +145,3 @@ export function formatPeriodLabel(period: string, lang: Locale): string {
   if (lang === "en") return `${EN_MONTHS[Number(month) - 1]} ${year}`;
   return `${year}年${Number(month)}月`;
 }
-
-/** The three locale codes, in i18n declaration order. */
-export const LOCALES = Object.keys(languages) as Locale[];
