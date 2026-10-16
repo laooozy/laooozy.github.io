@@ -20,6 +20,7 @@ import BlogPagination from "./BlogPagination";
 import SearchModal from "./SearchModal.astro";
 import Heading from "./ui/Heading";
 import Text from "./ui/Text";
+import type { FilterLink, Pagination } from "./types";
 import { useTranslations, type Locale } from "../i18n/ui";
 import {
   blogPostPath,
@@ -28,23 +29,13 @@ import {
   type Post,
 } from "../lib/blog";
 
-interface FilterLink {
-  label: string;
-  href: string;
-  active?: boolean;
-}
-
 interface Props {
   posts: Post[];
   locale: Locale;
   heading: string;
   tags?: FilterLink[];
   periods?: FilterLink[];
-  pagination?: {
-    currentPage: number;
-    lastPage: number;
-    url: { prev?: string; next?: string };
-  };
+  pagination?: Pagination;
 }
 
 const {

@@ -17,14 +17,9 @@
  */
 import ChipRow from "./ChipRow";
 import Separator from "./ui/Separator";
+import type { FilterLink } from "./types";
 import { useTranslations, type Locale } from "../i18n/ui";
 import { blogIndexPath } from "../lib/blog";
-
-interface FilterLink {
-  label: string;
-  href: string;
-  active?: boolean;
-}
 
 interface BlogFiltersProps {
   locale: Locale;

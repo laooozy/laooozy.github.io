@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import Chip from "./ui/Chip";
+import type { ChipItem } from "./types";
 
 /**
  * ChipRow — a wrapping row of Chips.
@@ -13,12 +14,6 @@ import Chip from "./ui/Chip";
  *  - gap?: 1..12          default: 2
  *  - className?: string
  */
-interface ChipItem {
-  label: string;
-  href?: string;
-  active?: boolean;
-}
-
 interface ChipRowProps {
   items: ChipItem[];
   variant?: "tag" | "filter";

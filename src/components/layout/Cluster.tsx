@@ -7,7 +7,7 @@ import type { CSSProperties, JSX, ReactNode } from "react";
  *  - gap?: 1..12        default: 3
  *  - align?: "start" | "center" | "end" | "baseline"   default: "center"
  *  - justify?: "start" | "center" | "end" | "between"   default: "start"
- *  - as?: string        element tag, default: "div"
+ *  - as?: keyof JSX.IntrinsicElements   element tag, default: "div"
  *  - className?: string
  *
  * Ideal for tag rows, meta rails and link rows. Use `justify="between"` for a

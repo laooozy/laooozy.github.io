@@ -8,12 +8,7 @@
  * doubles as the visible status in the middle of the bar.
  */
 import { useTranslations, type Locale } from "../i18n/ui";
-
-interface Pagination {
-  currentPage: number;
-  lastPage: number;
-  url: { prev?: string; next?: string };
-}
+import type { Pagination } from "./types";
 
 interface BlogPaginationProps {
   locale: Locale;

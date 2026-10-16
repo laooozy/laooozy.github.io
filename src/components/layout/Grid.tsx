@@ -9,7 +9,7 @@ import type { CSSProperties, JSX, ReactNode } from "react";
  *                       the grid reflows with NO breakpoints.
  *  - gap?: 1..12        default: 5
  *  - columns?: number   force an exact column count (skips auto-fit)
- *  - as?: string        element tag, default: "div"
+ *  - as?: keyof JSX.IntrinsicElements   element tag, default: "div"
  *  - className?: string
  *
  * Use for card collections. For one wrapping line, reach for Cluster instead.

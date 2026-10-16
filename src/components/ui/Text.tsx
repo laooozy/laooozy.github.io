@@ -4,7 +4,7 @@ import type { JSX, ReactNode } from "react";
  * Text — body/label copy with token size and tone.
  *
  * Props
- *  - as?: string         element tag, default: "p"
+ *  - as?: keyof JSX.IntrinsicElements   element tag, default: "p"
  *  - size?: "xs" | "sm" | "base" | "lg" | "xl"   default: "base"
  *  - tone?: "default" | "muted"                  default: "default"
  *  - measure?: boolean   cap the line length at --measure (~68ch)

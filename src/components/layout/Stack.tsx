@@ -5,7 +5,7 @@ import type { CSSProperties, JSX, ReactNode } from "react";
  *
  * Props
  *  - gap?: 1..12        default: 4  → gap: var(--space-N)
- *  - as?: string        element tag, default: "div" (e.g. "ul", "section")
+ *  - as?: keyof JSX.IntrinsicElements   element tag, default: "div" (e.g. "ul", "section")
  *  - align?: "stretch" | "start" | "center"   default: "stretch"
  *  - className?: string
  *
