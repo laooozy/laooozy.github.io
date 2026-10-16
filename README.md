@@ -50,12 +50,17 @@ Resolution order, applied before the first paint by an inline script in `<head>`
 3. The default, `zh-hant`.
 
 The script sets `<html lang>` and `data-locale` before paint. Locale-dependent
-strings are rendered together by the `<T>` component: one element per locale,
-each tagged `data-l="<locale>"`. CSS rules keyed on `html[data-locale]` show
-exactly one of them and hide the rest with `display: none`, so hidden locales
-leave the accessibility tree. First paint is already correct, which is what
-removes the flash, and switching language never navigates or reloads. With
-JavaScript disabled, or before the script runs, `zh-hant` is shown.
+text is rendered by hydrated React components that read the locale from the
+Zustand store through `useT(clientDeps)` (`src/hooks/useT.ts`). When the language
+changes, those components re-render in place: no navigation, no reload. The
+`<T>` component survives only for the language switcher's static screen-reader
+a11y label.
+
+Because the build is static and single-URL, the server-rendered HTML is always
+the default locale (`zh-hant`), and each island renders that default until it
+mounts and adopts the store locale. A visitor on a non-default locale therefore
+sees a brief `zh-hant` flash before hydration, an accepted trade-off. With
+JavaScript disabled, that default is what stays on screen.
 
 Selecting a language writes the new locale to the store, to `<html lang>`, to
 `data-locale` and to `localStorage`, all in place. The URL does not change.
@@ -88,13 +93,21 @@ adapters push values in through its actions.
 
 ## Components
 
-React is used where a UI library or interactivity is needed: the language
-switcher, the search modal, the blog filters and pagination, post cards, and the
-layout and UI primitives. Components that need neither stay `.astro`. For
-example, `PostArticle.astro` renders Markdown with Astro's `render()` and ships
-no client JS. The only island that hydrates is the language switcher
-(`client:idle`); the search module is loaded lazily on first open. There is no
-eager `client:load` island.
+React is used where a UI library or interactivity is needed, and any surface
+that renders locale-dependent text is a hydrated React island so it can
+re-render with the client locale. Hydration is split by surface:
+
+- `client:load` for the chrome (`SiteHeader`, `SiteFooter`), the pages
+  (`HomePage`, `AcgPage`, `NotFound`), the article chrome (`PostArticle`) and
+  the blog listing (`BlogList`).
+- `client:idle` for the language switcher (`LanguageSwitcher`) and the search
+  modal (`SearchModal`).
+
+`PostArticle` (`src/components/PostArticle.tsx`) renders the article chrome
+only: the back link, title, date / reading time and tags. The Markdown body
+stays Astro-rendered by `render()` with `<Content/>` in
+`src/pages/blog/[slug].astro`. Components that need neither a UI library nor
+interactivity stay `.astro`.
 
 ## Search
 
