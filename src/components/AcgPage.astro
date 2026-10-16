@@ -13,7 +13,6 @@
  * composed of Instagram embeds resolved at build time (see InstagramEmbed.astro
  * and src/data/instagram.ts), backed by link-out fallbacks.
  */
-import { getRelativeLocaleUrl } from "astro:i18n";
 import Card from "./Card";
 import InstagramEmbed from "./InstagramEmbed.astro";
 import Section from "./layout/Section.astro";
@@ -28,7 +27,7 @@ import { contactIdentity, resolveLocale, useTranslations } from "../i18n/ui";
 const locale = resolveLocale(Astro.currentLocale);
 const t = useTranslations(locale);
 
-const homeHref = getRelativeLocaleUrl(locale);
+const homeHref = "/";
 const igHandle = `@${contactIdentity.acgIg}`;
 const igHref = `https://instagram.com/${contactIdentity.acgIg}`;
 

@@ -1,12 +1,11 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Card from "../components/Card";
-import { getRelativeLocaleUrl } from "astro:i18n";
 import { resolveLocale, useTranslations } from "../i18n/ui";
 
 const locale = resolveLocale(Astro.currentLocale);
 const t = useTranslations(locale);
-const homeHref = getRelativeLocaleUrl(locale);
+const homeHref = "/";
 ---
 
 <BaseLayout

@@ -1,7 +1,6 @@
 ---
 import "../styles/tokens.css";
 import "../styles/global.css";
-import { getRelativeLocaleUrl } from "astro:i18n";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import Container from "../components/layout/Container";
 import LinkButton from "@/components/LinkButton";
@@ -21,7 +20,7 @@ const locale = resolveLocale(Astro.currentLocale);
 const t = useTranslations(locale);
 
 const site = Astro.site ?? new URL("https://laooozy.github.io");
-const homeHref = getRelativeLocaleUrl(locale);
+const homeHref = "/";
 const pageTitle = title ? `${title} · ${t.home.title}` : t.home.title;
 const metaDescription = description ?? t.home.tagline;
 const canonical = new URL(Astro.url.pathname, site).href;
@@ -30,7 +29,7 @@ const year = new Date().getFullYear();
 
 // Nav always targets the HOME page's sections, so from `/blog/` (or any
 // sub-page) an anchor like `#about` still resolves to the home hero sections.
-// `homeHref` is locale-aware (`/` for zh-hant, `/en/`, `/zh-hans/`).
+// Single-URL model: home is always `/` (locale is client-side).
 const navItems = [
   { href: `${homeHref}#about`, label: t.nav.about },
   { href: `${homeHref}#acg`, label: t.nav.acg },

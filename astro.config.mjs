@@ -14,17 +14,6 @@ export default defineConfig({
   // SITE_INDEXABLE in src/lib/seo.ts.
   integrations: [...(SITE_INDEXABLE ? [sitemap()] : []), react()],
 
-  i18n: {
-    // Lowercase codes: Astro normalises locale codes to lowercase in URLs.
-    // BCP-47 casing for the <html lang> attribute lives in src/i18n/ui.ts.
-    locales: ['zh-hant', 'zh-hans', 'en'],
-    defaultLocale: 'zh-hant',
-    routing: {
-      // Default locale (zh-hant) is served at the root, without a prefix.
-      prefixDefaultLocale: false,
-    },
-  },
-
   vite: {
     plugins: [tailwindcss()],
   },

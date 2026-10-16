@@ -7,7 +7,6 @@
  * Every user-facing string comes from src/i18n/ui.ts; the page renders inside
  * BaseLayout (see the thin locale routes in src/pages).
  */
-import { getRelativeLocaleUrl } from "astro:i18n";
 import Hero from "./Hero";
 import Card from "./Card";
 import PostCard from "./PostCard";
@@ -41,7 +40,7 @@ const locale = resolveLocale(Astro.currentLocale);
 const t = useTranslations(locale);
 
 const latest = (await getAllPosts()).slice(0, 4);
-const acgHref = getRelativeLocaleUrl(locale, "acg");
+const acgHref = "/acg/";
 const allPostsHref = blogIndexPath(locale).replace(/\/$/, "");
 
 const interests: Interest[] = [
