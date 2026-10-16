@@ -122,47 +122,17 @@ const navItems = [
 
 		<script>
 			/*
-			 * Scroll-hiding top bar. Single-direction only:
+			 * Scroll-hiding top bar, wired through the client store + DOM adapter
+			 * instead of raw globals. Single-direction only:
 			 *  - shown by default and whenever at/near the top;
 			 *  - hidden ONLY while the page scrolls DOWN;
 			 *  - ANY upward movement reveals it immediately (no threshold).
+			 * The decision logic lives in `attachScrollHeader` (vanilla, no island).
 			 */
-			const header = document.querySelector<HTMLElement>('[data-site-header]');
-			if (header) {
-				const TOP_OFFSET = 8; // px — "near the top" always shows the bar
-				const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-				let lastY = window.scrollY;
-				let ticking = false;
+			import { clientDeps } from "@/client/bootstrap";
+			import { attachScrollHeader } from "@/client/scroll-header";
 
-				const update = () => {
-					const y = window.scrollY;
-					const delta = y - lastY;
-
-					if (reduceMotion.matches || y <= TOP_OFFSET) {
-						// Reduced motion, or at/near the top: always visible.
-						header.removeAttribute('data-hidden');
-					} else if (delta > 0) {
-						// Scrolling down → hide.
-						header.setAttribute('data-hidden', '');
-					} else if (delta < 0) {
-						// Scrolling up → reveal immediately, no threshold.
-						header.removeAttribute('data-hidden');
-					}
-
-					lastY = y;
-					ticking = false;
-				};
-
-				const onScroll = () => {
-					if (ticking) return;
-					ticking = true;
-					requestAnimationFrame(update);
-				};
-
-				window.addEventListener('scroll', onScroll, { passive: true });
-				reduceMotion.addEventListener('change', update);
-				update();
-			}
+			attachScrollHeader(clientDeps);
 		</script>
 	</body>
 </html>
