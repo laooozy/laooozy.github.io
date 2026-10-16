@@ -1,11 +1,14 @@
 /**
  * DOM adapter — a port over the browser side effects the shell needs: scroll
- * observation, reduced-motion preference and header visibility.
+ * observation, reduced-motion preference, header visibility and locale
+ * application.
  *
  * Every method is total (never throws): a missing/failing DOM degrades to a
  * no-op. Callers inject the port, so the store/hook layer owns the behaviour
  * while this module owns the imperative glue.
  */
+
+import { langAttr, type Locale } from "@/i18n";
 
 /** Browser side effects for scroll + header concerns. */
 export interface DomPort {
@@ -20,6 +23,13 @@ export interface DomPort {
   prefersReducedMotion(): boolean;
   /** Toggle the `data-hidden` attribute on `[data-site-header]`. */
   setHeaderHidden(hidden: boolean): void;
+  /**
+   * Apply a locale to the document root: sets `<html lang>` to its BCP-47 tag
+   * (`langAttr`) and mirrors the code into `document.documentElement.dataset.locale`
+   * (the `data-locale` attribute) so the CSS locale toggle can reveal the
+   * matching `[data-l]` spans. Never throws.
+   */
+  applyLocale(locale: Locale): void;
 }
 
 function createDomAdapter(): DomPort {
@@ -72,6 +82,18 @@ function createDomAdapter(): DomPort {
         // Best-effort: header visibility must never break the caller.
       }
     },
+
+    applyLocale(locale) {
+      try {
+        if (typeof document === "undefined") return;
+        const root = document.documentElement;
+        if (!root) return;
+        root.lang = langAttr[locale];
+        root.dataset.locale = locale;
+      } catch {
+        // Best-effort: a failing/passive DOM must never break the caller.
+      }
+    },
   };
 }
 
@@ -83,4 +105,5 @@ export const noopDomAdapter: DomPort = {
   onScroll: () => () => {},
   prefersReducedMotion: () => false,
   setHeaderHidden: () => {},
+  applyLocale: () => {},
 };
