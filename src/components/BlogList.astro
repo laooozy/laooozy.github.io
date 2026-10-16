@@ -18,8 +18,8 @@ import PostRow from "./PostRow.astro";
 import BlogFilters from "./BlogFilters.astro";
 import BlogPagination from "./BlogPagination.astro";
 import SearchModal from "./SearchModal.astro";
-import Heading from "./ui/Heading.astro";
-import Text from "./ui/Text.astro";
+import Heading from "./ui/Heading";
+import Text from "./ui/Text";
 import { useTranslations, type Locale } from "../i18n/ui";
 import {
   blogPostPath,
@@ -60,7 +60,7 @@ const t = useTranslations(locale);
 
 <section class="blog-index" aria-labelledby="blog-heading">
   <header class="blog-index__header">
-    <Heading level={1} id="blog-heading" class="blog-index__title">
+    <Heading level={1} id="blog-heading" className="blog-index__title">
       {heading}
     </Heading>
     <SearchModal locale={locale} />

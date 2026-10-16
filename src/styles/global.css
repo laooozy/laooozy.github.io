@@ -127,10 +127,11 @@ button {
   scroll-margin-top: var(--space-10);
 }
 
-/* Centered content column. */
+/* Centered content column. The Container primitive may override the cap with
+   an inline `--container-max`; with no override it falls back to `--container`. */
 .container {
   width: 100%;
-  max-width: var(--container);
+  max-width: var(--container-max, var(--container));
   margin-inline: auto;
   padding-inline: clamp(var(--space-4), 4vw, var(--space-6));
 }
@@ -347,4 +348,219 @@ html:not([data-locale]) [data-l="zh-hant"] {
   html {
     @apply font-sans;
   }
+}
+
+/* Ported primitives (task 11) — layout/UI primitive styles moved out of the
+   per-component scoped <style> blocks when the primitives became React. */
+.stack {
+  display: flex;
+  flex-direction: column;
+  align-items: var(--stack-align);
+  gap: var(--stack-gap);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: var(--grid-template);
+  gap: var(--grid-gap);
+}
+
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: var(--cluster-align);
+  justify-content: var(--cluster-justify);
+  gap: var(--cluster-gap);
+}
+
+.card {
+  position: relative;
+  display: block;
+  padding: var(--space-6);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface);
+  background-image: var(--card-bg);
+  box-shadow: var(--card-inset);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    border-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+.card--interactive:hover,
+.card--interactive:focus-visible {
+  border-color: var(--glass-border-strong);
+  box-shadow: var(--card-inset), var(--shadow-lift);
+  transform: translateY(-3px);
+}
+
+.card--interactive:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card--interactive:hover,
+  .card--interactive:focus-visible {
+    transition: none;
+    transform: none;
+  }
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--chip-row-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.text {
+  margin: 0;
+}
+
+.text--xs {
+  font-size: var(--text-xs);
+}
+
+.text--sm {
+  font-size: var(--text-sm);
+}
+
+.text--base {
+  font-size: var(--text-base);
+}
+
+.text--lg {
+  font-size: var(--text-lg);
+}
+
+.text--xl {
+  font-size: var(--text-xl);
+}
+
+.text--muted {
+  color: var(--text-muted);
+}
+
+.text--measure {
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+
+.heading {
+  margin: 0;
+}
+
+.heading--muted {
+  color: var(--text-muted);
+}
+
+.heading--md {
+  font-size: var(--text-xl);
+}
+
+.heading--lg {
+  font-size: var(--text-2xl);
+}
+
+.heading--xl {
+  font-size: var(--text-3xl);
+}
+
+.heading--hero {
+  font-size: var(--text-hero);
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.2rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  line-height: 1.6;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.chip--tag {
+  background: var(--surface);
+  border-color: color-mix(in oklab, var(--text) 10%, transparent);
+  color: var(--text-muted);
+}
+
+/*
+ * A tag that is ALSO a link (a post page's "tagged" nav) still reads as a
+ * quiet label: it never fills with the accent the way a filter control does.
+ * Hover only lifts it toward --text, so tags and controls stay distinct.
+ */
+a.chip--tag {
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+a.chip--tag:hover,
+a.chip--tag:focus-visible {
+  background: var(--surface-hover);
+  border-color: color-mix(in oklab, var(--text) 22%, transparent);
+  color: var(--text);
+}
+
+.chip--filter {
+  padding-block: 0.35rem;
+  background: var(--surface);
+  border-color: var(--glass-border);
+  color: var(--text);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.chip--filter:hover {
+  background: var(--accent-surface);
+  border-color: var(--glass-border-strong);
+  color: var(--text);
+}
+
+.chip--filter.is-active,
+.chip--filter.is-active:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--text-on-accent);
+  font-weight: 600;
+}
+
+.separator {
+  border: 0;
+  background: color-mix(in oklab, var(--glass-border) 45%, transparent);
+}
+
+.separator--horizontal {
+  width: 100%;
+  height: 1px;
+  margin: 0;
+}
+
+.separator--vertical {
+  width: 1px;
+  align-self: stretch;
+  min-height: 1em;
 }

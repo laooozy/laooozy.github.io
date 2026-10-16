@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Card from "../components/Card.astro";
+import Card from "../components/Card";
 import { getRelativeLocaleUrl } from "astro:i18n";
 import { resolveLocale, useTranslations } from "../i18n/ui";
 
@@ -16,7 +16,7 @@ const homeHref = getRelativeLocaleUrl(locale);
 >
 	<section class="not-found" aria-labelledby="notfound-heading">
 		<p class="not-found__code" aria-hidden="true">404</p>
-		<Card class="not-found__card">
+		<Card className="not-found__card">
 			<h1 id="notfound-heading" class="not-found__title">
 				{t.notFound.heading}
 			</h1>

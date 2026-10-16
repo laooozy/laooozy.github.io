@@ -14,14 +14,14 @@
  * and src/data/instagram.ts), backed by link-out fallbacks.
  */
 import { getRelativeLocaleUrl } from "astro:i18n";
-import Card from "./Card.astro";
+import Card from "./Card";
 import InstagramEmbed from "./InstagramEmbed.astro";
 import Section from "./layout/Section.astro";
-import Grid from "./layout/Grid.astro";
-import Stack from "./layout/Stack.astro";
-import Cluster from "./layout/Cluster.astro";
-import Heading from "./ui/Heading.astro";
-import Text from "./ui/Text.astro";
+import Grid from "./layout/Grid";
+import Stack from "./layout/Stack";
+import Cluster from "./layout/Cluster";
+import Heading from "./ui/Heading";
+import Text from "./ui/Text";
 import { instagramPosts } from "../data/instagram";
 import { contactIdentity, resolveLocale, useTranslations } from "../i18n/ui";
 
@@ -52,11 +52,11 @@ const hasPhotos = instagramPosts.length > 0;
 			<span>{t.acg.heading}</span>
 		</p>
 
-		<Heading level={1} size="hero" class="acg-masthead__title">
+		<Heading level={1} size="hero" className="acg-masthead__title">
 			{t.acgPage.introHeading}
 		</Heading>
 
-		<Stack gap={4} class="acg-masthead__intro">
+		<Stack gap={4} className="acg-masthead__intro">
 			<Text size="xl" tone="muted" measure>{t.acgPage.introLead}</Text>
 			<Text measure>{t.acgPage.introBody}</Text>
 		</Stack>
@@ -66,7 +66,7 @@ const hasPhotos = instagramPosts.length > 0;
 		<Stack gap={6}>
 			{
 				hasPhotos ? (
-					<Grid min="19rem" gap={6} class="acg-wall">
+					<Grid min="19rem" gap={6} className="acg-wall">
 						{instagramPosts.map((url) => (
 							<InstagramEmbed url={url} />
 						))}
@@ -90,7 +90,7 @@ const hasPhotos = instagramPosts.length > 0;
 	</Section>
 
 	<Section id="approach" heading={t.acgPage.approachHeading}>
-		<Grid min="16rem" gap={6} class="acg-approach">
+		<Grid min="16rem" gap={6} className="acg-approach">
 			{
 				approach.map((item) => (
 					<div class="acg-approach__item">
@@ -103,7 +103,7 @@ const hasPhotos = instagramPosts.length > 0;
 	</Section>
 
 	<Section id="commission" heading={t.acgPage.commissionHeading}>
-		<Card class="acg-commission">
+		<Card className="acg-commission">
 			<Stack gap={5}>
 				<Text tone="muted">{t.acgPage.commissionLead}</Text>
 				<ul class="acg-commission__list">

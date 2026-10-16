@@ -24,10 +24,10 @@
  *  - headingLevel?: 2 | 3    default: 2 (page title is the h1)
  *  - class?: string
  */
-import Card from "./Card.astro";
-import ChipRow from "./ChipRow.astro";
-import Heading from "./ui/Heading.astro";
-import Text from "./ui/Text.astro";
+import Card from "./Card";
+import ChipRow from "./ChipRow";
+import Heading from "./ui/Heading";
+import Text from "./ui/Text";
 
 interface Props {
   href: string;
@@ -53,21 +53,21 @@ const {
 } = Astro.props;
 ---
 
-<Card href={href} class:list={["post-row", className]}>
+<Card href={href} className={["post-row", className].filter(Boolean).join(" ")}>
   <div class="post-row__inner">
     <div class="post-row__rail">
       <time class="post-row__date" datetime={datetime}>{dateLabel}</time>
       {readingTime && <span class="post-row__reading">{readingTime}</span>}
     </div>
     <div class="post-row__main">
-      <Heading level={headingLevel} size="lg" class="post-row__title">
+      <Heading level={headingLevel} size="lg" className="post-row__title">
         {title}
       </Heading>
-      <Text tone="muted" class="post-row__desc">{description}</Text>
+      <Text tone="muted" className="post-row__desc">{description}</Text>
       {
         tags.length > 0 && (
           <ChipRow
-            class="post-row__tags"
+            className="post-row__tags"
             gap={2}
             items={tags.map((label) => ({ label }))}
           />

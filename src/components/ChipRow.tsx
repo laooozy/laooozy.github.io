@@ -1,4 +1,6 @@
----
+import type { CSSProperties } from "react";
+import Chip from "./ui/Chip";
+
 /**
  * ChipRow — a wrapping row of Chips.
  *
@@ -9,35 +11,39 @@
  *      filter → interactive controls (idle = outlined, active = filled)
  *  - ariaLabel?: string   names the row; needed for filter control groups
  *  - gap?: 1..12          default: 2
- *  - class?: string
+ *  - className?: string
  */
-import Chip from "./ui/Chip.astro";
-
 interface ChipItem {
   label: string;
   href?: string;
   active?: boolean;
 }
 
-interface Props {
+interface ChipRowProps {
   items: ChipItem[];
   variant?: "tag" | "filter";
   ariaLabel?: string;
   gap?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
-  class?: string;
+  className?: string;
 }
-const { items, variant = "tag", ariaLabel, gap = 2, class: className } = Astro.props;
----
 
-{
-  items.length > 0 && (
+export default function ChipRow({
+  items,
+  variant = "tag",
+  ariaLabel,
+  gap = 2,
+  className,
+}: ChipRowProps) {
+  if (items.length === 0) return null;
+
+  return (
     <ul
-      class:list={["chip-row", className]}
-      style={`--chip-row-gap: var(--space-${gap})`}
+      className={["chip-row", className].filter(Boolean).join(" ")}
+      style={{ "--chip-row-gap": `var(--space-${gap})` } as CSSProperties}
       aria-label={ariaLabel}
     >
       {items.map((item) => (
-        <li>
+        <li key={item.label}>
           <Chip
             label={item.label}
             href={item.href}
@@ -47,17 +53,5 @@ const { items, variant = "tag", ariaLabel, gap = 2, class: className } = Astro.p
         </li>
       ))}
     </ul>
-  )
+  );
 }
-
-<style>
-  .chip-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--chip-row-gap);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-</style>

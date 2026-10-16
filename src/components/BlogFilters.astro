@@ -16,8 +16,8 @@
  * All copy is i18n-driven; the "All posts" href is derived from the locale, so
  * the reset always lands on that locale's index.
  */
-import ChipRow from "./ChipRow.astro";
-import Separator from "./ui/Separator.astro";
+import ChipRow from "./ChipRow";
+import Separator from "./ui/Separator";
 import { useTranslations, type Locale } from "../i18n/ui";
 import { blogIndexPath } from "../lib/blog";
 
@@ -66,7 +66,7 @@ const tagItems: FilterLink[] = [
       )
     }
   </div>
-  <Separator class="blog-filters__rule" />
+  <Separator className="blog-filters__rule" />
 </nav>
 
 <style>

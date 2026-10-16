@@ -13,8 +13,8 @@
  * `variant="tag"` styling — never the accent fill of a filter control.
  */
 import { render } from "astro:content";
-import ChipRow from "./ChipRow.astro";
-import Cluster from "./layout/Cluster.astro";
+import ChipRow from "./ChipRow";
+import Cluster from "./layout/Cluster";
 import { useTranslations, type Locale } from "../i18n/ui";
 import {
   blogIndexPath,
@@ -53,7 +53,7 @@ const tags = post.data.tags.map((tag) => ({
   <article class="post__article">
     <header class="post__header">
       <h1 class="post__title">{post.data.title}</h1>
-      <Cluster as="p" gap={3} align="baseline" class="post__meta">
+      <Cluster as="p" gap={3} align="baseline" className="post__meta">
         <time class="post__date" datetime={post.data.date.toISOString()}>
           {formatPostDate(post.data.date, locale)}
         </time>
@@ -63,7 +63,7 @@ const tags = post.data.tags.map((tag) => ({
       {
         tags.length > 0 && (
           <ChipRow
-            class="post__tags"
+            className="post__tags"
             gap={2}
             ariaLabel={t.blog.tagged}
             items={tags}
