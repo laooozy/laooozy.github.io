@@ -163,6 +163,31 @@ button {
   align-items: center;
 }
 
+/*
+ * Locale toggle (zero-flash i18n). Every localized string is rendered for all
+ * three locales, each in its own `[data-l]` element (see components/T.tsx).
+ * Only the active locale — reflected on <html> as `data-locale` — is shown;
+ * the others are removed with `display: none` so they leave the accessibility
+ * tree (not merely hidden visually via opacity/visibility).
+ *
+ * `display: revert` restores each element's natural UA display (inline for
+ * <span>, block for <div>/<h1>, …) rather than forcing a single value.
+ * With no `data-locale` (e.g. JavaScript disabled) `zh-hant` is the default.
+ */
+[data-l] {
+  display: none;
+}
+
+html[data-locale="zh-hant"] [data-l="zh-hant"],
+html[data-locale="zh-hans"] [data-l="zh-hans"],
+html[data-locale="en"] [data-l="en"] {
+  display: revert;
+}
+
+html:not([data-locale]) [data-l="zh-hant"] {
+  display: revert;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
