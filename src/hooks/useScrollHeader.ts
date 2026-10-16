@@ -1,16 +1,10 @@
 /**
- * Scroll-header hook — observes scrolling through the injected DOM port and
- * drives header visibility from the store.
+ * Pure scroll-header decision logic, shared by the client scroll wiring
+ * (`src/client/scroll-header.ts`) and tested directly.
  *
  * Rule: hide when scrolling DOWN and not near the top; reveal on ANY upward
  * movement, when back near the top, and when the user prefers reduced motion.
- * The pure `resolveHeaderHidden` decision is exported for direct testing.
- * The scroll subscription is cleaned up on unmount.
  */
-
-import { useEffect } from "react";
-
-import type { ClientDeps } from "./deps";
 
 /** Within this many pixels of the top the header is always revealed. */
 export const NEAR_TOP_PX = 8;
@@ -35,32 +29,4 @@ export function resolveHeaderHidden(
   if (sample.scrollY > sample.lastScrollY) return true;
   if (sample.scrollY < sample.lastScrollY) return false;
   return sample.hidden;
-}
-
-export function useScrollHeader(deps: ClientDeps): void {
-  useEffect(() => {
-    let lastScrollY = 0;
-
-    const apply = (hidden: boolean): void => {
-      deps.store.getState().setHeaderHidden(hidden);
-      deps.adapters.dom.setHeaderHidden(hidden);
-    };
-
-    const unsubscribe = deps.adapters.dom.onScroll((scrollY) => {
-      if (deps.adapters.dom.prefersReducedMotion()) {
-        lastScrollY = scrollY;
-        apply(false);
-        return;
-      }
-      const hidden = resolveHeaderHidden({
-        scrollY,
-        lastScrollY,
-        hidden: deps.store.getState().headerHidden,
-      });
-      lastScrollY = scrollY;
-      apply(hidden);
-    });
-
-    return unsubscribe;
-  }, [deps]);
 }
