@@ -5,6 +5,7 @@ import { getRelativeLocaleUrl } from "astro:i18n";
 import LanguageSwitcher from "../components/LanguageSwitcher.astro";
 import Container from "../components/layout/Container.astro";
 import LinkButton from "@/components/LinkButton";
+import { LOCALE_BOOT_SCRIPT } from "@/client/locale-boot";
 import { SITE_INDEXABLE } from "../lib/seo";
 import { langAttr, ogLocale, resolveLocale, useTranslations } from "../i18n/ui";
 
@@ -41,6 +42,13 @@ const navItems = [
 <!doctype html>
 <html lang={langAttr[locale]} class="dark">
 	<head>
+		{/*
+		 * Pre-paint locale bootstrap: resolves localStorage → navigator.language
+		 * → default and reflects it on <html> (lang + data-locale) before the
+		 * first paint, so the CSS locale toggle shows the right language with
+		 * zero flash. Self-contained inline JS — see src/client/locale-boot.ts.
+		 */}
+		<script is:inline set:html={LOCALE_BOOT_SCRIPT} />
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />

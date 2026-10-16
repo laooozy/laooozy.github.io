@@ -399,6 +399,40 @@ export function resolveLocale(locale: string | undefined): Locale {
   return locale && locale in ui ? (locale as Locale) : defaultLang;
 }
 
+/**
+ * Resolve the locale to apply before first paint from client-side hints.
+ *
+ * PURE: no DOM, no storage — the caller passes the two raw values so the
+ * documented resolution order is unit-testable and shared with the inline boot
+ * snippet in `src/client/locale-boot.ts` (which cannot import this module).
+ *
+ * Order:
+ *  1. `stored` wins when it is exactly a supported locale code;
+ *  2. otherwise `navigatorLang` is matched case-insensitively by prefix —
+ *     `zh-hans`/`zh-cn`/`zh-sg` → `zh-hans`, `en` → `en`;
+ *  3. anything else (including `zh-tw`/`zh-hk` and a missing hint) → `zh-hant`.
+ */
+export function resolveClientLocale(
+  stored: string | null,
+  navigatorLang: string | null,
+): Locale {
+  if (stored === "zh-hant" || stored === "zh-hans" || stored === "en") {
+    return stored;
+  }
+
+  const lang = navigatorLang?.toLowerCase() ?? "";
+  if (
+    lang.startsWith("zh-hans") ||
+    lang.startsWith("zh-cn") ||
+    lang.startsWith("zh-sg")
+  ) {
+    return "zh-hans";
+  }
+  if (lang.startsWith("en")) return "en";
+
+  return defaultLang;
+}
+
 export function useTranslations(locale: Locale): UI {
   return ui[locale] ?? ui[defaultLang];
 }
