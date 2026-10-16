@@ -17,7 +17,7 @@
 import PostCard from "./PostCard";
 import BlogFilters from "./BlogFilters";
 import BlogPagination from "./BlogPagination";
-import SearchModal from "./SearchModal.astro";
+import SearchModal from "./SearchModal";
 import Heading from "./ui/Heading";
 import Text from "./ui/Text";
 import type { FilterLink, Pagination } from "./types";
@@ -54,7 +54,7 @@ const t = useTranslations(locale);
     <Heading level={1} id="blog-heading" className="blog-index__title">
       {heading}
     </Heading>
-    <SearchModal locale={locale} />
+    <SearchModal client:idle />
   </header>
 
   {

@@ -950,3 +950,333 @@ a.chip--tag:focus-visible {
     transition: none;
   }
 }
+
+/* Ported article chrome (task 35) — the post chrome moved out of
+   `PostArticle.astro`'s scoped <style> when the chrome became a React island
+   (`PostArticle.tsx`). React elements receive no Astro `data-astro-cid-*` scope
+   attribute, so these selectors must be global; every class name and value is
+   unchanged from the scoped original. The Markdown body keeps its own scoped
+   styles in `src/pages/blog/[slug].astro`. */
+.post {
+  max-width: var(--container-narrow);
+  margin-inline: auto;
+}
+
+.post__back {
+  margin-bottom: var(--space-5);
+}
+
+.post__back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.post__back-link:hover {
+  color: var(--text);
+}
+
+.post__back-link span {
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.post__back-link:hover span {
+  transform: translateX(-3px);
+}
+
+.post__header {
+  position: relative;
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid
+    color-mix(in oklab, var(--glass-border) 40%, transparent);
+}
+
+/* A single soft aurora behind the masthead — the brand's featured visual. */
+.post__header::before {
+  content: "";
+  position: absolute;
+  top: -55%;
+  left: -12%;
+  z-index: 0;
+  width: min(34rem, 80vw);
+  aspect-ratio: 1;
+  border-radius: var(--radius-pill);
+  background: radial-gradient(
+    circle,
+    var(--accent-surface) 0%,
+    transparent 62%
+  );
+  pointer-events: none;
+}
+
+.post__header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.post__title {
+  margin: 0 0 var(--space-4);
+  font-size: clamp(var(--text-2xl), 5vw, var(--text-4xl));
+  line-height: var(--leading-tight);
+  text-wrap: balance;
+}
+
+.post__meta {
+  max-width: none;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-muted);
+}
+
+.post__tags {
+  margin-top: var(--space-5);
+}
+
+/* Ported search island (task 35) — the search overlay moved out of
+   `SearchModal.astro`'s scoped <style> when the modal became a React island
+   (`SearchModal.tsx`). React elements receive no Astro `data-astro-cid-*` scope
+   attribute, so these selectors must be global; every class name and value is
+   unchanged from the scoped original. */
+.search {
+  display: inline-flex;
+}
+
+.search__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid color-mix(in oklab, var(--glass-border) 55%, transparent);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.search__trigger:hover,
+.search__trigger:focus-visible {
+  color: var(--text);
+  border-color: var(--glass-border-strong);
+  background: var(--surface-hover);
+}
+
+.search__trigger:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.search__kbd {
+  padding: 0 var(--space-2);
+  border: 1px solid color-mix(in oklab, var(--glass-border) 45%, transparent);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* Full-viewport transparent shell so the panel sits in the top layer. */
+.search-modal {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  margin: 0;
+  padding: var(--space-4);
+  border: none;
+  background: transparent;
+  color: var(--text);
+}
+
+.search-modal[open] {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  align-content: start;
+  padding-top: clamp(var(--space-8), 12vh, var(--space-11));
+}
+
+.search-modal::backdrop {
+  background: color-mix(in oklab, var(--bg-deep) 72%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.search-modal__panel {
+  width: min(100%, 40rem);
+  max-height: min(70vh, 40rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background: color-mix(in oklab, var(--bg-elevated) 92%, transparent);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--glass-glow);
+}
+
+.search-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.search-modal__title {
+  margin: 0;
+  font-size: var(--text-xl);
+}
+
+.search-modal__close {
+  display: inline-flex;
+  padding: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.search-modal__close:hover,
+.search-modal__close:focus-visible {
+  color: var(--text);
+  border-color: var(--glass-border-strong);
+}
+
+.search-modal__close:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.search-modal__field {
+  display: flex;
+}
+
+.search-modal__visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.search-modal__input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in oklab, var(--glass-border) 60%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+}
+
+.search-modal__input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-modal__input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--glass-border-strong);
+}
+
+.search-modal__status {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.search-results {
+  overflow-y: auto;
+}
+
+.search-results__list {
+  display: grid;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.search-results__link {
+  display: block;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in oklab, var(--glass-border) 40%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.search-results__link:hover,
+.search-results__link:focus-visible {
+  border-color: var(--glass-border-strong);
+  background: var(--surface-hover);
+}
+
+.search-results__link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.search-results__title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-base);
+}
+
+.search-results__excerpt {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.search-results__excerpt mark {
+  background: var(--accent-soft);
+  color: var(--text);
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .search-modal[open] .search-modal__panel {
+    animation: search-panel-in var(--dur-base) var(--ease-out);
+  }
+}
+
+@keyframes search-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search__trigger,
+  .search-results__link {
+    transition: none;
+  }
+}

@@ -1,15 +1,19 @@
 ---
 /**
- * zh-hant blog post — served unprefixed at `/blog/[slug]/` (default locale).
+ * Blog post — served unprefixed at `/blog/[slug]/` (default locale).
  * Content is language-agnostic, so every locale renders the same post set.
  * Drafts are excluded by `getAllPosts`.
+ *
+ * The Markdown body is rendered here with Astro's `render()` and wrapped in
+ * `.post__body`; the surrounding chrome (back link, title, date / reading
+ * time, tags) is the hydrated `PostArticle` React island, so it re-renders with
+ * the client locale.
  */
+import { render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import PostArticle from "../../components/PostArticle.astro";
+import PostArticle from "../../components/PostArticle";
+import { estimateReadingTime, type Post } from "../../lib/domain/posts";
 import { getAllPosts } from "../../lib/io/posts";
-import type { Post } from "../../lib/domain/posts";
-
-const locale = "zh-hant" as const;
 
 export async function getStaticPaths() {
   const posts = await getAllPosts();
@@ -17,6 +21,8 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props as { post: Post };
+const { Content } = await render(post);
+const readingMinutes = estimateReadingTime(post.body);
 ---
 
 <BaseLayout
@@ -24,5 +30,104 @@ const { post } = Astro.props as { post: Post };
 	description={post.data.description}
 	ogType="article"
 >
-	<PostArticle post={post} locale={locale} />
+	<div class="post">
+		<PostArticle
+			client:load
+			title={post.data.title}
+			datetime={post.data.date.toISOString()}
+			tags={post.data.tags}
+			readingMinutes={readingMinutes}
+		/>
+		<div class="post__body">
+			<Content />
+		</div>
+	</div>
 </BaseLayout>
+
+<style>
+	/*
+	 * Markdown body only. The chrome styles are global (see `global.css`) because
+	 * the chrome is a React island; these rules stay scoped — `.post__body` is
+	 * rendered here, and `:global()` reaches the Markdown children it holds.
+	 */
+	.post__body {
+		padding-top: var(--space-6);
+		max-width: var(--measure);
+		color: var(--text);
+		font-size: var(--text-lg);
+		line-height: var(--leading-relaxed);
+	}
+
+	.post__body :global(h2) {
+		margin: var(--space-9) 0 var(--space-3);
+		font-size: var(--text-2xl);
+		line-height: var(--leading-tight);
+	}
+
+	.post__body :global(h3) {
+		margin: var(--space-7) 0 var(--space-2);
+		font-size: var(--text-xl);
+	}
+
+	.post__body :global(p) {
+		margin: 0 0 var(--space-4);
+	}
+
+	.post__body :global(ul),
+	.post__body :global(ol) {
+		margin: 0 0 var(--space-4);
+		padding-inline-start: var(--space-6);
+	}
+
+	.post__body :global(li) {
+		margin-bottom: var(--space-2);
+	}
+
+	.post__body :global(a) {
+		color: var(--accent);
+	}
+
+	.post__body :global(strong) {
+		font-weight: 600;
+		color: var(--text);
+	}
+
+	.post__body :global(blockquote) {
+		margin: var(--space-5) 0;
+		padding-inline-start: var(--space-5);
+		border-inline-start: 1px solid var(--glass-border-strong);
+		color: var(--text-muted);
+	}
+
+	.post__body :global(hr) {
+		height: 1px;
+		margin: var(--space-8) 0;
+		border: 0;
+		background: color-mix(in oklab, var(--glass-border) 45%, transparent);
+	}
+
+	.post__body :global(code) {
+		font-family: var(--font-mono);
+		font-size: 0.9em;
+	}
+
+	.post__body :global(pre) {
+		overflow-x: auto;
+		padding: var(--space-4);
+		border: 1px solid var(--glass-border);
+		border-radius: var(--radius-md);
+		background: var(--surface);
+	}
+
+	.post__body :global(img) {
+		border-radius: var(--radius-md);
+	}
+
+	.post__body > :global(:first-child) {
+		margin-top: 0;
+	}
+
+	.post__body > :global(:last-child) {
+		margin-bottom: 0;
+	}
+</style>
