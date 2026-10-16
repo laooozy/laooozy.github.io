@@ -2,8 +2,9 @@
 import "../styles/tokens.css";
 import "../styles/global.css";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import SiteFooter from "../components/SiteFooter";
+import SiteHeader from "../components/SiteHeader";
 import Container from "../components/layout/Container";
-import LinkButton from "@/components/LinkButton";
 import { LOCALE_BOOT_SCRIPT } from "@/client/locale-boot";
 import { SITE_INDEXABLE } from "../lib/seo";
 import { langAttr, ogLocale, resolveLocale, useTranslations } from "../i18n/ui";
@@ -20,22 +21,10 @@ const locale = resolveLocale(Astro.currentLocale);
 const t = useTranslations(locale);
 
 const site = Astro.site ?? new URL("https://laooozy.github.io");
-const homeHref = "/";
 const pageTitle = title ? `${title} · ${t.home.title}` : t.home.title;
 const metaDescription = description ?? t.home.tagline;
 const canonical = new URL(Astro.url.pathname, site).href;
 const ogImage = new URL("/og.png", site).href;
-const year = new Date().getFullYear();
-
-// Nav always targets the HOME page's sections, so from `/blog/` (or any
-// sub-page) an anchor like `#about` still resolves to the home hero sections.
-// Single-URL model: home is always `/` (locale is client-side).
-const navItems = [
-  { href: `${homeHref}#about`, label: t.nav.about },
-  { href: `${homeHref}#acg`, label: t.nav.acg },
-  { href: `${homeHref}#blog`, label: t.nav.blog },
-  { href: `${homeHref}#contact`, label: t.nav.contact },
-];
 ---
 
 <!doctype html>
@@ -85,27 +74,16 @@ const navItems = [
 		/>
 	</head>
 	<body>
-		<a class="skip-link" href="#main">{t.a11y.skipToContent}</a>
-
-		<header class="site-header" data-site-header>
-			<div class="site-header__inner container">
-				<a class="brand" href={homeHref}>{t.home.title}</a>
-				<nav class="site-nav" aria-label={t.a11y.primaryNav}>
-					<ul class="site-nav__list">
-						{
-							navItems.map((item) => (
-								<li>
-									<a class="site-nav__link" href={item.href}>
-										{item.label}
-									</a>
-								</li>
-							))
-						}
-					</ul>
-				</nav>
-				<LanguageSwitcher client:idle />
-			</div>
-		</header>
+		{/*
+		 * Header and footer are hydrated React islands (task 32): their nav /
+		 * footer labels render from the client locale store, so the chrome
+		 * re-renders in place when the language changes — no navigation, no
+		 * reload. The switcher keeps its own `client:idle` island, nested in the
+		 * header's flex row so the layout is unchanged.
+		 */}
+		<SiteHeader client:load>
+			<LanguageSwitcher client:idle />
+		</SiteHeader>
 
 		<main id="main" class="site-main">
 			<Container>
@@ -113,12 +91,7 @@ const navItems = [
 			</Container>
 		</main>
 
-		<footer class="site-footer">
-			<div class="site-footer__inner container">
-				<p class="site-footer__copy">© {year} {t.home.title} · {t.footer.rights}</p>
-				<LinkButton href={`${homeHref}#contact`} label={t.nav.contact} />
-			</div>
-		</footer>
+		<SiteFooter client:load />
 
 		<script>
 			/*
@@ -137,8 +110,14 @@ const navItems = [
 	</body>
 </html>
 
-<style>
+<style is:global>
 	/*
+	 * Global (not scoped): the header, nav and footer markup now lives in the
+	 * hydrated React islands `SiteHeader`/`SiteFooter`, whose elements do not
+	 * receive Astro's `data-astro-cid-*` scope attribute. The selectors are
+	 * class-scoped and unique to the chrome, so making them global preserves the
+	 * exact look without changing any class or value.
+	 *
 	 * Sticky (not fixed) so the header keeps its own place in the flow: the
 	 * document reserves its height and there is zero layout shift when it
 	 * slides away. Hiding is a GPU-composited transform, never a height change.
