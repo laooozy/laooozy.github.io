@@ -14,8 +14,9 @@
  *
  * A post that is private, deleted, or has embeds disabled returns HTTP 400 /
  * code 24 from the oEmbed endpoint; that URL then renders as a plain
- * "View on Instagram" link instead of an embed (see InstagramEmbed.astro), so a
- * bad link degrades gracefully rather than breaking the build.
+ * "View on Instagram" link instead of an embed (see `lib/io/instagram.ts` +
+ * `components/InstagramEmbed.tsx`), so a bad link degrades gracefully rather
+ * than breaking the build.
  *
  * NOTE: the two URLs below are the owner's own Instagram permalinks. Set the
  * array to `[]` to render the wall as link-out cards only.

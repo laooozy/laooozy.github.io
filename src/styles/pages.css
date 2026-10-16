@@ -1,0 +1,522 @@
+/**
+ * Global page styles for the React page islands.
+ *
+ * `HomePage`, `AcgPage`, `InstagramEmbed`, `Section` and `NotFound` are hydrated
+ * React components. React-rendered elements receive no Astro `data-astro-cid-*`
+ * scope attribute, so the styles that used to live in their scoped `<style>`
+ * blocks would no longer reach the markup. They are therefore global here, with
+ * every class name and value unchanged from the scoped originals.
+ *
+ * This sheet is imported by `BaseLayout.astro` right after `global.css`, so it
+ * loads on every route. It is kept as its own file (rather than appended to
+ * `global.css`) so page-island styling stays a self-contained unit.
+ *
+ * Sections: Section primitive → Home page → ACG page → Instagram embed → 404.
+ */
+
+/* ---------------------------------------------------------------- *
+ * Section primitive (task 33 port)
+ * ---------------------------------------------------------------- */
+.section__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.section__title {
+  margin: 0;
+}
+
+.section__lead {
+  max-width: var(--measure);
+  margin: 0 0 var(--space-6);
+  color: var(--text-muted);
+}
+
+.section__head + .section__lead {
+  margin-top: calc(var(--space-1) * -1);
+}
+
+/* ---------------------------------------------------------------- *
+ * Home page
+ * ---------------------------------------------------------------- */
+.home {
+  display: grid;
+  gap: clamp(var(--space-8), 6vw, var(--space-10));
+}
+
+.interest__label {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-lg);
+}
+
+.interest__chips {
+  margin-top: var(--space-4);
+}
+
+.acg-card__cta {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.section__more {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.contact__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+}
+
+.contact__label {
+  min-width: 6rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.contact__link {
+  font-size: var(--text-lg);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+/* ---------------------------------------------------------------- *
+ * ACG page
+ * ---------------------------------------------------------------- */
+.acg {
+  display: grid;
+  gap: clamp(var(--space-9), 9vw, var(--space-12));
+}
+
+/* Back rail — a full-size pill target, not a bare text link. */
+.acg-rail {
+  margin-top: calc(-1 * var(--space-2));
+}
+
+.acg-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.acg-back:hover {
+  background: var(--accent-surface);
+  border-color: var(--glass-border-strong);
+  color: var(--text);
+}
+
+.acg-back__arrow {
+  color: var(--accent);
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.acg-back:hover .acg-back__arrow {
+  transform: translateX(-3px);
+}
+
+/* Masthead */
+.acg-masthead {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-5);
+  padding-bottom: clamp(var(--space-2), 3vw, var(--space-6));
+}
+
+/* A single soft aurora — the brand's "featured visual" (hue = brand). */
+.acg-masthead::before {
+  content: "";
+  position: absolute;
+  top: -30%;
+  left: -14%;
+  z-index: 0;
+  width: min(34rem, 68vw);
+  aspect-ratio: 1;
+  border-radius: var(--radius-pill);
+  background: radial-gradient(
+    circle,
+    var(--accent-surface) 0%,
+    transparent 62%
+  );
+  pointer-events: none;
+}
+
+.acg-masthead > * {
+  position: relative;
+  z-index: 1;
+}
+
+.acg-masthead__status {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.acg-masthead__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  box-shadow: 0 0 12px -2px var(--accent);
+}
+
+.acg-masthead__handle {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--text);
+}
+
+.acg-masthead__sep {
+  color: var(--glass-border-strong);
+}
+
+.acg-masthead__title {
+  margin: 0;
+  max-width: 20ch;
+}
+
+.acg-masthead__intro {
+  max-width: var(--measure);
+}
+
+/* Photo wall */
+.acg-wall {
+  align-items: start;
+}
+
+/* Empty / no-posts state: one honest link-out panel. */
+.acg-empty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface);
+  background-image: var(--card-bg);
+  box-shadow: var(--card-inset);
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    border-color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out);
+}
+
+.acg-empty:hover {
+  border-color: var(--glass-border-strong);
+  background-color: var(--surface-hover);
+}
+
+.acg-empty__label {
+  font-weight: 600;
+}
+
+.acg-empty__handle {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.acg-empty__arrow {
+  margin-inline-start: auto;
+  color: var(--accent);
+}
+
+/* Shared CTA pill */
+.acg-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  background-color: var(--accent);
+  color: var(--text-on-accent);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+.acg-cta:hover,
+.acg-cta:focus-visible {
+  color: var(--text-on-accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+}
+
+.acg-cta__arrow {
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.acg-cta:hover .acg-cta__arrow {
+  transform: translateX(3px);
+}
+
+/* Approach — ruled spec columns (no card chrome). */
+.acg-approach {
+  align-items: start;
+}
+
+.acg-approach__item {
+  padding-top: var(--space-4);
+  border-top: 1px solid
+    color-mix(in oklab, var(--glass-border) 45%, transparent);
+}
+
+.acg-approach__title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-lg);
+}
+
+/* Commission panel */
+.acg-commission {
+  max-width: var(--container-narrow);
+}
+
+.acg-commission__list {
+  display: grid;
+  gap: var(--space-3);
+  list-style: none;
+}
+
+.acg-commission__item {
+  position: relative;
+  padding-inline-start: var(--space-5);
+  color: var(--text);
+}
+
+.acg-commission__item::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0.65em;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+}
+
+/* Motion — one orchestrated masthead entrance, opt-in only. */
+@media (prefers-reduced-motion: no-preference) {
+  .acg-masthead > * {
+    animation: acg-rise var(--dur-slow) var(--ease-out) both;
+  }
+
+  .acg-masthead > *:nth-child(2) {
+    animation-delay: 60ms;
+  }
+
+  .acg-masthead > *:nth-child(3) {
+    animation-delay: 120ms;
+  }
+
+  .acg-masthead__dot {
+    animation: acg-pulse 2.4s var(--ease-out) infinite;
+  }
+}
+
+@keyframes acg-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes acg-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--accent-surface);
+  }
+  50% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acg-cta:hover,
+  .acg-cta:focus-visible {
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------- *
+ * Instagram embed
+ * ---------------------------------------------------------------- */
+/*
+ * Instagram's embed is always a LIGHT card, which would otherwise punch a
+ * white hole in the near-black page. Framing it on a brand surface (glass
+ * border + rounded, clipped corners) reads it as a deliberately mounted photo
+ * on the darkroom wall rather than a broken block.
+ */
+.ig-embed {
+  margin: 0;
+  min-width: 0;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface);
+  box-shadow: var(--card-inset);
+  overflow: hidden;
+}
+
+/*
+ * The oEmbed blockquote arrives with LIGHT inline styles (background:#FFF …).
+ * Inline styles win over a stylesheet unless the rule is `!important`, so the
+ * overrides below keep the embed on-brand before the Instagram library swaps
+ * the blockquote for a themeable iframe. Values stay on brand tokens.
+ */
+.ig-embed blockquote.instagram-media {
+  background: var(--surface) !important;
+  background-image: var(--card-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--card-inset) !important;
+  color: var(--text) !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+}
+
+.ig-embed blockquote.instagram-media a {
+  color: var(--text-muted) !important;
+}
+
+.ig-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 12rem;
+  padding: var(--space-6);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface);
+  background-image: var(--card-bg);
+  box-shadow: var(--card-inset);
+  color: var(--text);
+  text-align: center;
+  text-decoration: none;
+  transition:
+    border-color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out);
+}
+
+.ig-fallback:hover,
+.ig-fallback:focus-visible {
+  border-color: var(--glass-border-strong);
+  background-color: var(--surface-hover);
+  color: var(--text);
+}
+
+.ig-fallback__glyph {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-surface);
+  color: var(--accent);
+  font-size: var(--text-lg);
+}
+
+.ig-fallback__label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------------- *
+ * 404
+ * ---------------------------------------------------------------- */
+.not-found {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-6);
+  padding-block: clamp(var(--space-8), 10vw, var(--space-11));
+  text-align: center;
+}
+
+.not-found__code {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: clamp(var(--text-4xl), 18vw, 8rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: var(--tracking-display);
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.not-found__card {
+  max-width: var(--container-narrow);
+  text-align: center;
+}
+
+.not-found__title {
+  margin: 0 0 var(--space-3);
+}
+
+.not-found__body {
+  margin: 0 0 var(--space-5);
+  color: var(--text-muted);
+}
+
+.not-found__link {
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.not-found__link:hover,
+.not-found__link:focus-visible {
+  color: var(--text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .not-found__code {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: var(--text);
+  }
+}

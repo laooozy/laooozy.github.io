@@ -1,11 +1,36 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import AcgPage from "../components/AcgPage.astro";
+import AcgPage from "../components/AcgPage";
+import { instagramPosts } from "../data/instagram";
+import { getInstagramEmbeds } from "../lib/io/instagram";
 import { resolveLocale, useTranslations } from "../i18n/ui";
 
 const t = useTranslations(resolveLocale(Astro.currentLocale));
+
+/* Resolve the photo wall at BUILD time (network I/O edge) and hand the plain
+ * results to the `AcgPage` island as props. */
+const embeds = await getInstagramEmbeds(instagramPosts);
 ---
 
 <BaseLayout title={t.acgPage.title} description={t.acgPage.description}>
-	<AcgPage />
+	<AcgPage client:load embeds={embeds} />
+	{/*
+	 * Instagram's embed library — loaded ONCE for the whole page (guarded so it
+	 * is only emitted when there is at least one embed), never once per embed.
+	 * It stays in this build-time Astro page (not the React island) because
+	 * `is:inline` is required: Astro otherwise strips/bundles this external
+	 * script and the embeds never upgrade.
+	 *
+	 * GDPR note: this loads Meta's JS, which sets cookies/beacons. The
+	 * consent-correct pattern is a click-to-load gate — render the server-side
+	 * blockquotes (already privacy-safe: they are just <a> links until the
+	 * library runs) behind a "Load Instagram photos" button that injects this
+	 * same script on click. Left as the simple auto-load here; swap in that
+	 * gate when a consent banner ships.
+	 */}
+	{
+		embeds.length > 0 && (
+			<script is:inline async src="https://www.instagram.com/embed.js" />
+		)
+	}
 </BaseLayout>

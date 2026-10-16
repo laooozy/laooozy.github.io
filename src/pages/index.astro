@@ -1,8 +1,30 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import HomePage from "../components/HomePage.astro";
+import HomePage from "../components/HomePage";
+import { blogPostPath } from "../lib/domain/posts";
+import { getAllPosts } from "../lib/io/posts";
+
+/**
+ * The blog data is fetched here (the only place the home route touches the
+ * `astro:content` I/O edge) and reduced to plain, serializable fields before it
+ * crosses into the `HomePage` React island. `date` is the BUILD-LOCAL calendar
+ * day (`YYYY-MM-DD`) so the client formats the same day in any timezone; the
+ * full ISO instant is kept separately for `<time datetime>`.
+ */
+const pad = (value: number) => String(value).padStart(2, "0");
+const toLocalDate = (date: Date) =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+const posts = (await getAllPosts()).slice(0, 4).map((post) => ({
+  href: blogPostPath(post.id),
+  title: post.data.title,
+  description: post.data.description,
+  date: toLocalDate(post.data.date),
+  datetime: post.data.date.toISOString(),
+  tags: post.data.tags,
+}));
 ---
 
 <BaseLayout>
-	<HomePage />
+	<HomePage client:load posts={posts} />
 </BaseLayout>
