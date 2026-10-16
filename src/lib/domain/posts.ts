@@ -96,6 +96,46 @@ export function blogPostPath(slug: string): string {
 }
 
 /**
+ * `YYYY-MM-DD` for a Date's LOCAL calendar day. Build-time dates are
+ * formatted on the client, so the calendar day is frozen here (never the raw
+ * instant) to keep the same day in every timezone — `getFullYear`/`getMonth`/
+ * `getDate` read the local day, and the client rehydrates it with
+ * `new Date(\`${date}T00:00:00\`)` (local midnight).
+ */
+export function toLocalDateString(date: Date): string {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+/**
+ * A blog post reduced to the plain, serializable fields a listing island needs.
+ * `date` is the build-local calendar day (`YYYY-MM-DD`); `datetime` keeps the
+ * full ISO instant for `<time datetime>`; `readingMinutes` is precomputed so no
+ * markdown body ships to the client.
+ */
+export interface BlogListItem {
+  href: string;
+  title: string;
+  description: string;
+  date: string;
+  datetime: string;
+  readingMinutes: number;
+  tags: string[];
+}
+
+export function toBlogListItem(post: Post): BlogListItem {
+  return {
+    href: blogPostPath(post.id),
+    title: post.data.title,
+    description: post.data.description,
+    date: toLocalDateString(post.data.date),
+    datetime: post.data.date.toISOString(),
+    readingMinutes: estimateReadingTime(post.body),
+    tags: post.data.tags,
+  };
+}
+
+/**
  * Estimate reading time (whole minutes, minimum 1) from a markdown body.
  *
  * CJK scripts are counted per glyph (~400 glyphs/min) and Latin script per

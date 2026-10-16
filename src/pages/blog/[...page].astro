@@ -1,18 +1,23 @@
 ---
 /**
- * zh-hant blog index — served unprefixed at `/blog/` (default locale).
+ * Blog index — served unprefixed at `/blog/` (default locale).
  * 4 posts per page, newest first; drafts excluded; build-time pagination.
+ *
+ * Posts are reduced to plain, serializable fields before they cross into the
+ * `BlogList` React island; the heading is a locale-independent descriptor, so
+ * the island re-derives every label from the store locale on the client.
  */
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import BlogList from "../../components/BlogList.astro";
+import BlogList from "../../components/BlogList";
+import SearchModal from "../../components/SearchModal";
 import { useTranslations } from "../../i18n/ui";
 import {
   blogArchivePath,
   blogTagPath,
   collectPeriods,
   collectTags,
-  formatPeriodLabel,
   PAGE_SIZE,
+  toBlogListItem,
 } from "../../lib/domain/posts";
 import { getAllPosts } from "../../lib/io/posts";
 
@@ -28,24 +33,34 @@ const { page } = Astro.props;
 
 const allPosts = await getAllPosts();
 const tags = collectTags(allPosts).map((tag) => ({
-  label: tag,
+  tag,
   href: blogTagPath(tag),
 }));
 const periods = collectPeriods(allPosts)
   .filter((period) => period.length === 4)
   .map((period) => ({
-    label: formatPeriodLabel(period, locale),
+    period,
     href: blogArchivePath(period),
   }));
+
+const posts = page.data.map(toBlogListItem);
+const heading = { kind: "index" } as const;
+const pagination = {
+  currentPage: page.currentPage,
+  lastPage: page.lastPage,
+  url: { prev: page.url.prev, next: page.url.next },
+};
 ---
 
 <BaseLayout title={t.blog.heading}>
 	<BlogList
-		posts={page.data}
-		locale={locale}
-		heading={t.blog.heading}
+		client:load
+		posts={posts}
+		heading={heading}
 		tags={tags}
 		periods={periods}
-		pagination={page}
-	/>
+		pagination={pagination}
+	>
+		<SearchModal client:idle />
+	</BlogList>
 </BaseLayout>

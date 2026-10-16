@@ -868,6 +868,36 @@ a.chip--tag:focus-visible {
   margin-top: var(--space-6);
 }
 
+/* Ported listing shell (task 34) — the `.blog-index*` / `.blog-list` styles
+   moved out of `BlogList.astro`'s scoped <style> when the listing became a
+   React island (`BlogList.tsx`). React elements receive no Astro `data-astro-cid-*`
+   scope attribute, so these selectors must be global; every class name and value
+   is unchanged from the scoped original. */
+.blog-index {
+  display: grid;
+  gap: clamp(var(--space-6), 3vw, var(--space-8));
+}
+
+.blog-index__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-6);
+}
+
+.blog-index__title {
+  margin: 0;
+}
+
+.blog-list {
+  display: grid;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 .post-card {
   height: 100%;
 }

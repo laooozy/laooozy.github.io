@@ -1,5 +1,5 @@
 /**
- * BlogFilters — the build-time filter tray for every blog listing.
+ * BlogFilters — the filter tray for every blog listing.
  *
  * Two control groups:
  *  - By tag: an "All posts" reset chip (filled while the index is unfiltered)
@@ -12,54 +12,68 @@
  * mistaken for a post's tag label. A `Separator` closes the tray and divides it
  * from the post list below.
  *
- * All copy is i18n-driven; the "All posts" href is derived from the locale, so
- * the reset always lands on that locale's index.
+ * Labels come from `useT`, bound to the store's active locale, so they re-render
+ * in place when the language switcher changes (mounted gate, mirroring
+ * `HomePage`). `href`s are locale-free, so the reset always lands on the single
+ * `/blog/` index.
  */
-import ChipRow from "./ChipRow";
-import Separator from "./ui/Separator";
-import type { FilterLink } from "./types";
-import { useTranslations, type Locale } from "../i18n/ui";
-import { blogIndexPath } from "../lib/domain/posts";
+import { useEffect, useState } from "react";
+
+import { clientDeps } from "@/client/bootstrap";
+import ChipRow from "@/components/ChipRow";
+import Separator from "@/components/ui/Separator";
+import type { FilterLink } from "@/components/types";
+import { useT, type Translate } from "@/hooks/useT";
+import { defaultLang, t as translate } from "@/i18n";
+import { blogIndexPath } from "@/lib/domain/posts";
+
+const defaultTranslate: Translate = (key, vars) =>
+  translate(defaultLang, key, vars);
 
 interface BlogFiltersProps {
-  locale: Locale;
   tags?: FilterLink[];
   periods?: FilterLink[];
   className?: string;
 }
 
 export default function BlogFilters({
-  locale,
   tags = [],
   periods = [],
   className,
 }: BlogFiltersProps) {
-  const t = useTranslations(locale);
+  const t = useT(clientDeps);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const tr = mounted ? t : defaultTranslate;
 
   // The unfiltered index: no tag and no period is active.
   const noneActive =
     !tags.some((item) => item.active) && !periods.some((item) => item.active);
 
   const tagItems: FilterLink[] = [
-    { label: t.blog.allPosts, href: blogIndexPath(), active: noneActive },
+    { label: tr("blog.allPosts"), href: blogIndexPath(), active: noneActive },
     ...tags,
   ];
 
   return (
     <nav
       className={["blog-filters", className].filter(Boolean).join(" ")}
-      aria-label={t.blog.filters}
+      aria-label={tr("blog.filters")}
     >
       <div className="blog-filters__groups">
         {tagItems.length > 1 && (
           <div className="blog-filters__group">
-            <span className="blog-filters__label">{t.blog.byTag}</span>
+            <span className="blog-filters__label">{tr("blog.byTag")}</span>
             <ChipRow variant="filter" items={tagItems} gap={2} />
           </div>
         )}
         {periods.length > 0 && (
           <div className="blog-filters__group">
-            <span className="blog-filters__label">{t.blog.byDate}</span>
+            <span className="blog-filters__label">{tr("blog.byDate")}</span>
             <ChipRow variant="filter" items={periods} gap={2} />
           </div>
         )}

@@ -5,9 +5,9 @@
  *  - href: string
  *  - title: string
  *  - description: string
- *  - dateLabel?: string      human date, already localised
- *  - datetime?: string       machine ISO date for <time datetime>
- *  - readingTime?: string    localised, e.g. "約 3 分鐘閱讀"
+ *  - date?: string           build-local calendar day `YYYY-MM-DD`
+ *  - datetime?: string       full ISO-8601 instant for <time datetime>
+ *  - readingMinutes?: number estimated whole minutes (locale-independent)
  *  - tags?: string[]
  *  - headingLevel?: 2 | 3    default: 2 (page title is the h1); row variant only
  *  - variant?: "card" | "row"   default: "card"
@@ -15,24 +15,37 @@
  *      row  → a wide horizontal entry with a fixed mono meta rail
  *  - className?: string
  *
- * Both variants wrap the shared `Card`, so they inherit the glass surface and
- * the interactive hover lift. Tags are NON-interactive labels (`ChipRow`
- * default `variant="tag"`), distinct from the filter controls above a list.
+ * The date and reading-time labels are formatted CLIENT-side from the store
+ * locale (mounted gate, mirroring `HomePage`), so they re-render in place when
+ * the language switcher changes. Both variants wrap the shared `Card`, so they
+ * inherit the glass surface and the interactive hover lift. Tags are
+ * NON-interactive labels (`ChipRow` default `variant="tag"`), distinct from the
+ * filter controls above a list.
  */
-import Card from "./Card";
-import Cluster from "./layout/Cluster";
-import Stack from "./layout/Stack";
-import Heading from "./ui/Heading";
-import Text from "./ui/Text";
-import ChipRow from "./ChipRow";
+import { useEffect, useState } from "react";
+
+import { clientDeps } from "@/client/bootstrap";
+import ChipRow from "@/components/ChipRow";
+import Card from "@/components/Card";
+import Cluster from "@/components/layout/Cluster";
+import Stack from "@/components/layout/Stack";
+import Heading from "@/components/ui/Heading";
+import Text from "@/components/ui/Text";
+import { useLocale } from "@/hooks/useLocale";
+import { useT, type Translate } from "@/hooks/useT";
+import { defaultLang, t as translate } from "@/i18n";
+import { formatPostDate } from "@/lib/domain/posts";
+
+const defaultTranslate: Translate = (key, vars) =>
+  translate(defaultLang, key, vars);
 
 interface PostCardProps {
   href: string;
   title: string;
   description: string;
-  dateLabel?: string;
+  date?: string;
   datetime?: string;
-  readingTime?: string;
+  readingMinutes?: number;
   tags?: string[];
   headingLevel?: 2 | 3;
   variant?: "card" | "row";
@@ -43,14 +56,35 @@ export default function PostCard({
   href,
   title,
   description,
-  dateLabel,
+  date,
   datetime,
-  readingTime,
+  readingMinutes,
   tags = [],
   headingLevel = 2,
   variant = "card",
   className,
 }: PostCardProps) {
+  const t = useT(clientDeps);
+  const { locale } = useLocale(clientDeps);
+  // `false` on the server AND on the first client render, so SSR and the
+  // hydration render agree; flipped after mount to adopt the store locale.
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const tr = mounted ? t : defaultTranslate;
+  const activeLocale = mounted ? locale : defaultLang;
+
+  const dateLabel = date
+    ? formatPostDate(new Date(`${date}T00:00:00`), activeLocale)
+    : undefined;
+  const readingTime =
+    readingMinutes === undefined
+      ? undefined
+      : tr("blog.readTime", { minutes: readingMinutes });
+
   if (variant === "row") {
     return (
       <Card

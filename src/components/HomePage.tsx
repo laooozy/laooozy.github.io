@@ -30,7 +30,6 @@ import Section from "@/components/layout/Section";
 import Stack from "@/components/layout/Stack";
 import PostCard from "@/components/PostCard";
 import Text from "@/components/ui/Text";
-import { useLocale } from "@/hooks/useLocale";
 import { useT, type Translate } from "@/hooks/useT";
 import {
   contactIdentity,
@@ -39,7 +38,7 @@ import {
   t as translate,
   vtubers,
 } from "@/i18n";
-import { blogIndexPath, formatPostDate } from "@/lib/domain/posts";
+import { blogIndexPath } from "@/lib/domain/posts";
 
 /** The build-time locale every SSR render is emitted in. Stable, no deps. */
 const defaultTranslate: Translate = (key, vars) =>
@@ -69,7 +68,6 @@ interface HomePageProps {
 
 export default function HomePage({ posts }: HomePageProps) {
   const t = useT(clientDeps);
-  const { locale } = useLocale(clientDeps);
   // `false` on the server AND on the first client render, so SSR and the
   // hydration render agree; flipped after mount to adopt the store locale.
   const [mounted, setMounted] = useState(false);
@@ -79,7 +77,6 @@ export default function HomePage({ posts }: HomePageProps) {
   }, []);
 
   const tr = mounted ? t : defaultTranslate;
-  const activeLocale = mounted ? locale : defaultLang;
 
   const interests = [
     {
@@ -193,10 +190,7 @@ export default function HomePage({ posts }: HomePageProps) {
                 href={post.href}
                 title={post.title}
                 description={post.description}
-                dateLabel={formatPostDate(
-                  new Date(`${post.date}T00:00:00`),
-                  activeLocale,
-                )}
+                date={post.date}
                 datetime={post.datetime}
                 tags={post.tags}
               />

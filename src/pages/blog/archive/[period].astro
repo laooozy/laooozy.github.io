@@ -1,10 +1,15 @@
 ---
 /**
- * zh-hant date archive — `/blog/archive/[period]/` where period is `YYYY` or
- * `YYYY-MM`. Build-time date filtering, linked from the index filter chips.
+ * Date archive — `/blog/archive/[period]/` where period is `YYYY` or `YYYY-MM`.
+ * Build-time date filtering, linked from the index filter chips.
+ *
+ * Posts are reduced to plain, serializable fields before they cross into the
+ * `BlogList` React island; the heading is a locale-independent descriptor, so
+ * the island re-derives every label from the store locale on the client.
  */
 import BaseLayout from "../../../layouts/BaseLayout.astro";
-import BlogList from "../../../components/BlogList.astro";
+import BlogList from "../../../components/BlogList";
+import SearchModal from "../../../components/SearchModal";
 import {
   blogArchivePath,
   blogTagPath,
@@ -12,6 +17,7 @@ import {
   collectTags,
   formatPeriodLabel,
   matchesPeriod,
+  toBlogListItem,
 } from "../../../lib/domain/posts";
 import { getAllPosts } from "../../../lib/io/posts";
 
@@ -27,24 +33,23 @@ export async function getStaticPaths() {
 
 const { period } = Astro.props;
 const allPosts = await getAllPosts();
-const posts = allPosts.filter((post) => matchesPeriod(post, period));
+const posts = allPosts
+  .filter((post) => matchesPeriod(post, period))
+  .map(toBlogListItem);
 const tags = collectTags(allPosts).map((tag) => ({
-  label: tag,
+  tag,
   href: blogTagPath(tag),
 }));
 const periods = collectPeriods(allPosts).map((key) => ({
-  label: formatPeriodLabel(key, locale),
+  period: key,
   href: blogArchivePath(key),
   active: key === period,
 }));
+const heading = { kind: "archive", period } as const;
 ---
 
 <BaseLayout title={formatPeriodLabel(period, locale)}>
-	<BlogList
-		posts={posts}
-		locale={locale}
-		heading={formatPeriodLabel(period, locale)}
-		tags={tags}
-		periods={periods}
-	/>
+	<BlogList client:load posts={posts} heading={heading} tags={tags} periods={periods}>
+		<SearchModal client:idle />
+	</BlogList>
 </BaseLayout>
