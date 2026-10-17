@@ -148,17 +148,36 @@ it in the foreground instead, use `bun run dev`.
 
 ## Adding a post
 
-Create a Markdown file in `src/content/blog/`, e.g.
-`src/content/blog/my-new-post.md`. Every post's frontmatter must satisfy the Zod
-schema in `src/content.config.ts`:
+Create a Markdown file in `src/content/blog/`. The filename MUST follow the
+locked convention `yyyy-mm-dd_<slug>.md`, for example
+`src/content/blog/2026-02-14_midnight-notes.md`.
 
-| Field            | Type                                 | Notes                                                        |
-| :--------------- | :----------------------------------- | :----------------------------------------------------------- |
-| `title`          | `string`                             | Post title.                                                  |
-| `description`    | `string`                             | Short summary used in lists and meta tags.                   |
-| `date`           | date (`z.coerce.date()`)             | e.g. `2026-02-14`. Drives ordering and archive grouping.     |
-| `tags`           | `string[]`                           | Defaults to `[]`.                                            |
-| `draft`          | `boolean`                            | Defaults to `false`. Drafts are excluded from every listing. |
+Filename rules:
+
+- The leading `yyyy-mm-dd` is the post date. It MUST be a real calendar date, so
+  `2026-02-29` is rejected while `2024-02-29` is accepted.
+- The date in the filename is the **source of truth**: the frontmatter `date`
+  must equal it.
+- The `<slug>` after the underscore must be lowercase `a-z`/`0-9` segments joined
+  by single hyphens (`^[a-z0-9]+(-[a-z0-9]+)*$`): no uppercase, underscores,
+  spaces, slashes, or leading, trailing or doubled hyphens.
+- The public URL is derived automatically from the filename (`post.id`), so the
+  slug is the URL segment: `2026-02-14_midnight-notes.md` is served at
+  `/blog/2026-02-14_midnight-notes/`. There is no `slug` frontmatter field.
+
+A Vitest guard (`src/lib/io/blog-filenames.test.ts`) enforces this over every
+file in `src/content/blog/` in CI.
+
+Every post's frontmatter must satisfy the Zod schema in
+`src/content.config.ts`:
+
+| Field         | Type                     | Notes                                                                                  |
+| :------------ | :----------------------- | :------------------------------------------------------------------------------------- |
+| `title`       | `string`                 | Post title.                                                                            |
+| `description` | `string`                 | Short summary used in lists and meta tags.                                             |
+| `date`        | date (`z.coerce.date()`) | e.g. `2026-02-14`. Must match the filename date; drives ordering and archive grouping. |
+| `tags`        | `string[]`               | Defaults to `[]`.                                                                      |
+| `draft`       | `boolean`                | Defaults to `false`. Drafts are excluded from every listing.                           |
 
 Example:
 
