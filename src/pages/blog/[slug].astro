@@ -30,7 +30,7 @@ const readingMinutes = estimateReadingTime(post.body);
 	description={post.data.description}
 	ogType="article"
 >
-	<div class="post">
+	<div class="post" data-pagefind-body>
 		<PostArticle
 			client:load
 			title={post.data.title}
