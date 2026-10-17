@@ -50,6 +50,6 @@ const heading = { kind: "tag", tag } as const;
 
 <BaseLayout title={`${t.blog.byTag} · ${tag}`}>
 	<BlogList client:load posts={posts} heading={heading} tags={tags} periods={periods}>
-		<SearchModal client:idle />
+		{allPosts.length > 0 && <SearchModal client:idle />}
 	</BlogList>
 </BaseLayout>

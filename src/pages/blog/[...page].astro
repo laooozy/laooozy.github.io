@@ -61,6 +61,6 @@ const pagination = {
 		periods={periods}
 		pagination={pagination}
 	>
-		<SearchModal client:idle />
+		{allPosts.length > 0 && <SearchModal client:idle />}
 	</BlogList>
 </BaseLayout>

@@ -50,6 +50,6 @@ const heading = { kind: "archive", period } as const;
 
 <BaseLayout title={formatPeriodLabel(period, locale)}>
 	<BlogList client:load posts={posts} heading={heading} tags={tags} periods={periods}>
-		<SearchModal client:idle />
+		{allPosts.length > 0 && <SearchModal client:idle />}
 	</BlogList>
 </BaseLayout>
