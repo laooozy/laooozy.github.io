@@ -33,7 +33,6 @@ function makePost(overrides: Partial<PostData> = {}, id = "post"): Post {
       date: new Date(2026, 0, 1),
       tags: [],
       draft: false,
-      translationKey: "key",
       ...overrides,
     },
   };

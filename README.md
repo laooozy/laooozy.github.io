@@ -158,9 +158,7 @@ schema in `src/content.config.ts`:
 | `description`    | `string`                             | Short summary used in lists and meta tags.                   |
 | `date`           | date (`z.coerce.date()`)             | e.g. `2026-02-14`. Drives ordering and archive grouping.     |
 | `tags`           | `string[]`                           | Defaults to `[]`.                                            |
-| `lang`           | `"zh-hant"` \| `"zh-hans"` \| `"en"` | Optional and unused for filtering. See the notes below.      |
 | `draft`          | `boolean`                            | Defaults to `false`. Drafts are excluded from every listing. |
-| `translationKey` | `string`                             | Stable key shared by the same post across locales.           |
 
 Example:
 
@@ -172,7 +170,6 @@ date: 2026-02-14
 tags:
   - 隨筆
 draft: false
-translationKey: midnight-notes
 ---
 
 深夜適合誠實，也適合後悔。
@@ -180,12 +177,7 @@ translationKey: midnight-notes
 
 Notes:
 
-- **Posts are language-agnostic.** Every locale shows the same post set. The
-  `lang` field is optional, kept only for provenance, and is never used to
-  filter, hide or route a post. A new post does not need to declare it.
-- **`translationKey` groups versions of one post.** Give the same
-  `translationKey` to the zh-hant, zh-hans and en files of one post so they stay
-  associated.
+- **Posts are language-agnostic.** Every locale shows the same post set.
 - **Set `draft: true`** to keep a work-in-progress out of the build without
   deleting it.
 - Posts are listed newest-first (by `date`, title break on ties), paginated
@@ -212,7 +204,6 @@ The site ships in three locales, all served from the same URLs:
   `en`), while locale codes stay lowercase.
 - **Locale is client state.** Each page emits one canonical URL and no `hreflang`
   alternates, because there is only one URL per page.
-- **The blog `lang` field** is retained in frontmatter but never filters posts.
 
 ## Testing and type checking
 

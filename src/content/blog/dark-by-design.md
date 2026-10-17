@@ -5,9 +5,7 @@ date: 2026-02-02
 tags:
   - 設計
   - 隨筆
-lang: zh-hant
 draft: false
-translationKey: dark-by-design
 ---
 
 把背景壓暗，不是為了看起來帥，而是為了讓內容自己發光。

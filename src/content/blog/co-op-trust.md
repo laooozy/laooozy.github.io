@@ -5,9 +5,7 @@ date: 2026-01-20
 tags:
   - 遊戲
   - 心得
-lang: zh-hant
 draft: false
-translationKey: co-op-trust
 ---
 
 有些遊戲一個人玩是折磨，一群人玩卻變成默契的練習場。

@@ -4,9 +4,7 @@ description: 一些在半夜寫下、隔天醒來常常覺得過於誠實的句�
 date: 2026-02-14
 tags:
   - 隨筆
-lang: zh-hant
 draft: false
-translationKey: midnight-notes
 ---
 
 深夜適合誠實，也適合後悔。

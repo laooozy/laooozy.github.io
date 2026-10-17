@@ -5,9 +5,7 @@ date: 2026-02-22
 tags:
   - Vtuber
   - 隨筆
-lang: zh-hant
 draft: false
-translationKey: virtual-streamers
 ---
 
 看台這件事，說到底是一種陪伴。

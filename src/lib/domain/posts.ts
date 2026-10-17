@@ -20,9 +20,7 @@ export interface PostData {
   description: string;
   date: Date;
   tags: string[];
-  lang?: Locale;
   draft: boolean;
-  translationKey: string;
 }
 
 /**

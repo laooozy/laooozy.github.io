@@ -4,9 +4,7 @@ description: 談談我最近背著相機到處走，慢慢學會觀察光線的�
 date: 2026-01-12
 tags:
   - 攝影
-lang: zh-hant
 draft: false
-translationKey: light-and-camera
 ---
 
 光是有方向的。以前拍照只顧著構圖，後來才發現，決定一張照片氣質的往往是光從哪裡來。
