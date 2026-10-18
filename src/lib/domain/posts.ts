@@ -6,8 +6,7 @@
  * actually reads the content collection lives in `../io/posts.ts`.
  *
  * Content is LANGUAGE-AGNOSTIC: every locale shows the SAME set of posts,
- * rendered with that locale's UI chrome. Post frontmatter may still carry a
- * `lang`, but it never filters or hides a post — the getter ignores it.
+ * rendered with that locale's UI chrome.
  *
  * The site is single-URL: path builders are LOCALE-FREE. `formatPostDate` /
  * `formatPeriodLabel` still take a `lang`, because they format *text*, not URLs.
