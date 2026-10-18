@@ -19,18 +19,21 @@ import {
   formatPeriodLabel,
   formatPostDate,
   matchesPeriod,
+  postDate,
 } from "./posts";
 import type { Post, PostData } from "./posts";
 
 /** Minimal fake post; override only the `data` fields a test cares about. */
-function makePost(overrides: Partial<PostData> = {}, id = "post"): Post {
+function makePost(
+  overrides: Partial<PostData> = {},
+  id = "2026-01-01_post",
+): Post {
   return {
     id,
     collection: "blog",
     data: {
       title: "Title",
       description: "Description",
-      date: new Date(2026, 0, 1),
       tags: [],
       draft: false,
       ...overrides,
@@ -68,13 +71,13 @@ describe("collectTags", () => {
 
 describe("collectPeriods", () => {
   it("emits newest-first months, then newest-first years", () => {
-    const dates = [
-      new Date(2026, 1, 14), // 2026-02
-      new Date(2026, 0, 5), // 2026-01
-      new Date(2025, 11, 1), // 2025-12
-      new Date(2026, 0, 20), // 2026-01 (duplicate month)
+    const ids = [
+      "2026-02-14_post", // 2026-02
+      "2026-01-05_post", // 2026-01
+      "2025-12-01_post", // 2025-12
+      "2026-01-20_post", // 2026-01 (duplicate month)
     ];
-    const posts = dates.map((date, i) => makePost({ date }, `p${i}`));
+    const posts = ids.map((id) => makePost({}, id));
 
     expect(collectPeriods(posts)).toEqual([
       "2026-02",
@@ -87,8 +90,8 @@ describe("collectPeriods", () => {
 
   it("dedupes identical month and year keys", () => {
     const posts = [
-      makePost({ date: new Date(2026, 5, 1) }, "a"),
-      makePost({ date: new Date(2026, 5, 30) }, "b"),
+      makePost({}, "2026-06-01_post"),
+      makePost({}, "2026-06-30_post"),
     ];
     expect(collectPeriods(posts)).toEqual(["2026-06", "2026"]);
   });
@@ -99,7 +102,7 @@ describe("collectPeriods", () => {
 });
 
 describe("matchesPeriod", () => {
-  const post = makePost({ date: new Date(2026, 1, 14) }); // February 2026
+  const post = makePost({}, "2026-02-14_post"); // February 2026
 
   it("matches a YYYY period by year", () => {
     expect(matchesPeriod(post, "2026")).toBe(true);
@@ -115,9 +118,23 @@ describe("matchesPeriod", () => {
   });
 
   it("zero-pads single-digit months", () => {
-    const january = makePost({ date: new Date(2026, 0, 9) });
+    const january = makePost({}, "2026-01-09_post");
     expect(matchesPeriod(january, "2026-01")).toBe(true);
     expect(matchesPeriod(january, "2026-1")).toBe(false);
+  });
+});
+
+describe("postDate", () => {
+  it("derives the date from the filename id", () => {
+    expect(postDate(makePost({}, "2026-02-14_post"))).toEqual(
+      new Date(2026, 1, 14),
+    );
+  });
+
+  it("throws on a malformed id", () => {
+    expect(() => postDate(makePost({}, "not-a-post"))).toThrow(
+      /Invalid post filename id/,
+    );
   });
 });
 

@@ -1,7 +1,6 @@
 ---
 title: 深夜裡的觀察筆記
 description: 一些在半夜寫下、隔天醒來常常覺得過於誠實的句子。
-date: 2026-02-14
 tags:
   - 隨筆
 draft: true

@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import HomePage from "../components/HomePage";
-import { blogPostPath } from "../lib/domain/posts";
+import { blogPostPath, postDate } from "../lib/domain/posts";
 import { getAllPosts } from "../lib/io/posts";
 
 /**
@@ -15,14 +15,17 @@ const pad = (value: number) => String(value).padStart(2, "0");
 const toLocalDate = (date: Date) =>
   `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 
-const posts = (await getAllPosts()).slice(0, 4).map((post) => ({
-  href: blogPostPath(post.id),
-  title: post.data.title,
-  description: post.data.description,
-  date: toLocalDate(post.data.date),
-  datetime: post.data.date.toISOString(),
-  tags: post.data.tags,
-}));
+const posts = (await getAllPosts()).slice(0, 4).map((post) => {
+  const date = postDate(post);
+  return {
+    href: blogPostPath(post.id),
+    title: post.data.title,
+    description: post.data.description,
+    date: toLocalDate(date),
+    datetime: date.toISOString(),
+    tags: post.data.tags,
+  };
+});
 ---
 
 <BaseLayout>

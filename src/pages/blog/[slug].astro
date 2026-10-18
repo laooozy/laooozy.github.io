@@ -12,7 +12,7 @@
 import { render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PostArticle from "../../components/PostArticle";
-import { estimateReadingTime, type Post } from "../../lib/domain/posts";
+import { estimateReadingTime, postDate, type Post } from "../../lib/domain/posts";
 import { getAllPosts } from "../../lib/io/posts";
 
 export async function getStaticPaths() {
@@ -34,7 +34,7 @@ const readingMinutes = estimateReadingTime(post.body);
 		<PostArticle
 			client:load
 			title={post.data.title}
-			datetime={post.data.date.toISOString()}
+			datetime={postDate(post).toISOString()}
 			tags={post.data.tags}
 			readingMinutes={readingMinutes}
 		/>

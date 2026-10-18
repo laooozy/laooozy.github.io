@@ -13,12 +13,12 @@
  * `formatPeriodLabel` still take a `lang`, because they format *text*, not URLs.
  */
 import type { Locale } from "../../i18n/types";
+import { parsePostId } from "./filename";
 
 /** Frontmatter shape of a blog post (mirrors the collection schema). */
 export interface PostData {
   title: string;
   description: string;
-  date: Date;
   tags: string[];
   draft: boolean;
 }
@@ -37,6 +37,20 @@ export interface Post {
 /** Posts shown per page (build-time pagination). */
 export const PAGE_SIZE = 4;
 
+/**
+ * The post date, derived from the filename id (`yyyy-mm-dd_slug`).
+ *
+ * A malformed id is a build-time error and throws.
+ */
+export function postDate(post: Post): Date {
+  const parsed = parsePostId(post.id);
+  if (!parsed.ok) {
+    throw new Error(`Invalid post filename id "${post.id}": ${parsed.reason}`);
+  }
+  const [y, m, d] = parsed.date.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
 /** The three locale codes, in i18n declaration order. */
 export const LOCALES: readonly Locale[] = ["zh-hant", "zh-hans", "en"];
 
@@ -54,7 +68,7 @@ export function collectPeriods(posts: Post[]): string[] {
   const years = new Set<string>();
   const months = new Set<string>();
   for (const post of posts) {
-    const date = post.data.date;
+    const date = postDate(post);
     const year = String(date.getFullYear());
     const month = `${year}-${String(date.getMonth() + 1).padStart(2, "0")}`;
     years.add(year);
@@ -66,7 +80,7 @@ export function collectPeriods(posts: Post[]): string[] {
 
 /** Does a post belong to a `YYYY` or `YYYY-MM` archive period? */
 export function matchesPeriod(post: Post, period: string): boolean {
-  const date = post.data.date;
+  const date = postDate(post);
   const year = String(date.getFullYear());
   if (period.length === 4) return year === period;
   const month = `${year}-${String(date.getMonth() + 1).padStart(2, "0")}`;
@@ -122,12 +136,13 @@ export interface BlogListItem {
 }
 
 export function toBlogListItem(post: Post): BlogListItem {
+  const date = postDate(post);
   return {
     href: blogPostPath(post.id),
     title: post.data.title,
     description: post.data.description,
-    date: toLocalDateString(post.data.date),
-    datetime: post.data.date.toISOString(),
+    date: toLocalDateString(date),
+    datetime: date.toISOString(),
     readingMinutes: estimateReadingTime(post.body),
     tags: post.data.tags,
   };

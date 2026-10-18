@@ -1,7 +1,6 @@
 ---
 title: 用相機記錄光的方向
 description: 談談我最近背著相機到處走，慢慢學會觀察光線的心得。
-date: 2026-01-12
 tags:
   - 攝影
 draft: true

@@ -2,9 +2,9 @@
  * Blog post filename convention - PURE.
  *
  * A post file MUST be named `yyyy-mm-dd_<slug>.md` and live in
- * `src/content/blog/`. The date in the filename is the source of truth: the
- * post's frontmatter `date` must equal it. The URL is derived from the filename
- * without the extension (`post.id`), so the slug half IS the public path.
+ * `src/content/blog/`. The date in the filename is the source of truth (there
+ * is no frontmatter `date` field). The URL is derived from the filename without
+ * the extension (`post.id`), so the slug half IS the public path.
  *
  * There is deliberately no regex for the date logic. The date is read by
  * slicing fixed character positions and then validated against the real
@@ -72,34 +72,31 @@ function pad2(value: number): string {
 }
 
 /**
- * Parse and validate a post filename.
+ * Parse and validate a post id: the filename WITHOUT its `.md` extension.
  *
- * On success returns the canonical `YYYY-MM-DD` date and the slug; on any
+ * This is the shape `post.id` carries in the content collection, so callers
+ * that already have the id (every domain transform) validate it directly. On
+ * success returns the canonical `YYYY-MM-DD` date and the slug; on any
  * violation returns `{ ok: false, reason }` with a human-readable explanation.
  */
-export function parsePostFilename(name: string): FilenameCheck {
-  if (!name.endsWith(EXTENSION)) {
-    return { ok: false, reason: `missing "${EXTENSION}" extension` };
-  }
-
-  const base = name.slice(0, -EXTENSION.length);
-  if (base.length < MIN_BASE_LENGTH) {
+export function parsePostId(id: string): FilenameCheck {
+  if (id.length < MIN_BASE_LENGTH) {
     return {
       ok: false,
-      reason: `base name "${base}" is shorter than ${MIN_BASE_LENGTH} characters`,
+      reason: `base name "${id}" is shorter than ${MIN_BASE_LENGTH} characters`,
     };
   }
 
-  if (base[4] !== "-" || base[7] !== "-" || base[10] !== "_") {
+  if (id[4] !== "-" || id[7] !== "-" || id[10] !== "_") {
     return {
       ok: false,
-      reason: `expected "yyyy-mm-dd_slug"; the "-", "-" and "_" separators are not at positions 5, 8 and 11 in "${base}"`,
+      reason: `expected "yyyy-mm-dd_slug"; the "-", "-" and "_" separators are not at positions 5, 8 and 11 in "${id}"`,
     };
   }
 
-  const yearText = base.slice(0, 4);
-  const monthText = base.slice(5, 7);
-  const dayText = base.slice(8, 10);
+  const yearText = id.slice(0, 4);
+  const monthText = id.slice(5, 7);
+  const dayText = id.slice(8, 10);
 
   if (!isAllAsciiDigits(yearText)) {
     return { ok: false, reason: `year "${yearText}" is not four ASCII digits` };
@@ -142,7 +139,7 @@ export function parsePostFilename(name: string): FilenameCheck {
     };
   }
 
-  const slug = base.slice(11);
+  const slug = id.slice(11);
   if (!isSlug(slug)) {
     return {
       ok: false,
@@ -155,4 +152,17 @@ export function parsePostFilename(name: string): FilenameCheck {
     date: `${pad2(year)}-${pad2(month)}-${pad2(day)}`,
     slug,
   };
+}
+
+/**
+ * Parse and validate a post filename.
+ *
+ * Requires the `.md` extension, strips it, then delegates to `parsePostId` so
+ * the id form and the filename form share exactly one set of rules.
+ */
+export function parsePostFilename(name: string): FilenameCheck {
+  if (!name.endsWith(EXTENSION)) {
+    return { ok: false, reason: `missing "${EXTENSION}" extension` };
+  }
+  return parsePostId(name.slice(0, -EXTENSION.length));
 }

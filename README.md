@@ -154,10 +154,10 @@ locked convention `yyyy-mm-dd_<slug>.md`, for example
 
 Filename rules:
 
-- The leading `yyyy-mm-dd` is the post date. It MUST be a real calendar date, so
-  `2026-02-29` is rejected while `2024-02-29` is accepted.
-- The date in the filename is the **source of truth**: the frontmatter `date`
-  must equal it.
+- The leading `yyyy-mm-dd` is the post date and the **source of truth**. It MUST
+  be a real calendar date, so `2026-02-29` is rejected while `2024-02-29` is
+  accepted. There is no frontmatter `date` field: the date is derived from the
+  filename.
 - The `<slug>` after the underscore must be lowercase `a-z`/`0-9` segments joined
   by single hyphens (`^[a-z0-9]+(-[a-z0-9]+)*$`): no uppercase, underscores,
   spaces, slashes, or leading, trailing or doubled hyphens.
@@ -171,13 +171,12 @@ file in `src/content/blog/` in CI.
 Every post's frontmatter must satisfy the Zod schema in
 `src/content.config.ts`:
 
-| Field         | Type                     | Notes                                                                                  |
-| :------------ | :----------------------- | :------------------------------------------------------------------------------------- |
-| `title`       | `string`                 | Post title.                                                                            |
-| `description` | `string`                 | Short summary used in lists and meta tags.                                             |
-| `date`        | date (`z.coerce.date()`) | e.g. `2026-02-14`. Must match the filename date; drives ordering and archive grouping. |
-| `tags`        | `string[]`               | Defaults to `[]`.                                                                      |
-| `draft`       | `boolean`                | Defaults to `false`. Drafts are excluded from every listing.                           |
+| Field         | Type       | Notes                                                        |
+| :------------ | :--------- | :----------------------------------------------------------- |
+| `title`       | `string`   | Post title.                                                  |
+| `description` | `string`   | Short summary used in lists and meta tags.                   |
+| `tags`        | `string[]` | Defaults to `[]`.                                            |
+| `draft`       | `boolean`  | Defaults to `false`. Drafts are excluded from every listing. |
 
 Example:
 
@@ -185,7 +184,6 @@ Example:
 ---
 title: 深夜裡的觀察筆記
 description: 一些在半夜寫下、隔天醒來常常覺得過於誠實的句子。
-date: 2026-02-14
 tags:
   - 隨筆
 draft: false
@@ -199,8 +197,8 @@ Notes:
 - **Posts are language-agnostic.** Every locale shows the same post set.
 - **Set `draft: true`** to keep a work-in-progress out of the build without
   deleting it.
-- Posts are listed newest-first (by `date`, title break on ties), paginated
-  **4 per page** at build time.
+- Posts are listed newest-first (by the date derived from the filename, title
+  break on ties), paginated **4 per page** at build time.
 
 After adding a post, rebuild (`bun run build && bun run pagefind`) or restart the
 dev server.
