@@ -86,6 +86,7 @@ export const ui = {
         photography: "攝影",
         photographyNote: "我現在喜歡上了拍照",
         photographyGearIntro: "目前裝備:",
+        sigmaNote: "(未買，應該會買)",
         games: "遊戲",
         gamesNote: "大多是能和別人一起玩、需要彼此配合的作品。",
         vtuber: "虛擬主播",
@@ -198,6 +199,7 @@ export const ui = {
         photography: "摄影",
         photographyNote: "我现在喜欢上了拍照",
         photographyGearIntro: "目前装备:",
+        sigmaNote: "(未买，应该会买)",
         games: "游戏",
         gamesNote: "大多是能和别人一起玩、需要彼此配合的作品。",
         vtuber: "虚拟主播",
@@ -311,6 +313,7 @@ export const ui = {
         photography: "Photography",
         photographyNote: "I've recently taken up photography.",
         photographyGearIntro: "Current gear:",
+        sigmaNote: "(not bought yet — planning to)",
         games: "Games",
         gamesNote:
           "Mostly titles I can play with others, where we have to work as a team.",

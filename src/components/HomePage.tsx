@@ -151,8 +151,9 @@ export default function HomePage({ posts }: HomePageProps) {
                     </Text>
                     <Stack as="ul" gap={1} className="interest__gear">
                       {card.gear.map((item) => (
-                        <Text as="li" key={item} tone="muted" size="sm">
-                          {item}
+                        <Text as="li" key={item.name} tone="muted" size="sm">
+                          {item.name}
+                          {item.noteKey ? <> {tr(item.noteKey)}</> : null}
                         </Text>
                       ))}
                     </Stack>

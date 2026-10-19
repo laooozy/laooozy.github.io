@@ -22,6 +22,17 @@
 /** Stable identifier for each of the five About cards. */
 export type AboutCardId = "runner" | "photography" | "games" | "vtuber" | "acg";
 
+/**
+ * One gear-list entry: a verbatim product name and, optionally, a dotted i18n
+ * key for a locale-dependent note about that item.
+ */
+export interface AboutGearItem {
+  /** Verbatim product name; never translated. */
+  name: string;
+  /** Optional dotted i18n key for a locale-dependent note (never translated text here). */
+  noteKey?: string;
+}
+
 /** One About card: an id, its i18n key paths, and any locale-independent extras. */
 export interface AboutCard {
   /** Stable card id (used as the React key and for tests). */
@@ -33,7 +44,7 @@ export interface AboutCard {
   /** Dotted i18n key path for the gear-list intro line (Photography card only). */
   gearIntroKey?: string;
   /** Locale-independent gear list (Photography card only). */
-  gear?: readonly string[];
+  gear?: readonly AboutGearItem[];
   /** Locale-independent link target (ACG card only). */
   href?: string;
 }
@@ -44,12 +55,15 @@ export interface AboutCard {
  * `▏` (U+258F) is the intended separator between the lens name and Sigma's
  * `Contemporary` product line; do not "fix" it.
  */
-export const photographyGear: readonly string[] = [
-  "Canon EOS R10",
-  "Canon RF-S18-150mm F3.5-6.3 IS STM",
-  "Sigma 30mm F1.4 DC DN ▏Contemporary",
-  "Godox V1mid",
-  "Godox X3 Pro",
+export const photographyGear: readonly AboutGearItem[] = [
+  { name: "Canon EOS R10" },
+  { name: "Canon RF-S18-150mm F3.5-6.3 IS STM" },
+  {
+    name: "Sigma 30mm F1.4 DC DN ▏Contemporary",
+    noteKey: "home.interests.sigmaNote",
+  },
+  { name: "Godox V1mid" },
+  { name: "Godox X3 Pro" },
 ];
 
 /** The ACG card's in-site link target (single URL space). */
