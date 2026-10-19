@@ -6,8 +6,10 @@
  * case-sensitive output folder). `langAttr` maps each code to its BCP-47 value
  * for the <html lang> attribute.
  *
- * These strings are authored per locale — they are NOT machine translations.
- * Untranslated PAGES fall back to zh-hant via Astro's `i18n.fallback`.
+ * These strings are authored per locale. LLM-assisted translation is permitted:
+ * a locale may be drafted by a model, but it must read naturally, keep the same
+ * voice and never ship as raw machine output (see `PRODUCT.md`). Untranslated
+ * PAGES fall back to zh-hant via Astro's `i18n.fallback`.
  *
  * This module is pure data + pure functions: no Astro, no DOM. `ui.ts` is kept
  * as a thin re-export barrel so existing importers keep resolving.

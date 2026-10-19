@@ -244,9 +244,10 @@ The site ships in three locales, all served from the same URLs:
 | `en`      | English  |                                            |
 
 - **UI strings** live in `src/i18n/index.ts` (`ui.ts` is a thin re-export
-  barrel). They are authored per locale, not machine translations. Shared,
-  locale-independent values such as the public contact handles and email live
-  there too.
+  barrel). They are authored per locale; LLM-assisted translation is permitted
+  as long as each locale reads naturally and keeps the same voice (see
+  `PRODUCT.md`) — never raw machine output. Shared, locale-independent values
+  such as the public contact handles and email live there too.
 - **Locale-independent data** lives in `src/data/**` (for example the About card
   order and photography gear in `src/data/about.ts`). It holds no translated
   text; every user-facing label stays in the i18n dictionaries.

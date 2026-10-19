@@ -1,15 +1,16 @@
 /**
  * DOM adapter — a port over the browser side effects the shell needs: scroll
  * observation, reduced-motion preference, header visibility, locale application
- * and the animation primitives the background atmosphere and the entrance
- * reveal consume (a shared `requestAnimationFrame` loop, a document-visibility
- * subscription and an `IntersectionObserver` factory).
+ * and the animation primitives the background atmosphere consumes (a shared
+ * `requestAnimationFrame` loop and a document-visibility subscription). The
+ * `IntersectionObserver` factory is port API available to a future scripted
+ * reveal; the shipped entrance reveal is pure CSS and uses none of it.
  *
  * Every method is total (never throws): a missing/failing DOM degrades to a
  * no-op. Callers inject the port, so the store/hook layer owns the behaviour
  * while this module owns the imperative glue. Only PRIMITIVES live here — the
- * canvas drawing and the reveal logic belong to the client modules that consume
- * this surface, not to the port.
+ * canvas drawing belongs to the client module that consumes this surface, not
+ * to the port.
  */
 
 import { langAttr, type Locale } from "@/i18n";
