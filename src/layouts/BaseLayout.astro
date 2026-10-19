@@ -121,8 +121,10 @@ if (!themeColor) {
 			 */
 			import { clientDeps } from "@/client/bootstrap";
 			import { attachScrollHeader } from "@/client/scroll-header";
+			import { attachAtmosphere } from "@/client/atmosphere";
 
 			attachScrollHeader(clientDeps);
+			attachAtmosphere(clientDeps);
 		</script>
 	</body>
 </html>
@@ -197,6 +199,29 @@ if (!themeColor) {
 
 	.site-nav__link:hover {
 		color: var(--text);
+	}
+
+	/*
+	 * Background atmosphere. The canvas is created by `attachAtmosphere` (a
+	 * client module) and sits at the bottom of the page's stacking order:
+	 * fixed, viewport-sized, and transparent to pointer events so every click
+	 * lands on the content above it. The content is lifted to `--z-base` so the
+	 * star dust and lightning read as sitting behind the page, never over it;
+	 * the sticky header already clears it at `--z-sticky`.
+	 */
+	[data-atmosphere] {
+		position: fixed;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 0;
+		pointer-events: none;
+	}
+
+	.site-main,
+	.site-footer {
+		position: relative;
+		z-index: var(--z-base);
 	}
 
 	.site-main {
