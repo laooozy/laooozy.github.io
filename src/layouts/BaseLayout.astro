@@ -9,6 +9,8 @@ import Container from "../components/layout/Container";
 import { LOCALE_BOOT_SCRIPT } from "@/client/locale-boot";
 import { SITE_INDEXABLE } from "../lib/seo";
 import { langAttr, ogLocale, resolveLocale, useTranslations } from "../i18n/ui";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 interface Props {
   title?: string;
@@ -26,6 +28,20 @@ const pageTitle = title ? `${title} · ${t.home.title}` : t.home.title;
 const metaDescription = description ?? t.home.tagline;
 const canonical = new URL(Astro.url.pathname, site).href;
 const ogImage = new URL("/og.png", site).href;
+
+/*
+ * theme-color must track --bg-base instead of duplicating it as a hex that
+ * drifts whenever the token is retuned. tokens.css is the single source of
+ * truth, so read it at build time (this layout is server-rendered only).
+ */
+const tokensCss = readFileSync(
+  join(process.cwd(), "src/styles/tokens.css"),
+  "utf8",
+);
+const themeColor = /--bg-base:\s*([^;]+);/.exec(tokensCss)?.[1]?.trim();
+if (!themeColor) {
+  throw new Error("--bg-base is not declared in src/styles/tokens.css");
+}
 ---
 
 <!doctype html>
@@ -41,7 +57,7 @@ const ogImage = new URL("/og.png", site).href;
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
-		<meta name="theme-color" content="#0a0a0f" />
+		<meta name="theme-color" content={themeColor} />
 		<meta name="description" content={metaDescription} />
 		{/*
 		 * While SITE_INDEXABLE is false the whole site is kept out of search

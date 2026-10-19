@@ -144,7 +144,7 @@ button {
   z-index: var(--z-tooltip);
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
-  /* Solid --accent, not the gradient: dark-on-#7c3aed only reaches 3.47:1. */
+  /* Solid --accent: dark text on the old gradient's darker end was only 3.47:1. */
   background: var(--accent);
   color: var(--text-on-accent);
   font-weight: 600;
@@ -262,8 +262,9 @@ html:not([data-locale]) [data-l="zh-hant"] {
  * SAME colours — there is no light theme to fall back to.
  *
  * Accent split (bug fix): shadcn's `--accent` means "hover surface", but the
- * brand also names its purple `--accent`. Mapping shadcn's accent to #a855f7
- * made `hover:bg-accent` paint solid purple. shadcn's accent now resolves to
+ * brand also names its purple `--accent`. Mapping shadcn's accent to the
+ * brand purple made `hover:bg-accent` paint solid purple. shadcn's accent now
+ * resolves to
  * the tinted surface `--accent-surface` via the @theme block above; the brand
  * purple is NOT re-declared here so tokens.css stays the single source for
  * `var(--accent)`. Brand purple remains the shadcn `--primary`.
