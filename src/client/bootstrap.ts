@@ -8,6 +8,14 @@
  * `localStorage` touch is guarded, so a build that pulls it in degrades to the
  * default locale instead of throwing.
  *
+ * The DOM port (`adapters.dom`) is the single seam for every browser-effect
+ * primitive the shell needs: scroll observation, reduced motion, header
+ * visibility and locale application, plus the shared animation loop, the
+ * document-visibility subscription and the intersection-observer factory that
+ * the background atmosphere and the entrance reveal consume. Those clients start
+ * from a layout script and read the port off this bundle, so no component or
+ * client module ever constructs a port or reaches for a browser global.
+ *
  * The store singleton is seeded here with the locale the pre-paint boot chose
  * (task 9). The boot writes its decision to `document.documentElement.dataset.locale`
  * and persists the resolved locale to storage; we prefer the already-applied

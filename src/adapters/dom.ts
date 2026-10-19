@@ -1,14 +1,45 @@
 /**
  * DOM adapter — a port over the browser side effects the shell needs: scroll
- * observation, reduced-motion preference, header visibility and locale
- * application.
+ * observation, reduced-motion preference, header visibility, locale application
+ * and the animation primitives the background atmosphere and the entrance
+ * reveal consume (a shared `requestAnimationFrame` loop, a document-visibility
+ * subscription and an `IntersectionObserver` factory).
  *
  * Every method is total (never throws): a missing/failing DOM degrades to a
  * no-op. Callers inject the port, so the store/hook layer owns the behaviour
- * while this module owns the imperative glue.
+ * while this module owns the imperative glue. Only PRIMITIVES live here — the
+ * canvas drawing and the reveal logic belong to the client modules that consume
+ * this surface, not to the port.
  */
 
 import { langAttr, type Locale } from "@/i18n";
+
+/** The slice of a native `IntersectionObserverEntry` an entrance reveal reads. */
+export interface DomIntersectionEntry {
+  /** The observed element this entry is about. */
+  readonly target: Element;
+  /** `true` once any part of `target` has entered the root. */
+  readonly isIntersecting: boolean;
+}
+
+/** Construction options for `createIntersectionObserver`, mirroring the native API. */
+export interface DomIntersectionOptions {
+  /** Margin around the root, e.g. `"0px 0px -8% 0px"`. */
+  rootMargin?: string;
+  /** Visible proportion(s) of the target that trigger the callback. */
+  threshold?: number | number[];
+}
+
+/**
+ * The `IntersectionObserver` surface a reveal needs. Each method is a thin,
+ * total delegation to the platform observer; `disconnect`/`unobserve` are safe
+ * to call with an element that is not observed.
+ */
+export interface DomIntersectionObserver {
+  observe(target: Element): void;
+  unobserve(target: Element): void;
+  disconnect(): void;
+}
 
 /** Browser side effects for scroll + header concerns. */
 export interface DomPort {
@@ -30,6 +61,31 @@ export interface DomPort {
    * matching `[data-l]` spans. Never throws.
    */
   applyLocale(locale: Locale): void;
+  /**
+   * Run `frame` once per animation frame until the returned stop function is
+   * called; `frame` receives the rAF timestamp. This is the ONE shared animation
+   * loop: the atmosphere's star dust, shooting stars and lightning all drive
+   * through a single subscription rather than each starting its own. The stop
+   * function is idempotent. Never throws; without a `requestAnimationFrame` it
+   * returns a no-op stop.
+   */
+  startLoop(frame: (time: number) => void): () => void;
+  /**
+   * Subscribe to document visibility: `callback` receives `true` while the tab
+   * is hidden and `false` once it is visible again. It is invoked once
+   * immediately with the current state so a caller can decide whether to start.
+   * Returns an unsubscribe. Never throws.
+   */
+  onVisibilityChange(callback: (hidden: boolean) => void): () => void;
+  /**
+   * Create an `IntersectionObserver` for an entrance reveal, or `null` when the
+   * platform lacks the API (callers then leave their elements in the
+   * already-visible default). Never throws.
+   */
+  createIntersectionObserver(
+    callback: (entries: DomIntersectionEntry[]) => void,
+    options?: DomIntersectionOptions,
+  ): DomIntersectionObserver | null;
 }
 
 function createDomAdapter(): DomPort {
@@ -94,6 +150,74 @@ function createDomAdapter(): DomPort {
         // Best-effort: a failing/passive DOM must never break the caller.
       }
     },
+
+    startLoop(frame) {
+      if (
+        typeof window === "undefined" ||
+        typeof window.requestAnimationFrame !== "function"
+      ) {
+        return () => {};
+      }
+
+      let rafId: number | null = null;
+      let stopped = false;
+
+      const tick = (time: number) => {
+        rafId = null;
+        if (stopped) return;
+        frame(time);
+        if (!stopped) rafId = window.requestAnimationFrame(tick);
+      };
+
+      try {
+        rafId = window.requestAnimationFrame(tick);
+      } catch {
+        return () => {};
+      }
+
+      return () => {
+        stopped = true;
+        if (rafId !== null) {
+          window.cancelAnimationFrame(rafId);
+          rafId = null;
+        }
+      };
+    },
+
+    onVisibilityChange(callback) {
+      try {
+        if (typeof document === "undefined") return () => {};
+        const handler = () => callback(document.hidden);
+        document.addEventListener("visibilitychange", handler);
+        handler();
+        return () => document.removeEventListener("visibilitychange", handler);
+      } catch {
+        return () => {};
+      }
+    },
+
+    createIntersectionObserver(callback, options) {
+      try {
+        if (typeof IntersectionObserver !== "function") return null;
+        const observer = new IntersectionObserver(
+          (entries) =>
+            callback(
+              entries.map((entry) => ({
+                target: entry.target,
+                isIntersecting: entry.isIntersecting,
+              })),
+            ),
+          options,
+        );
+        return {
+          observe: (target) => observer.observe(target),
+          unobserve: (target) => observer.unobserve(target),
+          disconnect: () => observer.disconnect(),
+        };
+      } catch {
+        return null;
+      }
+    },
   };
 }
 
@@ -106,4 +230,7 @@ export const noopDomAdapter: DomPort = {
   prefersReducedMotion: () => false,
   setHeaderHidden: () => {},
   applyLocale: () => {},
+  startLoop: () => () => {},
+  onVisibilityChange: () => () => {},
+  createIntersectionObserver: () => null,
 };
