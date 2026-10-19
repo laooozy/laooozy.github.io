@@ -669,16 +669,11 @@ a.chip--tag:focus-visible {
   text-wrap: balance;
 }
 
-.hero__links ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.hero__link {
+/* Reusable pill link with a trailing arrow. Promoted from the old hero
+   quick-link row when that row was removed; cards that need a "go there" link
+   (e.g. the About ACG card) opt in with `class="link-arrow"` and put the arrow
+   in `class="link-arrow__arrow"` (aria-hidden). */
+.link-arrow {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -695,18 +690,18 @@ a.chip--tag:focus-visible {
     border-color var(--dur-fast) var(--ease-out);
 }
 
-.hero__link:hover {
+.link-arrow:hover {
   background: var(--accent-surface);
   border-color: var(--glass-border-strong);
   color: var(--text);
 }
 
-.hero__link-arrow {
+.link-arrow__arrow {
   color: var(--accent);
   transition: transform var(--dur-base) var(--ease-out);
 }
 
-.hero__link:hover .hero__link-arrow {
+.link-arrow:hover .link-arrow__arrow {
   transform: translateX(3px);
 }
 

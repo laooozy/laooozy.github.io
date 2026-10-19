@@ -102,12 +102,6 @@ export default function HomePage({ posts }: HomePageProps) {
     },
   ];
 
-  const quickLinks = [
-    { label: tr("nav.blog"), href: "#blog" },
-    { label: tr("nav.acg"), href: ACG_HREF },
-    { label: tr("nav.contact"), href: "#contact" },
-  ];
-
   const heroMeta = [
     { label: tr("home.baseLabel"), value: tr("home.baseValue") },
     {
@@ -144,8 +138,6 @@ export default function HomePage({ posts }: HomePageProps) {
         tagline={tr("home.tagline")}
         nowLabel={tr("home.nowLabel")}
         nowText={tr("home.nowText")}
-        links={quickLinks}
-        linksLabel={tr("a11y.quickLinks")}
         meta={heroMeta}
       />
 

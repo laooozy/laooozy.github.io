@@ -7,19 +7,12 @@
  *  - tagline: string                   one-line description
  *  - nowLabel?: string                 small status label, e.g. "Now"
  *  - nowText?: string                  the "now" line beside the status dot
- *  - links?: { label; href }[]         compact quick-link row (Blog / ACG / …)
- *  - linksLabel?: string               aria-label for the quick-link nav
  *  - meta?: { label; value }[]         right-column spec rows (Base / Now / …)
  *  - className?: string
  *
  * Two columns ≥60rem (text + spec panel), stacked below. The spec panel and a
  * single soft aurora glow are the "featured visual" — no photos are hosted.
  */
-interface HeroLink {
-  label: string;
-  href: string;
-}
-
 interface HeroMeta {
   label: string;
   value: string;
@@ -30,8 +23,6 @@ interface HeroProps {
   tagline: string;
   nowLabel?: string;
   nowText?: string;
-  links?: HeroLink[];
-  linksLabel?: string;
   meta?: HeroMeta[];
   className?: string;
 }
@@ -41,8 +32,6 @@ export default function Hero({
   tagline,
   nowLabel,
   nowText,
-  links = [],
-  linksLabel,
   meta = [],
   className,
 }: HeroProps) {
@@ -65,23 +54,6 @@ export default function Hero({
         </h1>
 
         <p className="hero__tagline">{tagline}</p>
-
-        {links.length > 0 && (
-          <nav className="hero__links" aria-label={linksLabel}>
-            <ul>
-              {links.map((link) => (
-                <li key={link.href}>
-                  <a className="hero__link" href={link.href}>
-                    <span>{link.label}</span>
-                    <span className="hero__link-arrow" aria-hidden="true">
-                      →
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )}
       </div>
 
       {meta.length > 0 && (

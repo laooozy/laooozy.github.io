@@ -67,7 +67,6 @@ export const ui = {
   "zh-hant": {
     nav: {
       about: "關於",
-      acg: "ACG",
       blog: "文章",
       contact: "聯絡",
       usefulLink: "實用連結",
@@ -173,7 +172,6 @@ export const ui = {
     a11y: {
       skipToContent: "跳至主要內容",
       primaryNav: "主選單",
-      quickLinks: "快速連結",
       language: "語言",
     },
     footer: { rights: "版權所有" },
@@ -181,7 +179,6 @@ export const ui = {
   "zh-hans": {
     nav: {
       about: "关于",
-      acg: "ACG",
       blog: "文章",
       contact: "联系",
       usefulLink: "实用链接",
@@ -287,7 +284,6 @@ export const ui = {
     a11y: {
       skipToContent: "跳至主要内容",
       primaryNav: "主菜单",
-      quickLinks: "快速链接",
       language: "语言",
     },
     footer: { rights: "版权所有" },
@@ -295,7 +291,6 @@ export const ui = {
   en: {
     nav: {
       about: "About",
-      acg: "ACG",
       blog: "Blog",
       contact: "Contact",
       usefulLink: "Useful Link",
@@ -407,7 +402,6 @@ export const ui = {
     a11y: {
       skipToContent: "Skip to main content",
       primaryNav: "Primary",
-      quickLinks: "Quick links",
       language: "Language",
     },
     footer: { rights: "All rights reserved" },
