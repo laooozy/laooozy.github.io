@@ -82,8 +82,11 @@ export const ui = {
       baseValue: "香港",
       interestsHeading: "興趣",
       interests: {
+        runner: "跑步的我",
+        runnerNote: "內容待補",
         photography: "攝影",
-        photographyNote: "習慣背著相機到處走，慢慢練習觀察光的方向。",
+        photographyNote: "我現在喜歡上了拍照",
+        photographyGearIntro: "目前裝備:",
         games: "遊戲",
         gamesNote: "大多是能和別人一起玩、需要彼此配合的作品。",
         vtuber: "虛擬主播",
@@ -193,8 +196,11 @@ export const ui = {
       baseValue: "香港",
       interestsHeading: "兴趣",
       interests: {
+        runner: "跑步的我",
+        runnerNote: "内容待补",
         photography: "摄影",
-        photographyNote: "习惯背着相机到处走，慢慢练习观察光的方向。",
+        photographyNote: "我现在喜欢上了拍照",
+        photographyGearIntro: "目前装备:",
         games: "游戏",
         gamesNote: "大多是能和别人一起玩、需要彼此配合的作品。",
         vtuber: "虚拟主播",
@@ -305,9 +311,11 @@ export const ui = {
       baseValue: "Hong Kong",
       interestsHeading: "Interests",
       interests: {
+        runner: "Runner",
+        runnerNote: "Body copy coming soon",
         photography: "Photography",
-        photographyNote:
-          "I carry a camera around and keep practising how light falls.",
+        photographyNote: "I've recently taken up photography.",
+        photographyGearIntro: "Current gear:",
         games: "Games",
         gamesNote:
           "Mostly titles I can play with others, where we have to work as a team.",
