@@ -15,7 +15,8 @@
   --bg-deep: oklch(0.124 0.008 285.1729);
   --bg-elevated: oklch(0.1861 0.0162 284.7158);
 
-  /* Ambient purple wash painted once behind the whole page (global.css). */
+  /* Ambient purple wash painted once behind the whole page, as the fixed
+   * `body::before` nebula layer in global.css. Single source of the glow. */
   --bg-aurora:
     radial-gradient(
       1200px 820px at 12% -12%,
@@ -151,6 +152,9 @@
   /* ------------------------------------------------------------------ *
    * Elevation — semantic z-index scale (never arbitrary 999)
    * ------------------------------------------------------------------ */
+  /* The ambient nebula layer sits behind every content layer; in-flow content
+   * paints above it automatically, so nothing needs to be lifted to z-base. */
+  --z-ambient: -1;
   --z-base: 1;
   --z-dropdown: 100;
   --z-sticky: 200;

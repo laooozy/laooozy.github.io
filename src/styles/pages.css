@@ -147,24 +147,9 @@
   padding-bottom: clamp(var(--space-2), 3vw, var(--space-6));
 }
 
-/* A single soft aurora — the brand's "featured visual" (hue = brand). */
-.acg-masthead::before {
-  content: "";
-  position: absolute;
-  top: -30%;
-  left: -14%;
-  z-index: 0;
-  width: min(34rem, 68vw);
-  aspect-ratio: 1;
-  border-radius: var(--radius-pill);
-  background: radial-gradient(
-    circle,
-    var(--accent-surface) 0%,
-    transparent 62%
-  );
-  pointer-events: none;
-}
-
+/* The masthead's local aurora glow is gone — the single fixed ambient layer
+   (`body::before`) now paints it, so the ACG page reads as the same one
+   background, not a doubled glow. The children stay above that wash. */
 .acg-masthead > * {
   position: relative;
   z-index: 1;

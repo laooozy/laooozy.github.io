@@ -32,10 +32,8 @@ body {
   font-size: var(--text-base);
   line-height: var(--leading-normal);
   color: var(--text);
+  /* The dark base is the page canvas; the ambient wash is a separate layer. */
   background-color: var(--bg-base);
-  background-image: var(--bg-aurora);
-  background-repeat: no-repeat;
-  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   /*
@@ -46,6 +44,40 @@ body {
    */
   overflow-x: clip;
   overflow-wrap: break-word;
+}
+
+/*
+ * The single ambient background layer for the whole site.
+ *
+ * This is the ONE place the deep-space nebula is painted. It replaces the old
+ * `body { background-image: var(--bg-aurora) }` wash 1:1 — same gradient — but
+ * promoted to an explicit full-viewport layer so it can drift slowly and be
+ * governed by the z-scale. `--z-ambient` keeps it below every content layer and
+ * `pointer-events: none` keeps it out of the hit-testing tree, so the wash can
+ * never cover text or swallow a click.
+ *
+ * The slow drift is pure decoration and is stopped by the global
+ * reduced-motion kill-switch above (which pins every animation to its end).
+ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -10%;
+  z-index: var(--z-ambient);
+  pointer-events: none;
+  background-image: var(--bg-aurora);
+  background-repeat: no-repeat;
+  animation: ambient-drift 72s var(--ease-out) infinite alternate;
+}
+
+@keyframes ambient-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-2.5%, 2%, 0);
+  }
 }
 
 h1,
@@ -576,24 +608,9 @@ a.chip--tag:focus-visible {
   padding-bottom: clamp(var(--space-4), 3vw, var(--space-6));
 }
 
-/* A single soft aurora behind the masthead — the brand's "featured visual". */
-.hero::before {
-  content: "";
-  position: absolute;
-  top: -20%;
-  right: -12%;
-  z-index: 0;
-  width: min(38rem, 70vw);
-  aspect-ratio: 1;
-  border-radius: var(--radius-pill);
-  background: radial-gradient(
-    circle,
-    var(--accent-surface) 0%,
-    transparent 62%
-  );
-  pointer-events: none;
-}
-
+/* The masthead's local aurora glow is gone: it is replaced by the single fixed
+   ambient layer (`body::before`). Keeping both would have doubled the purple
+   wash behind the hero. The children stay layered above the ambient wash. */
 .hero__main,
 .hero__meta {
   position: relative;
@@ -1026,24 +1043,8 @@ a.chip--tag:focus-visible {
     color-mix(in oklab, var(--glass-border) 40%, transparent);
 }
 
-/* A single soft aurora behind the masthead — the brand's featured visual. */
-.post__header::before {
-  content: "";
-  position: absolute;
-  top: -55%;
-  left: -12%;
-  z-index: 0;
-  width: min(34rem, 80vw);
-  aspect-ratio: 1;
-  border-radius: var(--radius-pill);
-  background: radial-gradient(
-    circle,
-    var(--accent-surface) 0%,
-    transparent 62%
-  );
-  pointer-events: none;
-}
-
+/* The article header's local aurora glow is gone — the single fixed ambient
+   layer (`body::before`) now supplies it. Children stay above that wash. */
 .post__header > * {
   position: relative;
   z-index: 1;
