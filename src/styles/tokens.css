@@ -11,33 +11,33 @@
   /* ------------------------------------------------------------------ *
    * Colour — base & background
    * ------------------------------------------------------------------ */
-  --bg-base: #0a0a0f;
-  --bg-deep: #060609;
-  --bg-elevated: #12121a;
+  --bg-base: oklch(0.1473 0.0107 285.0074);
+  --bg-deep: oklch(0.124 0.008 285.1729);
+  --bg-elevated: oklch(0.1861 0.0162 284.7158);
 
   /* Ambient purple wash painted once behind the whole page (global.css). */
   --bg-aurora:
     radial-gradient(
       1200px 820px at 12% -12%,
-      rgba(124, 58, 237, 0.22),
+      oklch(0.5413 0.2466 293.009 / 0.22),
       transparent 60%
     ),
     radial-gradient(
       980px 900px at 112% 8%,
-      rgba(168, 85, 247, 0.16),
+      oklch(0.6268 0.2325 303.9004 / 0.16),
       transparent 55%
     );
 
   /* ------------------------------------------------------------------ *
    * Colour — glass surfaces
    * ------------------------------------------------------------------ */
-  --surface: rgba(255, 255, 255, 0.04);
-  --surface-strong: rgba(255, 255, 255, 0.06);
-  --surface-hover: rgba(255, 255, 255, 0.07);
-  --glass-border: rgba(168, 85, 247, 0.35);
-  --glass-border-strong: rgba(168, 85, 247, 0.55);
+  --surface: oklch(1 0 0 / 0.04);
+  --surface-strong: oklch(1 0 0 / 0.06);
+  --surface-hover: oklch(1 0 0 / 0.07);
+  --glass-border: oklch(0.6268 0.2325 303.9004 / 0.35);
+  --glass-border-strong: oklch(0.6268 0.2325 303.9004 / 0.55);
   --glass-blur: 16px;
-  --glass-glow: 0 0 30px -8px rgba(168, 85, 247, 0.5);
+  --glass-glow: 0 0 30px -8px oklch(0.6268 0.2325 303.9004 / 0.5);
 
   /*
    * Card surface. A real surface has a top-down gradient (lit from above) plus
@@ -48,38 +48,43 @@
    */
   --card-bg: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.055) 0%,
-    rgba(255, 255, 255, 0.018) 100%
+    oklch(1 0 0 / 0.055) 0%,
+    oklch(1 0 0 / 0.018) 100%
   );
-  --card-inset: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --card-inset: inset 0 1px 0 oklch(1 0 0 / 0.07);
   /* Soft brand-coloured lift for interactive surfaces. Tight spread keeps it a
    * lift, not a "ghost card" halo. */
-  --shadow-lift: 0 14px 30px -18px rgba(124, 58, 237, 0.6);
+  --shadow-lift: 0 14px 30px -18px oklch(0.5413 0.2466 293.009 / 0.6);
 
   /* ------------------------------------------------------------------ *
    * Colour — accent
    * ------------------------------------------------------------------ */
-  --accent: #a855f7;
-  --accent-2: #7c3aed;
-  --accent-soft: rgba(168, 85, 247, 0.14);
+  --accent: oklch(0.6268 0.2325 303.9004);
+  --accent-2: oklch(0.5413 0.2466 293.009);
+  --accent-soft: oklch(0.6268 0.2325 303.9004 / 0.14);
   /*
    * shadcn/ui calls a *hover surface* `--accent`; the brand colour is `--accent`
    * too, so the two names collided and every `hover:bg-accent` painted solid
    * purple. shadcn's accent now maps to these tinted surfaces (see global.css
    * @theme), while the brand purple stays on `--accent` / `--primary`.
    */
-  --accent-surface: rgba(168, 85, 247, 0.14);
-  --accent-surface-hover: rgba(168, 85, 247, 0.22);
-  --accent-gradient: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
-  --text-on-accent: #0a0a0f;
+  --accent-surface: oklch(0.6268 0.2325 303.9004 / 0.14);
+  --accent-surface-hover: oklch(0.6268 0.2325 303.9004 / 0.22);
+  --accent-gradient: linear-gradient(
+    135deg,
+    oklch(0.6268 0.2325 303.9004) 0%,
+    oklch(0.5413 0.2466 293.009) 100%
+  );
+  --text-on-accent: oklch(0.1473 0.0107 285.0074);
 
   /* ------------------------------------------------------------------ *
-   * Colour — text (contrast checked against --bg-base; AA minimum)
+   * Colour — text (contrast measured against --bg-base; AA minimum)
    * ------------------------------------------------------------------ */
-  --text: #ededf2;
-  /* Bumped from #a1a1aa: the old muted read as washed-out gray on the
-   * near-black base. ~10:1 against --bg-base, still visibly below --text. */
-  --text-muted: #b4b4c2;
+  --text: oklch(0.9475 0.0067 286.2717);
+  /* Measured WCAG contrast vs --bg-base: --text 16.9:1, --text-muted 9.6:1.
+   * The muted tone was bumped from #a1a1aa, which read washed-out gray on the
+   * near-black base; it stays visibly below --text while clearing AA. */
+  --text-muted: oklch(0.7743 0.0197 285.9298);
 
   /* ------------------------------------------------------------------ *
    * Typography
