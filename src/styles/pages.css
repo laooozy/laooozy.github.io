@@ -481,7 +481,14 @@
   font-weight: 700;
   line-height: 1;
   letter-spacing: var(--tracking-display);
-  background: var(--accent-gradient);
+  /*
+   * The old two-hue accent gradient was retired in the single-purple
+   * consolidation. Paint the numeral with the solid --accent instead: the clip
+   * plus transparent fill still render it as the brand purple, and the
+   * reduced-motion fallback below (which resets the background and restores
+   * currentColor) keeps working unchanged.
+   */
+  background: var(--accent);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
