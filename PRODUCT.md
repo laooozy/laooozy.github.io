@@ -43,7 +43,9 @@ loud, never busy.
 ## Voice
 
 Warm, plain, first-person, slightly self-deprecating. Authored in Traditional
-Chinese, Simplified Chinese and English — never machine-translated.
+Chinese, Simplified Chinese and English. LLM-assisted translation is permitted:
+a locale may be drafted by a model, but it must read naturally, keep the same
+voice, and never ship as raw machine output.
 
 ## Hard constraints
 
