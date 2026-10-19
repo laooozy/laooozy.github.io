@@ -28,10 +28,15 @@ loud, never busy.
 
 - **One screen tells the story.** The fold carries the wordmark, the person, the
   "now" line, and the way in. No dead air.
-- **Composed, not decorated.** Depth comes from surface, light and space — not
-  from ornament. No gradient text, no stripes, no sketchy SVG.
-- **Static-first.** Content and layout are HTML+CSS. JS only where genuinely
-  interactive (scroll-hiding bar, Pagefind search).
+- **Composed, not decorated.** Depth comes from surface, light and space, not
+  from ornament. No gradient text, no stripes, no sketchy SVG. The deep-space
+  atmosphere (nebula, star dust, right-to-left shooting stars, purple
+  lightning) is sanctioned: it is light and space, not decoration. Under
+  `prefers-reduced-motion: reduce` it goes still: no drift, no stars, no
+  lightning, and the entrance reveal is instant.
+- **Static-first.** Content and layout are HTML+CSS. JS is reserved for what is
+  genuinely interactive or alive: the scroll-hiding bar, Pagefind search, the
+  atmospheric canvas, and the entrance reveal.
 - **The kit is the product.** Pages are assembled from a small set of composable
   parts (layout primitives + UI + content) so any layout can be arranged freely.
 
