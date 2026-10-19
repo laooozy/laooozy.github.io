@@ -3,7 +3,10 @@
  * hydrated React island.
  *
  * Structure: masthead (intro) → photo wall (Instagram embeds) → approach →
- * commission. Every user-facing string comes from `useT` (store-bound locale),
+ * commission. The three sections carry the `reveal` class so the entrance
+ * animation (declared only under `prefers-reduced-motion: no-preference`, in
+ * pages.css) enhances an already-visible default; the masthead keeps its own
+ * entrance. Every user-facing string comes from `useT` (store-bound locale),
  * so switching language re-renders the copy in place — no navigation, no reload.
  * The Instagram embeds are resolved at BUILD time by `pages/acg.astro` (the
  * network I/O edge) and passed in as serializable props; the page only renders
@@ -108,6 +111,7 @@ export default function AcgPage({ embeds }: AcgPageProps) {
 
       <Section
         id="work"
+        className="reveal"
         heading={tr("acgPage.followHeading")}
         lead={tr("acgPage.followNote")}
       >
@@ -156,7 +160,11 @@ export default function AcgPage({ embeds }: AcgPageProps) {
         </Stack>
       </Section>
 
-      <Section id="approach" heading={tr("acgPage.approachHeading")}>
+      <Section
+        id="approach"
+        className="reveal"
+        heading={tr("acgPage.approachHeading")}
+      >
         <Grid min="16rem" gap={6} className="acg-approach">
           {approach.map((item, index) => (
             <div key={`${item.title}-${index}`} className="acg-approach__item">
@@ -167,7 +175,11 @@ export default function AcgPage({ embeds }: AcgPageProps) {
         </Grid>
       </Section>
 
-      <Section id="commission" heading={tr("acgPage.commissionHeading")}>
+      <Section
+        id="commission"
+        className="reveal"
+        heading={tr("acgPage.commissionHeading")}
+      >
         <Card className="acg-commission">
           <Stack gap={5}>
             <Text tone="muted">{tr("acgPage.commissionLead")}</Text>

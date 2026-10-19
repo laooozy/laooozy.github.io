@@ -354,6 +354,28 @@
   }
 }
 
+/*
+ * Entrance reveal for the ACG page's major blocks. Same contract as the home
+ * reveal in global.css — base visible, animated only under
+ * `prefers-reduced-motion: no-preference`, scoped to the `.reveal` blocks
+ * (applied in `AcgPage.tsx`) rather than every section. The shared
+ * `reveal-rise` keyframe is defined in global.css and reuses the existing
+ * `acg-rise` motion shape, so no second motion language is introduced.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .acg .reveal {
+    animation: reveal-rise var(--dur-slow) var(--ease-out) both;
+  }
+
+  .acg .reveal:nth-of-type(2) {
+    animation-delay: 60ms;
+  }
+
+  .acg .reveal:nth-of-type(3) {
+    animation-delay: 120ms;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .acg-cta:hover,
   .acg-cta:focus-visible {

@@ -807,6 +807,52 @@ a.chip--tag:focus-visible {
   }
 }
 
+/*
+ * Entrance reveal — an ENHANCEMENT over an already-visible default.
+ *
+ * The base state is fully visible (`opacity: 1`, no transform) and the
+ * animation is declared ONLY inside `prefers-reduced-motion: no-preference`.
+ * Under reduced motion this media query never matches, so no element is ever
+ * left at `opacity: 0` — the block simply renders visible from the first frame.
+ * A bare `.reveal{opacity:0}` outside the guard would blank the page for those
+ * users and is deliberately avoided.
+ *
+ * Scope: the `.reveal` class is applied only to the home page's major blocks
+ * (see `HomePage.tsx`) — never to every `.section` on the site. The ACG page's
+ * counterpart lives in `pages.css`. Reuses the existing timing tokens and the
+ * existing `hero-rise`/`acg-rise` motion shape, so there is no second motion
+ * language. `both` holds the start frame through each block's delay and the end
+ * frame once the animation settles.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .home .reveal {
+    animation: reveal-rise var(--dur-slow) var(--ease-out) both;
+  }
+
+  .home .reveal:nth-of-type(2) {
+    animation-delay: 60ms;
+  }
+
+  .home .reveal:nth-of-type(3) {
+    animation-delay: 120ms;
+  }
+
+  .home .reveal:nth-of-type(4) {
+    animation-delay: 180ms;
+  }
+}
+
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .pagination {
   display: flex;
   flex-wrap: wrap;

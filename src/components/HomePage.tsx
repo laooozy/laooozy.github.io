@@ -3,7 +3,10 @@
  * React island.
  *
  * Composed from the reusable kit only: Hero → Section#about → Section#acg →
- * Section#blog → Section#contact. Every user-facing string comes from `useT`,
+ * Section#blog → Section#contact. The four sections carry the `reveal` class so
+ * the entrance animation (declared only under `prefers-reduced-motion:
+ * no-preference`, in global.css) enhances an already-visible default; the Hero
+ * keeps its own entrance. Every user-facing string comes from `useT`,
  * bound to the store's active locale, so switching language re-renders the page
  * copy in place — no navigation, no reload. The blog data is fetched at BUILD
  * time by `pages/index.astro` (which owns the `astro:content` I/O edge) and
@@ -146,7 +149,12 @@ export default function HomePage({ posts }: HomePageProps) {
         meta={heroMeta}
       />
 
-      <Section id="about" heading={tr("about.heading")} lead={tr("home.intro")}>
+      <Section
+        id="about"
+        className="reveal"
+        heading={tr("about.heading")}
+        lead={tr("home.intro")}
+      >
         <Grid min="15rem" gap={5}>
           {interests.map((interest) => (
             <Card key={interest.key}>
@@ -162,7 +170,7 @@ export default function HomePage({ posts }: HomePageProps) {
         </Grid>
       </Section>
 
-      <Section id="acg" heading={tr("acg.heading")}>
+      <Section id="acg" className="reveal" heading={tr("acg.heading")}>
         <Card href={ACG_HREF}>
           <Stack gap={3}>
             <Text>{tr("acg.note")}</Text>
@@ -175,6 +183,7 @@ export default function HomePage({ posts }: HomePageProps) {
 
       <Section
         id="blog"
+        className="reveal"
         heading={tr("blog.heading")}
         actions={
           <a className="section__more" href={ALL_POSTS_HREF}>
@@ -203,6 +212,7 @@ export default function HomePage({ posts }: HomePageProps) {
 
       <Section
         id="contact"
+        className="reveal"
         heading={tr("contact.heading")}
         lead={tr("contact.intro")}
       >
