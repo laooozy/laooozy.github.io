@@ -2,15 +2,19 @@
  * HomePage — the single-page home, shared by all three locales, as a hydrated
  * React island.
  *
- * Composed from the reusable kit only: Hero → Section#about → Section#acg →
- * Section#blog → Section#contact. The four sections carry the `reveal` class so
- * the entrance animation (declared only under `prefers-reduced-motion:
- * no-preference`, in global.css) enhances an already-visible default; the Hero
- * keeps its own entrance. Every user-facing string comes from `useT`,
- * bound to the store's active locale, so switching language re-renders the page
- * copy in place — no navigation, no reload. The blog data is fetched at BUILD
- * time by `pages/index.astro` (which owns the `astro:content` I/O edge) and
- * passed in as serializable props; only the localized chrome is client state.
+ * Composed from the reusable kit only: Hero → Section#about → Section#blog →
+ * Section#contact. The three sections carry the `reveal` class so the entrance
+ * animation (declared only under `prefers-reduced-motion: no-preference`, in
+ * global.css) enhances an already-visible default; the Hero keeps its own
+ * entrance. The `#about` grid renders `aboutCards` from `@/data/about` (card
+ * order + locale-independent extras) and resolves every label/note through
+ * `useT`, so switching language re-renders the page copy in place — no
+ * navigation, no reload. The ACG persona has no standalone home section; its
+ * card in the About grid is the entry point to `/acg/`. Every user-facing
+ * string comes from `useT`, bound to the store's active locale. The blog data
+ * is fetched at BUILD time by `pages/index.astro` (which owns the
+ * `astro:content` I/O edge) and passed in as serializable props; only the
+ * localized chrome is client state.
  *
  * Hydration safety
  * ----------------
@@ -33,6 +37,7 @@ import Section from "@/components/layout/Section";
 import Stack from "@/components/layout/Stack";
 import PostCard from "@/components/PostCard";
 import Text from "@/components/ui/Text";
+import { aboutCards } from "@/data/about";
 import { useT, type Translate } from "@/hooks/useT";
 import {
   contactIdentity,
@@ -47,7 +52,6 @@ import { blogIndexPath } from "@/lib/domain/posts";
 const defaultTranslate: Translate = (key, vars) =>
   translate(defaultLang, key, vars);
 
-const ACG_HREF = "/acg/";
 const ALL_POSTS_HREF = blogIndexPath().replace(/\/$/, "");
 
 /**
@@ -80,27 +84,6 @@ export default function HomePage({ posts }: HomePageProps) {
   }, []);
 
   const tr = mounted ? t : defaultTranslate;
-
-  const interests = [
-    {
-      key: "photography",
-      label: tr("home.interests.photography"),
-      note: tr("home.interests.photographyNote"),
-      items: [] as string[],
-    },
-    {
-      key: "games",
-      label: tr("home.interests.games"),
-      note: tr("home.interests.gamesNote"),
-      items: [...games],
-    },
-    {
-      key: "vtuber",
-      label: tr("home.interests.vtuber"),
-      note: tr("home.interests.vtuberNote"),
-      items: [...vtubers],
-    },
-  ];
 
   const heroMeta = [
     { label: tr("home.baseLabel"), value: tr("home.baseValue") },
@@ -147,30 +130,61 @@ export default function HomePage({ posts }: HomePageProps) {
         heading={tr("about.heading")}
         lead={tr("home.intro")}
       >
-        <Grid min="15rem" gap={5}>
-          {interests.map((interest) => (
-            <Card key={interest.key}>
-              <h3 className="interest__label">{interest.label}</h3>
-              <Text tone="muted">{interest.note}</Text>
-              {interest.items.length > 0 && (
-                <div className="interest__chips">
-                  <ChipRow items={interest.items.map((label) => ({ label }))} />
-                </div>
-              )}
+        <Grid min="18rem" gap={5}>
+          {aboutCards.map((card) => (
+            <Card key={card.id} className={`interest interest--${card.id}`}>
+              <h3 className="interest__label">{tr(card.titleKey)}</h3>
+
+              <Stack gap={3}>
+                {card.id === "runner" ? (
+                  <Text as="p" tone="muted" size="sm">
+                    {tr(card.noteKey)}
+                  </Text>
+                ) : (
+                  <Text tone="muted">{tr(card.noteKey)}</Text>
+                )}
+
+                {card.id === "photography" && (
+                  <>
+                    <Text as="p" tone="muted" size="sm">
+                      {tr(card.gearIntroKey)}
+                    </Text>
+                    <Stack as="ul" gap={1} className="interest__gear">
+                      {card.gear.map((item) => (
+                        <Text as="li" key={item} tone="muted" size="sm">
+                          {item}
+                        </Text>
+                      ))}
+                    </Stack>
+                  </>
+                )}
+
+                {card.id === "games" && (
+                  <div className="interest__chips">
+                    <ChipRow items={games.map((label) => ({ label }))} />
+                  </div>
+                )}
+
+                {card.id === "vtuber" && (
+                  <div className="interest__chips">
+                    <ChipRow items={vtubers.map((label) => ({ label }))} />
+                  </div>
+                )}
+
+                {card.id === "acg" && (
+                  <div>
+                    <a className="link-arrow" href={card.href}>
+                      {tr("acg.cta")}
+                      <span className="link-arrow__arrow" aria-hidden="true">
+                        →
+                      </span>
+                    </a>
+                  </div>
+                )}
+              </Stack>
             </Card>
           ))}
         </Grid>
-      </Section>
-
-      <Section id="acg" className="reveal" heading={tr("acg.heading")}>
-        <Card href={ACG_HREF}>
-          <Stack gap={3}>
-            <Text>{tr("acg.note")}</Text>
-            <span className="acg-card__cta">
-              {tr("acg.cta")} <span aria-hidden="true">→</span>
-            </span>
-          </Stack>
-        </Card>
       </Section>
 
       <Section
