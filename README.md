@@ -15,10 +15,11 @@ rendered at build time, and the deployed output is plain HTML/CSS/JS.
 ```
 src/
 ├── adapters/          Ports for storage, locale detection, DOM and search, each with a real adapter and a test double
-├── client/            Client-only entry points (bootstrap composition root, locale-boot, scroll-header)
+├── client/            Client-only entry points (bootstrap composition root, locale-boot, scroll-header, atmosphere)
 ├── components/        Astro and React UI (layout, ui primitives, feature components)
 ├── content/blog/      Blog posts, one Markdown file per post
 ├── content.config.ts  Zod schema for the blog collection
+├── data/              Locale-independent data (About card order + gear, Instagram permalinks)
 ├── hooks/             Client hooks over the store and its injected adapters
 ├── i18n/              Pure dictionaries and t() (index.ts, ui.ts re-export, types.ts)
 ├── layouts/           BaseLayout.astro (SEO, nav, footer, pre-paint boot)
@@ -70,17 +71,23 @@ Selecting a language writes the new locale to the store, to `<html lang>`, to
 Every browser, network and storage effect sits behind a port under
 `src/adapters/`. Each port ships a real adapter and a deterministic test double:
 
-| Port               | Real adapter                                                       | Test double            |
-| :----------------- | :----------------------------------------------------------------- | :--------------------- |
-| `StoragePort`      | `localStorageAdapter` (degrades to memory when storage is blocked) | `memoryStorageAdapter` |
-| `LocaleSourcePort` | `navigatorLocaleSource`                                            | `fixedLocaleSource`    |
-| `DomPort`          | `domAdapter` (scroll, reduced motion, header visibility)           | `noopDomAdapter`       |
-| `PagefindPort`     | `pagefindAdapter` (lazy dynamic import)                            | `fakePagefind`         |
+| Port               | Real adapter                                                                    | Test double            |
+| :----------------- | :------------------------------------------------------------------------------ | :--------------------- |
+| `StoragePort`      | `localStorageAdapter` (degrades to memory when storage is blocked)              | `memoryStorageAdapter` |
+| `LocaleSourcePort` | `navigatorLocaleSource`                                                         | `fixedLocaleSource`    |
+| `DomPort`          | `domAdapter` (scroll, reduced motion, header visibility, the shared frame loop) | `noopDomAdapter`       |
+| `PagefindPort`     | `pagefindAdapter` (lazy dynamic import)                                         | `fakePagefind`         |
 
 Adapters are wired in exactly one place: the composition root
 `src/client/bootstrap.ts`, which assembles a `ClientDeps` bundle and seeds the
 store from the pre-paint decision. Components and hooks receive that bundle;
 none imports an adapter directly, so tests can swap in the doubles above.
+
+The background atmosphere is one such client: `src/client/atmosphere.ts` mounts
+from a layout script with the injected `ClientDeps` and draws on the single
+animation loop the DOM port exposes (`DomPort.startLoop`), so the page never runs
+a second `requestAnimationFrame` loop. The port, not the client, knows about
+`requestAnimationFrame`, `document.hidden` and `prefers-reduced-motion`.
 
 ## State
 
@@ -108,6 +115,29 @@ only: the back link, title, date / reading time and tags. The Markdown body
 stays Astro-rendered by `render()` with `<Content/>` in
 `src/pages/blog/[slug].astro`. Components that need neither a UI library nor
 interactivity stay `.astro`.
+
+The header nav is `About · Blog · Contact · Useful Link`; the ACG persona keeps
+its own page at `/acg/` and is reached from the home About grid, not from the
+header. The home hero carries the wordmark, tagline, "now" line and a small spec
+panel only: the old quick-link row is gone. The language control is a single
+glassy dropdown button (a globe icon plus the current language) whose menu lists
+the three locales; selecting one switches in place, with no URL change and no
+reload.
+
+## Atmosphere
+
+The deep-space background has two parts. The slow nebula wash is a CSS layer
+(`body::before` in `src/styles/global.css`), fixed and `pointer-events:none`. On
+top of it, one fixed, transparent, `pointer-events:none` `<canvas>` paints the
+animated part: drifting star dust, occasional right-to-left shooting stars and
+purple lightning (an ambient flash plus a pointer-interactive bolt).
+
+That canvas is a client module, `src/client/atmosphere.ts`, not a component. It
+mounts from `BaseLayout.astro` with the injected `clientDeps`, exactly like the
+scroll header, and it draws on the single animation loop the DOM port owns
+(`DomPort.startLoop`): no second `requestAnimationFrame`, paused while the tab is
+hidden, and never created under `prefers-reduced-motion: reduce`. Because the
+canvas is `pointer-events:none`, clicks pass straight through to the page.
 
 ## Search
 
@@ -217,6 +247,9 @@ The site ships in three locales, all served from the same URLs:
   barrel). They are authored per locale, not machine translations. Shared,
   locale-independent values such as the public contact handles and email live
   there too.
+- **Locale-independent data** lives in `src/data/**` (for example the About card
+  order and photography gear in `src/data/about.ts`). It holds no translated
+  text; every user-facing label stays in the i18n dictionaries.
 - **`<html lang>`** uses BCP-47 casing via `langAttr` (`zh-Hant`, `zh-Hans`,
   `en`), while locale codes stay lowercase.
 - **Locale is client state.** Each page emits one canonical URL and no `hreflang`
