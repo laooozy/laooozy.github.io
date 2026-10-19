@@ -65,7 +65,13 @@ export const ogLocale = {
 
 export const ui = {
   "zh-hant": {
-    nav: { about: "關於", acg: "ACG", blog: "文章", contact: "聯絡" },
+    nav: {
+      about: "關於",
+      acg: "ACG",
+      blog: "文章",
+      contact: "聯絡",
+      usefulLink: "實用連結",
+    },
     home: {
       title: "laooozy",
       tagline: "攝影、遊戲，與我寫下的一些東西。",
@@ -170,7 +176,13 @@ export const ui = {
     footer: { rights: "版權所有" },
   },
   "zh-hans": {
-    nav: { about: "关于", acg: "ACG", blog: "文章", contact: "联系" },
+    nav: {
+      about: "关于",
+      acg: "ACG",
+      blog: "文章",
+      contact: "联系",
+      usefulLink: "实用链接",
+    },
     home: {
       title: "laooozy",
       tagline: "摄影、游戏，以及我写下的一些东西。",
@@ -275,7 +287,13 @@ export const ui = {
     footer: { rights: "版权所有" },
   },
   en: {
-    nav: { about: "About", acg: "ACG", blog: "Blog", contact: "Contact" },
+    nav: {
+      about: "About",
+      acg: "ACG",
+      blog: "Blog",
+      contact: "Contact",
+      usefulLink: "Useful Link",
+    },
     home: {
       title: "laooozy",
       tagline: "Photography, games, and a few things I write down.",
