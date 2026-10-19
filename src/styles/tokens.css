@@ -19,7 +19,7 @@
   --bg-aurora:
     radial-gradient(
       1200px 820px at 12% -12%,
-      oklch(0.5413 0.2466 293.009 / 0.22),
+      oklch(0.6268 0.2325 303.9004 / 0.22),
       transparent 60%
     ),
     radial-gradient(
@@ -54,13 +54,12 @@
   --card-inset: inset 0 1px 0 oklch(1 0 0 / 0.07);
   /* Soft brand-coloured lift for interactive surfaces. Tight spread keeps it a
    * lift, not a "ghost card" halo. */
-  --shadow-lift: 0 14px 30px -18px oklch(0.5413 0.2466 293.009 / 0.6);
+  --shadow-lift: 0 14px 30px -18px oklch(0.6268 0.2325 303.9004 / 0.6);
 
   /* ------------------------------------------------------------------ *
    * Colour — accent
    * ------------------------------------------------------------------ */
   --accent: oklch(0.6268 0.2325 303.9004);
-  --accent-2: oklch(0.5413 0.2466 293.009);
   --accent-soft: oklch(0.6268 0.2325 303.9004 / 0.14);
   /*
    * shadcn/ui calls a *hover surface* `--accent`; the brand colour is `--accent`
@@ -70,11 +69,6 @@
    */
   --accent-surface: oklch(0.6268 0.2325 303.9004 / 0.14);
   --accent-surface-hover: oklch(0.6268 0.2325 303.9004 / 0.22);
-  --accent-gradient: linear-gradient(
-    135deg,
-    oklch(0.6268 0.2325 303.9004) 0%,
-    oklch(0.5413 0.2466 293.009) 100%
-  );
   --text-on-accent: oklch(0.1473 0.0107 285.0074);
 
   /* ------------------------------------------------------------------ *
