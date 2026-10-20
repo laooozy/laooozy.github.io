@@ -18,7 +18,8 @@ src/
 ├── client/            Client-only entry points (bootstrap composition root, locale-boot, scroll-header, atmosphere)
 ├── components/        Astro and React UI (layout, ui primitives, feature components)
 ├── content/blog/      Blog posts, one Markdown file per post
-├── content.config.ts  Zod schema for the blog collection
+├── content/links/     The useful-links list, one Markdown file for the whole page
+├── content.config.ts  Zod schemas for the blog and links collections
 ├── data/              Locale-independent data (About card order + gear, Instagram permalinks)
 ├── hooks/             Client hooks over the store and its injected adapters
 ├── i18n/              Pure dictionaries and t() (index.ts, ui.ts re-export, types.ts)
@@ -27,7 +28,7 @@ src/
 │   ├── domain/        Pure post domain: sort, tags, periods, paths, formatting
 │   ├── io/            I/O edge: getAllPosts() over astro:content
 │   └── seo.ts         The SITE_INDEXABLE switch
-├── pages/             Routes (one URL space: /, /acg/, /blog/…)
+├── pages/             Routes (one URL space: /, /acg/, /links/, /blog/…)
 ├── store/             The single client store (app-store.ts, types.ts)
 └── styles/            Design tokens and global styles
 public/                Static assets copied verbatim into the build
@@ -116,7 +117,13 @@ stays Astro-rendered by `render()` with `<Content/>` in
 `src/pages/blog/[slug].astro`. Components that need neither a UI library nor
 interactivity stay `.astro`.
 
-The header nav is `About · Blog · Contact · Useful Link`; the ACG persona keeps
+The links page (`src/pages/links.astro`) follows the same split: its Markdown
+list is Astro-rendered, and its heading is emitted in all three locales with the
+static `[data-l]` toggle, so it needs no React island and no client state.
+
+The header nav is `About · Blog · Contact · Useful Links`; Useful Links is its
+own page at `/links/`, and the project's GitHub repository is the first entry in
+that page's list rather than a separate external nav link. The ACG persona keeps
 its own page at `/acg/` and is reached from the home About grid, not from the
 header. The home hero carries the wordmark, tagline, "now" line and a small spec
 panel only: the old quick-link row is gone. The language control is a single
@@ -232,6 +239,24 @@ Notes:
 
 After adding a post, rebuild (`bun run build && bun run pagefind`) or restart the
 dev server.
+
+## Adding a useful link
+
+The whole `/links/` list lives in ONE Markdown file:
+`src/content/links/index.md`. It is not a per-link collection; add, edit or
+remove entries by editing that file:
+
+```md
+- [Display text](https://example.com) — one short note
+```
+
+The visible heading comes from the page and i18n (`links.title`), not from the
+Markdown, so the heading switches with the locale while the list stays
+language-agnostic. The file's optional frontmatter supports `title` and
+`description` (both strings) but neither is required.
+
+After editing the list, rebuild (`bun run build && bun run pagefind`) or restart
+the dev server.
 
 ## Internationalization
 
