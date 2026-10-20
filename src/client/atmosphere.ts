@@ -351,7 +351,11 @@ export function attachAtmosphere(deps: ClientDeps): () => void {
    * `(1 - t)^1.4`, so the head is full width and the tail dissolves to a
    * hairline instead of reading as a constant-width scratch.
    */
-  function ribbonPath(meteor: Meteor, widthScale: number): void {
+  function ribbonPath(
+    meteor: Meteor,
+    widthScale: number,
+    length: number,
+  ): void {
     const nx = -meteor.dirY;
     const ny = meteor.dirX;
     ctx.beginPath();
@@ -361,8 +365,8 @@ export function attachAtmosphere(deps: ClientDeps): () => void {
         0.05,
         (meteor.headW * widthScale * (1 - t) ** 1.4) / 2,
       );
-      const cx = meteor.x - meteor.dirX * meteor.trail * t;
-      const cy = meteor.y - meteor.dirY * meteor.trail * t;
+      const cx = meteor.x - meteor.dirX * length * t;
+      const cy = meteor.y - meteor.dirY * length * t;
       const px = cx + nx * half;
       const py = cy + ny * half;
       if (i === 0) ctx.moveTo(px, py);
@@ -374,20 +378,20 @@ export function attachAtmosphere(deps: ClientDeps): () => void {
         0.05,
         (meteor.headW * widthScale * (1 - t) ** 1.4) / 2,
       );
-      const cx = meteor.x - meteor.dirX * meteor.trail * t;
-      const cy = meteor.y - meteor.dirY * meteor.trail * t;
+      const cx = meteor.x - meteor.dirX * length * t;
+      const cy = meteor.y - meteor.dirY * length * t;
       ctx.lineTo(cx - nx * half, cy - ny * half);
     }
     ctx.closePath();
   }
 
   /** Gradient axis running from the head back to the ribbon tip. */
-  function tailGradient(meteor: Meteor): CanvasGradient {
+  function tailGradient(meteor: Meteor, length: number): CanvasGradient {
     return ctx.createLinearGradient(
       meteor.x,
       meteor.y,
-      meteor.x - meteor.dirX * meteor.trail,
-      meteor.y - meteor.dirY * meteor.trail,
+      meteor.x - meteor.dirX * length,
+      meteor.y - meteor.dirY * length,
     );
   }
 
@@ -397,15 +401,23 @@ export function attachAtmosphere(deps: ClientDeps): () => void {
     const speed = near ? rand(1.35, 1.95) : rand(0.72, 1.02);
     const trailMs = near ? rand(180, 260) : rand(150, 220);
     const trail = Math.max(140, Math.min(speed * trailMs, width * 0.42));
-    const slope = rand(0.16, 0.38);
-    const norm = Math.hypot(1, slope);
-    const dirX = -1 / norm;
-    const dirY = slope / norm;
     const glowR = near ? 32 : 20;
-    const spawnX = width + rand(24, 80);
-    const top = Math.min(trail * dirY + 24, height * 0.45);
-    const spawnY = rand(top, height * 0.45);
-    const exitX = -(glowR + 16);
+
+    // Appear anywhere in the TOP-RIGHT quadrant (inset so the head is on-screen).
+    const spawnX = rand(width * 0.52, width * 0.98);
+    const spawnY = rand(height * 0.02, height * 0.48);
+
+    // Disappear on the bottom-left quadrant's LEFT edge or BOTTOM edge.
+    const exitOnLeft = Math.random() < 0.5;
+    const exitX = exitOnLeft ? -8 : rand(width * 0.02, width * 0.46);
+    const exitY = exitOnLeft ? rand(height * 0.52, height * 0.98) : height + 8;
+
+    const dx = exitX - spawnX;
+    const dy = exitY - spawnY;
+    const dist = Math.max(1, Math.hypot(dx, dy));
+    const dirX = dx / dist;
+    const dirY = dy / dist;
+
     meteors.push({
       x: spawnX,
       y: spawnY,
@@ -416,7 +428,7 @@ export function attachAtmosphere(deps: ClientDeps): () => void {
       headW: near ? 3.2 : 1.8,
       glowR,
       alpha: near ? 1 : rand(0.55, 0.72),
-      life: (spawnX - exitX) / (speed * Math.abs(dirX)),
+      life: dist / speed,
       age: 0,
     });
   }
@@ -450,9 +462,11 @@ export function attachAtmosphere(deps: ClientDeps): () => void {
       }
       // Fade-in only: the lifetime already guarantees the head exits the frame.
       const a = Math.min(1, meteor.age / 70) * meteor.alpha;
+      // A meteor now spawns on-screen, so the tail grows from zero with travel.
+      const tailLen = Math.min(meteor.trail, meteor.age * meteor.speed);
 
-      ribbonPath(meteor, 2.8);
-      const bloom = tailGradient(meteor);
+      ribbonPath(meteor, 2.8, tailLen);
+      const bloom = tailGradient(meteor, tailLen);
       bloom.addColorStop(0, rgba(accentColor, 0.1 * a));
       bloom.addColorStop(0.45, rgba(accentColor, 0.035 * a));
       bloom.addColorStop(1, rgba(accentColor, 0));
@@ -475,8 +489,8 @@ export function attachAtmosphere(deps: ClientDeps): () => void {
       ctx.arc(meteor.x, meteor.y, meteor.glowR, 0, Math.PI * 2);
       ctx.fill();
 
-      ribbonPath(meteor, 1);
-      const crisp = tailGradient(meteor);
+      ribbonPath(meteor, 1, tailLen);
+      const crisp = tailGradient(meteor, tailLen);
       crisp.addColorStop(0, rgba(HOT, 0.8 * a));
       crisp.addColorStop(0.12, rgba(HOT, 0.46 * a));
       crisp.addColorStop(0.4, rgba(mix(HOT, accentColor, 0.45), 0.2 * a));
@@ -508,8 +522,8 @@ export function attachAtmosphere(deps: ClientDeps): () => void {
       ctx.beginPath();
       ctx.moveTo(meteor.x, meteor.y);
       ctx.lineTo(
-        meteor.x - meteor.dirX * meteor.trail * 0.18,
-        meteor.y - meteor.dirY * meteor.trail * 0.18,
+        meteor.x - meteor.dirX * tailLen * 0.18,
+        meteor.y - meteor.dirY * tailLen * 0.18,
       );
       ctx.stroke();
     }
