@@ -39,8 +39,10 @@ const MAX_DPR = 2;
 const MAX_DT_MS = 48;
 
 /** Shooting-star cadence: a bounded random interval keeps it occasional. */
-const METEOR_MIN_MS = 6000;
-const METEOR_MAX_MS = 17000;
+const METEOR_MIN_MS = 4500;
+const METEOR_MAX_MS = 11000;
+/** Cap live meteors so a burst on a tall viewport stays cheap. */
+const MAX_METEORS = 3;
 
 /** Ambient lightning cadence: a bounded random interval, deliberately sparse. */
 const AMBIENT_MIN_MS = 9000;
@@ -74,11 +76,20 @@ interface Star {
 interface Meteor {
   x: number;
   y: number;
-  vx: number;
-  vy: number;
-  /** Streak length in px. */
+  /** Unit forward vector; `dirX` is always negative (right-to-left). */
+  dirX: number;
+  dirY: number;
+  /** Travel speed in px per ms. */
+  speed: number;
+  /** Ribbon length in px. */
   trail: number;
-  /** Lifetime in ms; the head fades over it. */
+  /** Full head width in px (the ribbon tapers to its tip). */
+  headW: number;
+  /** Head halo radius in px. */
+  glowR: number;
+  /** Depth brightness multiplier. */
+  alpha: number;
+  /** Lifetime in ms, sized so the head always exits the viewport. */
   life: number;
   age: number;
 }
@@ -136,6 +147,21 @@ function readToken(name: string, literal: string, fallback: Rgb): Rgb {
 
 function rgba(color: Rgb, alpha: number): string {
   return `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${Math.max(0, alpha).toFixed(3)})`;
+}
+
+/** Emissions white for a meteor's head; deliberately not the `--text` ink. */
+const HOT: Rgb = [255, 253, 255];
+
+/** Normalised samples down the ribbon, head (0) to tip (1). */
+const RIBBON_T: readonly number[] = [0, 0.1, 0.24, 0.42, 0.6, 0.78, 0.9, 1];
+
+/** Linear per-channel blend, rounded to byte values. */
+function mix(a: Rgb, b: Rgb, t: number): Rgb {
+  return [
+    Math.round(a[0] + (b[0] - a[0]) * t),
+    Math.round(a[1] + (b[1] - a[1]) * t),
+    Math.round(a[2] + (b[2] - a[2]) * t),
+  ];
 }
 
 /**
@@ -319,14 +345,78 @@ export function attachAtmosphere(deps: ClientDeps): () => void {
     }
   }
 
+  /**
+   * Trace a meteor's tapered ribbon as a closed polygon: head→tip along one
+   * edge, tip→head along the other. The half-width falls off as
+   * `(1 - t)^1.4`, so the head is full width and the tail dissolves to a
+   * hairline instead of reading as a constant-width scratch.
+   */
+  function ribbonPath(meteor: Meteor, widthScale: number): void {
+    const nx = -meteor.dirY;
+    const ny = meteor.dirX;
+    ctx.beginPath();
+    for (let i = 0; i < RIBBON_T.length; i += 1) {
+      const t = RIBBON_T[i];
+      const half = Math.max(
+        0.05,
+        (meteor.headW * widthScale * (1 - t) ** 1.4) / 2,
+      );
+      const cx = meteor.x - meteor.dirX * meteor.trail * t;
+      const cy = meteor.y - meteor.dirY * meteor.trail * t;
+      const px = cx + nx * half;
+      const py = cy + ny * half;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    for (let i = RIBBON_T.length - 1; i >= 0; i -= 1) {
+      const t = RIBBON_T[i];
+      const half = Math.max(
+        0.05,
+        (meteor.headW * widthScale * (1 - t) ** 1.4) / 2,
+      );
+      const cx = meteor.x - meteor.dirX * meteor.trail * t;
+      const cy = meteor.y - meteor.dirY * meteor.trail * t;
+      ctx.lineTo(cx - nx * half, cy - ny * half);
+    }
+    ctx.closePath();
+  }
+
+  /** Gradient axis running from the head back to the ribbon tip. */
+  function tailGradient(meteor: Meteor): CanvasGradient {
+    return ctx.createLinearGradient(
+      meteor.x,
+      meteor.y,
+      meteor.x - meteor.dirX * meteor.trail,
+      meteor.y - meteor.dirY * meteor.trail,
+    );
+  }
+
   function spawnMeteor(): void {
+    if (meteors.length >= MAX_METEORS) return;
+    const near = Math.random() < 0.4;
+    const speed = near ? rand(1.35, 1.95) : rand(0.72, 1.02);
+    const trailMs = near ? rand(180, 260) : rand(150, 220);
+    const trail = Math.max(140, Math.min(speed * trailMs, width * 0.42));
+    const slope = rand(0.16, 0.38);
+    const norm = Math.hypot(1, slope);
+    const dirX = -1 / norm;
+    const dirY = slope / norm;
+    const glowR = near ? 32 : 20;
+    const spawnX = width + rand(24, 80);
+    const top = Math.min(trail * dirY + 24, height * 0.45);
+    const spawnY = rand(top, height * 0.45);
+    const exitX = -(glowR + 16);
     meteors.push({
-      x: width + rand(40, 120),
-      y: rand(height * 0.04, height * 0.55),
-      vx: -rand(0.34, 0.6),
-      vy: rand(0.05, 0.16),
-      trail: rand(90, 190),
-      life: rand(900, 1500),
+      x: spawnX,
+      y: spawnY,
+      dirX,
+      dirY,
+      speed,
+      trail,
+      headW: near ? 3.2 : 1.8,
+      glowR,
+      alpha: near ? 1 : rand(0.55, 0.72),
+      life: (spawnX - exitX) / (speed * Math.abs(dirX)),
       age: 0,
     });
   }
@@ -345,37 +435,85 @@ export function attachAtmosphere(deps: ClientDeps): () => void {
   }
 
   function drawMeteors(dt: number): void {
+    // One additive pass for every meteor: a hot core plus a faint purple bloom
+    // reads as light rather than paint. Restore also runs after removals.
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
     for (let i = meteors.length - 1; i >= 0; i -= 1) {
       const meteor = meteors[i];
       meteor.age += dt;
-      meteor.x += meteor.vx * dt;
-      meteor.y += meteor.vy * dt;
-      const life = 1 - meteor.age / meteor.life;
-      if (life <= 0 || meteor.x < -meteor.trail - 40) {
+      meteor.x += meteor.dirX * meteor.speed * dt;
+      meteor.y += meteor.dirY * meteor.speed * dt;
+      if (meteor.age >= meteor.life || meteor.x < -meteor.glowR - 16) {
         meteors.splice(i, 1);
         continue;
       }
-      const fade =
-        Math.min(1, life * 2.4) * Math.min(1, (meteor.age / meteor.life) * 5);
-      const norm = Math.hypot(meteor.vx, meteor.vy) || 1;
-      const tailX = meteor.x - (meteor.vx / norm) * meteor.trail;
-      const tailY = meteor.y - (meteor.vy / norm) * meteor.trail;
-      const gradient = ctx.createLinearGradient(
+      // Fade-in only: the lifetime already guarantees the head exits the frame.
+      const a = Math.min(1, meteor.age / 70) * meteor.alpha;
+
+      ribbonPath(meteor, 2.8);
+      const bloom = tailGradient(meteor);
+      bloom.addColorStop(0, rgba(accentColor, 0.1 * a));
+      bloom.addColorStop(0.45, rgba(accentColor, 0.035 * a));
+      bloom.addColorStop(1, rgba(accentColor, 0));
+      ctx.fillStyle = bloom;
+      ctx.fill();
+
+      const halo = ctx.createRadialGradient(
         meteor.x,
         meteor.y,
-        tailX,
-        tailY,
+        0,
+        meteor.x,
+        meteor.y,
+        meteor.glowR,
       );
-      gradient.addColorStop(0, rgba(starColor, 0.85 * fade));
-      gradient.addColorStop(1, rgba(starColor, 0));
-      ctx.strokeStyle = gradient;
-      ctx.lineWidth = 1.6;
+      halo.addColorStop(0, rgba(accentColor, 0.22 * a));
+      halo.addColorStop(0.35, rgba(accentColor, 0.08 * a));
+      halo.addColorStop(1, rgba(accentColor, 0));
+      ctx.fillStyle = halo;
+      ctx.beginPath();
+      ctx.arc(meteor.x, meteor.y, meteor.glowR, 0, Math.PI * 2);
+      ctx.fill();
+
+      ribbonPath(meteor, 1);
+      const crisp = tailGradient(meteor);
+      crisp.addColorStop(0, rgba(HOT, 0.8 * a));
+      crisp.addColorStop(0.12, rgba(HOT, 0.46 * a));
+      crisp.addColorStop(0.4, rgba(mix(HOT, accentColor, 0.45), 0.2 * a));
+      crisp.addColorStop(0.72, rgba(accentColor, 0.07 * a));
+      crisp.addColorStop(1, rgba(accentColor, 0));
+      ctx.fillStyle = crisp;
+      ctx.fill();
+
+      const coreR = meteor.headW * 1.6;
+      const core = ctx.createRadialGradient(
+        meteor.x,
+        meteor.y,
+        0,
+        meteor.x,
+        meteor.y,
+        coreR,
+      );
+      core.addColorStop(0, rgba(HOT, 0.95 * a));
+      core.addColorStop(0.4, rgba(HOT, 0.5 * a));
+      core.addColorStop(1, rgba(HOT, 0));
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.arc(meteor.x, meteor.y, coreR, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = rgba(HOT, 0.35 * a);
+      ctx.lineWidth = 0.8;
       ctx.lineCap = "round";
       ctx.beginPath();
       ctx.moveTo(meteor.x, meteor.y);
-      ctx.lineTo(tailX, tailY);
+      ctx.lineTo(
+        meteor.x - meteor.dirX * meteor.trail * 0.18,
+        meteor.y - meteor.dirY * meteor.trail * 0.18,
+      );
       ctx.stroke();
     }
+    ctx.restore();
   }
 
   function strike(gesture: Point[], weight: number, now: number): void {
