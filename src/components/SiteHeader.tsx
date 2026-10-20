@@ -29,20 +29,15 @@ import { clientDeps } from "@/client/bootstrap";
 import { useT, type Translate } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
 
-// Nav always targets the HOME page's sections (or an external site), so from
-// `/blog/` or any sub-page an anchor still resolves to the home hero sections.
-// Single-URL model: home is always `/` (locale is client-side).
-//
-// `usefulLink` points at the project's GitHub repository. The owner segment is
-// the exact package.json `"name"` value (`laooozy`) and the host matches
-// `astro.config.mjs`'s `site`; it is copied, never retyped from memory.
-const USEFUL_LINK_HREF = "https://github.com/laooozy/laooozy.github.io";
-
+// Nav always targets the HOME page's sections, so from `/blog/` or any sub-page
+// an anchor still resolves to the home hero sections. `usefulLink` is its own
+// page at `/links/`. Single-URL model: home is always `/` (locale is
+// client-side).
 const NAV_ITEMS = [
   { href: "/#about", key: "nav.about" },
   { href: "/#blog", key: "nav.blog" },
   { href: "/#contact", key: "nav.contact" },
-  { href: USEFUL_LINK_HREF, key: "nav.usefulLink", external: true },
+  { href: "/links/", key: "nav.usefulLink" },
 ] as const;
 
 /** The build-time locale every SSR render is emitted in. Stable, no deps. */
@@ -80,13 +75,7 @@ export default function SiteHeader({ children }: SiteHeaderProps) {
             <ul className="site-nav__list">
               {NAV_ITEMS.map((item) => (
                 <li key={item.href}>
-                  <a
-                    className="site-nav__link"
-                    href={item.href}
-                    {...("external" in item && item.external
-                      ? { target: "_blank", rel: "noopener noreferrer" }
-                      : {})}
-                  >
+                  <a className="site-nav__link" href={item.href}>
                     {tr(item.key)}
                   </a>
                 </li>

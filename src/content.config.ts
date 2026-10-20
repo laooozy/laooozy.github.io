@@ -12,4 +12,17 @@ const blog = defineCollection({
   }),
 });
 
-export const collections = { blog };
+/**
+ * Useful links — ONE Markdown file (`index.md`) holding the whole bullet list,
+ * not one entry per link. The schema is deliberately loose: the list is prose
+ * the owner edits by hand, so only an optional title/description are typed.
+ */
+const links = defineCollection({
+  loader: glob({ pattern: "*.md", base: "./src/content/links" }),
+  schema: z.object({
+    title: z.string().optional(),
+    description: z.string().optional(),
+  }),
+});
+
+export const collections = { blog, links };

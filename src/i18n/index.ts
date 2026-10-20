@@ -159,6 +159,9 @@ export const ui = {
       resultCount: "找到 {count} 筆結果",
       close: "關閉搜尋",
     },
+    links: {
+      title: "實用連結",
+    },
     contact: {
       heading: "聯絡我",
       intro: "想聊攝影、遊戲，或只是打聲招呼，都可以從這裡找到我。",
@@ -272,6 +275,9 @@ export const ui = {
       resultCount: "找到 {count} 条结果",
       close: "关闭搜索",
     },
+    links: {
+      title: "实用链接",
+    },
     contact: {
       heading: "联系我",
       intro: "想聊摄影、游戏，或只是打个招呼，都可以从这里找到我。",
@@ -297,7 +303,7 @@ export const ui = {
       about: "About",
       blog: "Blog",
       contact: "Contact",
-      usefulLink: "Useful Link",
+      usefulLink: "Useful Links",
     },
     home: {
       title: "laooozy",
@@ -389,6 +395,9 @@ export const ui = {
       noResults: "No results found.",
       resultCount: "{count} results",
       close: "Close search",
+    },
+    links: {
+      title: "Useful Links",
     },
     contact: {
       heading: "Get in touch",

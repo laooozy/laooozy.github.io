@@ -1,0 +1,99 @@
+---
+/**
+ * Useful links — `/links/`.
+ *
+ * The whole list is ONE Markdown entry (`src/content/links/index.md`) rendered
+ * here with Astro's `render()`. The visible heading is NOT in the Markdown: it
+ * is emitted in all three locales with the existing `[data-l]` toggle, so the
+ * language switch costs no React island and no client state.
+ */
+import { getEntry, render } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import T from "../components/T";
+import { useTranslations } from "../i18n/ui";
+
+const entry = await getEntry("links", "index");
+if (!entry) {
+  throw new Error("Missing links entry: src/content/links/index.md");
+}
+const { Content } = await render(entry);
+const t = useTranslations("zh-hant");
+---
+
+<BaseLayout title={t.links.title}>
+	<article class="links">
+		<header class="links__header">
+			<h1 class="links__title"><T k="links.title" /></h1>
+		</header>
+		<div class="links__body">
+			<Content />
+		</div>
+	</article>
+</BaseLayout>
+
+<style>
+	.links {
+		max-width: var(--container-narrow);
+		margin-inline: auto;
+	}
+
+	.links__header {
+		padding-bottom: var(--space-5);
+		border-bottom: 1px solid
+			color-mix(in oklab, var(--glass-border) 40%, transparent);
+	}
+
+	.links__title {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: clamp(var(--text-2xl), 5vw, var(--text-4xl));
+		line-height: var(--leading-tight);
+		letter-spacing: var(--tracking-display);
+		text-wrap: balance;
+	}
+
+	.links__body {
+		padding-top: var(--space-6);
+		color: var(--text);
+		font-size: var(--text-lg);
+		line-height: var(--leading-relaxed);
+	}
+
+	.links__body :global(> p:first-child) {
+		max-width: var(--measure);
+		margin: 0 0 var(--space-6);
+		color: var(--text-muted);
+	}
+
+	.links__body :global(ul) {
+		display: grid;
+		gap: var(--space-3);
+		max-width: var(--measure);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.links__body :global(li) {
+		padding: var(--space-4) var(--space-5);
+		border: 1px solid var(--glass-border);
+		border-radius: var(--radius-md);
+		background: var(--surface);
+	}
+
+	.links__body :global(a) {
+		color: var(--accent);
+		font-weight: 500;
+		text-decoration: none;
+	}
+
+	.links__body :global(a:hover) {
+		color: var(--text);
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+	}
+
+	.links__body :global(li:has(> a:focus-visible)) {
+		border-color: var(--glass-border-strong);
+	}
+</style>
