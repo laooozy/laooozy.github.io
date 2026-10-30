@@ -175,6 +175,38 @@ const SWITCHER_CSS = `
 	border: 0;
 }
 
+/*
+ * Compact header (see SiteHeader's disclosure breakpoint): on narrow screens
+ * the trigger becomes a 44x44 icon-only control. The locale label is clipped
+ * rather than removed from the accessibility tree, so the trigger's name stays
+ * "language + current locale" while only the globe is visible.
+ */
+@media (max-width: 621px) {
+	.lang-switch__trigger {
+		inline-size: 44px;
+		block-size: 44px;
+		padding: 0;
+		gap: 0;
+		justify-content: center;
+	}
+
+	.lang-switch__trigger [data-l] {
+		position: absolute;
+		inline-size: 1px;
+		block-size: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+
+	.lang-switch__chevron {
+		display: none;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.lang-switch__trigger,
 	.lang-switch__chevron,
@@ -303,6 +335,12 @@ export default function LanguageSwitcher() {
           onClick={() => setOpen((prev) => !prev)}
         >
           <Globe className="lang-switch__globe" aria-hidden="true" size={16} />
+          {/* Static all-locale context: "Language" + the visible locale name is
+              the trigger's accessible name, including when the label is
+              visually clipped on compact screens. */}
+          <span className="lang-switch__sr">
+            <T k="a11y.language" />
+          </span>
           {ALL_LOCALES.map((code) => (
             <span key={code} data-l={code} lang={langAttr[code]}>
               {languages[code]}

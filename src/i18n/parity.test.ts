@@ -46,11 +46,13 @@ const REFERENCE: (typeof LOCALES)[number] = "zh-hant";
 const FIXED_KEYS = [
   "nav.about",
   "nav.blog",
+  "nav.acg",
   "nav.contact",
   "nav.usefulLink",
   "a11y.skipToContent",
   "a11y.primaryNav",
   "a11y.language",
+  "a11y.menu",
   "button.viewAll",
   "blog.heading",
   "blog.empty",

@@ -57,6 +57,7 @@ export const ui = {
     nav: {
       about: "關於",
       blog: "文章",
+      acg: "ACG",
       contact: "聯絡",
       usefulLink: "連結",
     },
@@ -103,6 +104,7 @@ export const ui = {
       skipToContent: "跳至主要內容",
       primaryNav: "主選單",
       language: "語言",
+      menu: "選單",
     },
     footer: { rights: "版權所有" },
   },
@@ -110,6 +112,7 @@ export const ui = {
     nav: {
       about: "关于",
       blog: "文章",
+      acg: "ACG",
       contact: "联系",
       usefulLink: "实用链接",
     },
@@ -156,6 +159,7 @@ export const ui = {
       skipToContent: "跳至主要内容",
       primaryNav: "主菜单",
       language: "语言",
+      menu: "菜单",
     },
     footer: { rights: "版权所有" },
   },
@@ -163,6 +167,7 @@ export const ui = {
     nav: {
       about: "About",
       blog: "Blog",
+      acg: "ACG",
       contact: "Contact",
       usefulLink: "Useful Links",
     },
@@ -209,6 +214,7 @@ export const ui = {
       skipToContent: "Skip to main content",
       primaryNav: "Primary",
       language: "Language",
+      menu: "Menu",
     },
     footer: { rights: "All rights reserved" },
   },
