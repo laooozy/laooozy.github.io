@@ -6,6 +6,7 @@
  * reason.
  */
 import { readdirSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { parse as parseYaml } from "yaml";
@@ -14,7 +15,9 @@ const BLOG_DIR = fileURLToPath(new URL("../../content/blog/", import.meta.url));
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
 
 function blogFilenames(): string[] {
-  return readdirSync(BLOG_DIR).filter((name) => name.endsWith(".md"));
+  return readdirSync(BLOG_DIR, { recursive: true, encoding: "utf8" }).filter(
+    (name) => name.endsWith(".md"),
+  );
 }
 
 describe("blog frontmatter is valid YAML", () => {
@@ -28,7 +31,7 @@ describe("blog frontmatter is valid YAML", () => {
     const offenders: string[] = [];
 
     for (const name of files) {
-      const source = readFileSync(`${BLOG_DIR}${name}`, "utf8");
+      const source = readFileSync(resolve(BLOG_DIR, name), "utf8");
       const match = source.match(FRONTMATTER);
       if (!match) {
         offenders.push(`${name}: missing --- frontmatter block`);
