@@ -6,7 +6,7 @@
  * This module is kept so the ~21 existing importers of `src/i18n/ui` keep
  * resolving every export they relied on:
  *
- *   languages, defaultLang, games, vtubers, contactIdentity,
+ *   languages, defaultLang, contactIdentity,
  *   langAttr, ogLocale, ui, Locale,
  *   resolveLocale, useTranslations, t
  *

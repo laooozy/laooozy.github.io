@@ -6,10 +6,14 @@
  * case-sensitive output folder). `langAttr` maps each code to its BCP-47 value
  * for the <html lang> attribute.
  *
+ * These strings are the FIXED CHROME only: nav, footer, search, blog-listing,
+ * 404, the links heading and the brand/meta strings. Page content lives in the
+ * zh-hant MDX entries (`src/content/pages/*.mdx`) and is never translated, so
+ * there are no content keys here.
+ *
  * These strings are authored per locale. LLM-assisted translation is permitted:
  * a locale may be drafted by a model, but it must read naturally, keep the same
- * voice and never ship as raw machine output (see `PRODUCT.md`). Untranslated
- * PAGES fall back to zh-hant via Astro's `i18n.fallback`.
+ * voice and never ship as raw machine output (see `PRODUCT.md`).
  *
  * This module is pure data + pure functions: no Astro, no DOM. `ui.ts` is kept
  * as a thin re-export barrel so existing importers keep resolving.
@@ -26,23 +30,6 @@ export const languages = {
 } as const;
 
 export const defaultLang = "zh-hant";
-
-/** Game titles shown under the "games" interest (locale-independent). */
-export const games = [
-  "Barotrauma",
-  "CS2",
-  "Dying Light 2",
-  "GTFO",
-  "L4D2",
-  "RE9",
-  "Ready or Not",
-  "Slay the Spire 1+2",
-  "Sons of the Forest",
-  "Stellaris",
-] as const;
-
-/** VTuber channels followed under the "vtuber" interest (locale-independent). */
-export const vtubers = ["Gura", "Laplus"] as const;
 
 /** Public contact handles, identical in every locale. */
 export const contactIdentity = {
@@ -71,72 +58,15 @@ export const ui = {
       about: "關於",
       blog: "文章",
       contact: "聯絡",
-      usefulLink: "實用連結",
+      usefulLink: "連結",
     },
     home: {
       title: "laooozy",
-      tagline: "攝影、遊戲，與我寫下的一些東西。",
-      intro: "嗨，我是 laooozy，住在香港。最近喜歡跑步和拍攝。",
+      tagline: "一個關於我自己的網站。",
       nowLabel: "最近",
-      nowText: "練跑，也練習用相機留住光。",
-      baseLabel: "據點",
-      baseValue: "香港",
-      interestsHeading: "興趣",
-      interests: {
-        runner: "跑步的我",
-        runnerNote: "內容待補",
-        photography: "攝影",
-        photographyNote: "我現在喜歡上了拍照",
-        photographyGearIntro: "目前裝備:",
-        sigmaNote: "(未買，應該會買)",
-        games: "遊戲",
-        gamesNote: "大多是能和別人一起玩、需要彼此配合的作品。",
-        vtuber: "虛擬主播",
-        vtuberNote: "固定會追的幾個台。",
-      },
-    },
-    about: { heading: "關於我" },
-    acg: {
-      heading: "ACG",
-      note: "我是剛起步的業餘攝影新手，喜歡拍 cosplayer。",
-      cta: "看看我的 ACG 介紹",
-    },
-    acgPage: {
-      title: "ACG 攝影",
-      description:
-        "一個喜歡拍 cosplayer 的業餘攝影新手，從 2026 年 ACGHK 之後開始拿起相機。",
-      back: "回到首頁",
-      introHeading: "ACG 攝影",
-      introLead: "我是喜歡拍 cosplayer 的業餘攝影新手，2026 年才剛拿起相機。",
-      introBody:
-        "2026 年我第一次參加 ACGHK。用手機拍下的照片怎麼看都不滿意，於是我買了第一台相機，開始慢慢學。到現在構圖、光線，還有跟 cosplayer 之間的溝通，都還在每天練習。",
-      approachHeading: "我的拍攝方式",
-      /*
-       * TODO(user): owner hasn't decided this content yet — replace the
-       * placeholder below with the real "approach" copy (title + body).
-       * The previous text was AI-invented; it was removed on purpose.
-       */
-      approach: [
-        {
-          title: "內容待補",
-          body: "「我的拍攝方式」這段內容還沒決定，之後會補上。",
-        },
-      ],
-      commissionHeading: "委託與合作",
-      /*
-       * TODO(user): owner hasn't decided this content yet — replace the
-       * placeholder lead + points below with the real commission copy.
-       * The previous text was AI-invented; it was removed on purpose.
-       */
-      commissionLead: "內容待補",
-      commissionPoints: ["「委託與合作」這段內容還沒決定，之後會補上。"],
-      followHeading: "追蹤我的作品",
-      followNote: "作品與約拍資訊，主要都放在 Instagram。",
-      followCta: "在 Instagram 看更多",
     },
     blog: {
       heading: "最新文章",
-      cta: "閱讀更多",
       allPosts: "所有文章",
       filters: "文章篩選",
       byDate: "依時間",
@@ -162,19 +92,13 @@ export const ui = {
     links: {
       title: "實用連結",
     },
-    contact: {
-      heading: "聯絡我",
-      intro: "想聊攝影、遊戲，或只是打聲招呼，都可以從這裡找到我。",
-      instagramLabel: "Instagram",
-      emailLabel: "Email",
-    },
     notFound: {
       title: "找不到頁面",
       heading: "找不到頁面",
-      body: "你要找的頁面不存在，或已經被移動了。",
+      body: "你好像來到了甚麼都沒有的地方呢。",
       backHome: "回到首頁",
     },
-    button: { readMore: "閱讀更多", viewAll: "查看全部" },
+    button: { viewAll: "查看全部" },
     a11y: {
       skipToContent: "跳至主要內容",
       primaryNav: "主選單",
@@ -192,67 +116,10 @@ export const ui = {
     home: {
       title: "laooozy",
       tagline: "摄影、游戏，以及我写下的一些东西。",
-      intro: "嗨，我是 laooozy，住在香港。最近喜欢跑步和拍摄。",
       nowLabel: "最近",
-      nowText: "练跑，也练习用相机留住光。",
-      baseLabel: "据点",
-      baseValue: "香港",
-      interestsHeading: "兴趣",
-      interests: {
-        runner: "跑步的我",
-        runnerNote: "内容待补",
-        photography: "摄影",
-        photographyNote: "我现在喜欢上了拍照",
-        photographyGearIntro: "目前装备:",
-        sigmaNote: "(未买，应该会买)",
-        games: "游戏",
-        gamesNote: "大多是能和别人一起玩、需要彼此配合的作品。",
-        vtuber: "虚拟主播",
-        vtuberNote: "固定会追的几个台。",
-      },
-    },
-    about: { heading: "关于我" },
-    acg: {
-      heading: "ACG",
-      note: "我是刚起步的业余摄影新手，喜欢拍 cosplayer。",
-      cta: "看看我的 ACG 介绍",
-    },
-    acgPage: {
-      title: "ACG 摄影",
-      description:
-        "一个喜欢拍 cosplayer 的业余摄影新手，从 2026 年 ACGHK 之后开始拿起相机。",
-      back: "回到首页",
-      introHeading: "ACG 摄影",
-      introLead: "我是喜欢拍 cosplayer 的业余摄影新手，2026 年才刚拿起相机。",
-      introBody:
-        "2026 年我第一次参加 ACGHK。用手机拍下的照片怎么看都不满意，于是我买了第一台相机，开始慢慢学。到现在构图、光线，还有跟 cosplayer 之间的沟通，都还在每天练习。",
-      approachHeading: "我的拍摄方式",
-      /*
-       * TODO(user): owner hasn't decided this content yet — replace the
-       * placeholder below with the real "approach" copy (title + body).
-       * The previous text was AI-invented; it was removed on purpose.
-       */
-      approach: [
-        {
-          title: "内容待补",
-          body: "「我的拍摄方式」这段内容还没决定，之后会补上。",
-        },
-      ],
-      commissionHeading: "委托与合作",
-      /*
-       * TODO(user): owner hasn't decided this content yet — replace the
-       * placeholder lead + points below with the real commission copy.
-       * The previous text was AI-invented; it was removed on purpose.
-       */
-      commissionLead: "内容待补",
-      commissionPoints: ["「委托与合作」这段内容还没决定，之后会补上。"],
-      followHeading: "关注我的作品",
-      followNote: "作品与约拍信息，主要都放在 Instagram。",
-      followCta: "在 Instagram 看更多",
     },
     blog: {
       heading: "最新文章",
-      cta: "阅读更多",
       allPosts: "所有文章",
       filters: "文章筛选",
       byDate: "按时间",
@@ -278,19 +145,13 @@ export const ui = {
     links: {
       title: "实用链接",
     },
-    contact: {
-      heading: "联系我",
-      intro: "想聊摄影、游戏，或只是打个招呼，都可以从这里找到我。",
-      instagramLabel: "Instagram",
-      emailLabel: "Email",
-    },
     notFound: {
       title: "找不到页面",
       heading: "找不到页面",
       body: "你要找的页面不存在，或已经被移动了。",
       backHome: "回到首页",
     },
-    button: { readMore: "阅读更多", viewAll: "查看全部" },
+    button: { viewAll: "查看全部" },
     a11y: {
       skipToContent: "跳至主要内容",
       primaryNav: "主菜单",
@@ -308,72 +169,10 @@ export const ui = {
     home: {
       title: "laooozy",
       tagline: "Photography, games, and a few things I write down.",
-      intro:
-        "Hi, I'm laooozy, based in Hong Kong — into running and photography these days.",
       nowLabel: "Now",
-      nowText: "Running, and learning to hold light with a camera.",
-      baseLabel: "Based in",
-      baseValue: "Hong Kong",
-      interestsHeading: "Interests",
-      interests: {
-        runner: "Runner",
-        runnerNote: "Body copy coming soon",
-        photography: "Photography",
-        photographyNote: "I've recently taken up photography.",
-        photographyGearIntro: "Current gear:",
-        sigmaNote: "(not bought yet — planning to)",
-        games: "Games",
-        gamesNote:
-          "Mostly titles I can play with others, where we have to work as a team.",
-        vtuber: "VTubers",
-        vtuberNote: "A small, fixed set of channels I keep up with.",
-      },
-    },
-    about: { heading: "About me" },
-    acg: {
-      heading: "ACG",
-      note: "I'm a beginner photographer who loves shooting cosplayers.",
-      cta: "See my ACG intro",
-    },
-    acgPage: {
-      title: "ACG Photography",
-      description:
-        "A beginner photographer who shoots cosplayers — it all started at ACGHK 2026.",
-      back: "Back to home",
-      introHeading: "ACG Photography",
-      introLead:
-        "I'm an amateur photographer just starting out, and I love shooting cosplayers.",
-      introBody:
-        "2026 was my first time at a convention — ACGHK. The photos I took on my phone looked bad, so I bought a camera and started learning. Composition, light, and talking with cosplayers are still things I practise a little more each day.",
-      approachHeading: "How I shoot",
-      /*
-       * TODO(user): owner hasn't decided this content yet — replace the
-       * placeholder below with the real "approach" copy (title + body).
-       * The previous text was AI-invented; it was removed on purpose.
-       */
-      approach: [
-        {
-          title: "Coming soon",
-          body: "This section — how I shoot — hasn't been decided yet. It'll be added later.",
-        },
-      ],
-      commissionHeading: "Commissions & collaboration",
-      /*
-       * TODO(user): owner hasn't decided this content yet — replace the
-       * placeholder lead + points below with the real commission copy.
-       * The previous text was AI-invented; it was removed on purpose.
-       */
-      commissionLead: "Coming soon",
-      commissionPoints: [
-        "The commissions & collaboration section hasn't been decided yet. It'll be added later.",
-      ],
-      followHeading: "Follow my work",
-      followNote: "My photos and shoot updates mostly live on Instagram.",
-      followCta: "See more on Instagram",
     },
     blog: {
       heading: "Latest posts",
-      cta: "Read more",
       allPosts: "All posts",
       filters: "Filter posts",
       byDate: "By date",
@@ -399,20 +198,13 @@ export const ui = {
     links: {
       title: "Useful Links",
     },
-    contact: {
-      heading: "Get in touch",
-      intro:
-        "Want to talk photography or games, or just say hi? You can reach me here.",
-      instagramLabel: "Instagram",
-      emailLabel: "Email",
-    },
     notFound: {
       title: "Page not found",
       heading: "Page not found",
       body: "The page you're looking for doesn't exist or may have moved.",
       backHome: "Back to home",
     },
-    button: { readMore: "Read more", viewAll: "View all" },
+    button: { viewAll: "View all" },
     a11y: {
       skipToContent: "Skip to main content",
       primaryNav: "Primary",

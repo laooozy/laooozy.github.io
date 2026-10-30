@@ -1,19 +1,29 @@
 /**
- * i18n key-parity guard.
+ * i18n key-parity and used-key guards.
  *
- * Every locale in `src/i18n/index.ts` must define EXACTLY the same set of
- * translation keys. A key present in one locale but missing from another makes
- * `t()` fall back to returning the raw dotted key string for that locale (see
- * `t()`'s documented fallback) — a bug that ships silently because `astro check`
- * cannot see it: each locale is an independent `as const` object with no shared
- * structural constraint, and a missing key still typechecks.
+ * The dictionaries in `src/i18n/index.ts` now hold FIXED CHROME strings only.
+ * Page content lives in the MDX entries (`src/content/pages/*.mdx`) and is
+ * always zh-hant; the chrome is the only locale-reactive surface.
  *
- * This guard walks each locale's `ui` tree to FULL depth — through nested
- * objects AND through arrays (so keys inside array elements are compared too,
- * e.g. `acgPage.approach[].title`) — compares the resulting dotted key-path
- * sets against the zh-hant reference (the default / fallback locale), and fails
- * with the exact dotted path and the offending locale.
+ * Two contracts are enforced here:
+ *
+ * 1. Every locale defines EXACTLY the same set of keys (and exactly the fixed
+ *    chrome set). A key present in one locale but missing from another makes
+ *    `t()` fall back to returning the raw dotted key string for that locale
+ *    (see `t()`'s documented fallback) — a bug that ships silently because
+ *    `astro check` cannot see it: each locale is an independent `as const`
+ *    object with no shared structural constraint, and a missing key still
+ *    typechecks.
+ *
+ * 2. Every literal key referenced from source (`t("…")`, `tr("…")`,
+ *    `translate("locale", "…")` and `<T k="…" />`) exists in the reference
+ *    dictionary. Static dictionary access (`t.home.title`) is already
+ *    typechecked by `useTranslations`; this guard covers the string form that
+ *    the type system cannot see.
  */
+import { readdirSync, readFileSync } from "node:fs";
+import { extname, join, relative } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { ui } from "./index";
@@ -25,11 +35,59 @@ const LOCALES = ["zh-hant", "zh-hans", "en"] as const;
 const REFERENCE: (typeof LOCALES)[number] = "zh-hant";
 
 /**
+ * The complete fixed-chrome key set.
+ *
+ * Content branches (the old home intro/interests/now-text keys, the ACG page,
+ * about and contact blocks, and the ACG card copy) are deliberately absent:
+ * that copy now lives in the zh-hant MDX pages. Later tasks that add fixed chrome
+ * keys (`nav.acg`, `now.pause`/`now.play`, `search.error`,
+ * `blog.pagination`) must add them here and to all three locales.
+ */
+const FIXED_KEYS = [
+  "nav.about",
+  "nav.blog",
+  "nav.contact",
+  "nav.usefulLink",
+  "a11y.skipToContent",
+  "a11y.primaryNav",
+  "a11y.language",
+  "button.viewAll",
+  "blog.heading",
+  "blog.empty",
+  "blog.readTime",
+  "blog.backToIndex",
+  "blog.tagged",
+  "blog.allPosts",
+  "blog.filters",
+  "blog.byDate",
+  "blog.byTag",
+  "blog.prev",
+  "blog.next",
+  "blog.pageOf",
+  "search.trigger",
+  "search.title",
+  "search.placeholder",
+  "search.hint",
+  "search.searching",
+  "search.noResults",
+  "search.resultCount",
+  "search.close",
+  "links.title",
+  "notFound.title",
+  "notFound.heading",
+  "notFound.body",
+  "notFound.backHome",
+  "footer.rights",
+  "home.title",
+  "home.tagline",
+  "home.nowLabel",
+] as const;
+
+/**
  * Collect every dotted key path reachable in a dictionary tree.
  *
  * - object branch → `parent.key`
- * - array → walks each element under a `parent[]` segment, so a key nested in an
- *   array element (e.g. `acgPage.approach[].title`) is compared as well
+ * - array → walks each element under a `parent[]` segment
  * - scalar leaf → its own path
  */
 function collectKeyPaths(
@@ -53,18 +111,74 @@ function collectKeyPaths(
   return out;
 }
 
+/** Files scanned by the used-key guard. */
+const SCAN_EXTENSIONS = new Set([".ts", ".tsx", ".astro", ".mdx"]);
+
+/** Directories under `src/` that hold source, tests or generated output. */
+function collectSourceFiles(dir: string, out: string[] = []): string[] {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      collectSourceFiles(full, out);
+      continue;
+    }
+    if (entry.name.includes(".test.")) continue;
+    if (SCAN_EXTENSIONS.has(extname(entry.name))) out.push(full);
+  }
+  return out;
+}
+
+/**
+ * A call to `t`, `tr` or `translate` whose FIRST string-literal argument is a
+ * key: either `t("blog.empty")` or the locale-first form
+ * `t(defaultLang, "blog.empty")`. The `useT` alias (`const t = useT(...)`) and
+ * the hydration-safe `tr` alias are both plain calls, so they are covered here.
+ */
+const CALL_KEY_RE =
+  /\b(?:t|tr|translate)\(\s*(?:[A-Za-z_$][\w$]*\s*,\s*)?(["'`])([^"'`\n]+)\1/g;
+
+/** `<T k="a11y.language" />` in React/Astro. */
+const T_COMPONENT_KEY_RE = /<T\b[^>]*\bk=(?:"([^"]+)"|'([^']+)')/g;
+
+/** Extract every literal key reference with its source file. */
+function collectReferencedKeys(): Map<string, Set<string>> {
+  const refs = new Map<string, Set<string>>();
+  const root = join(process.cwd(), "src");
+
+  for (const file of collectSourceFiles(root)) {
+    const source = readFileSync(file, "utf8");
+    const rel = relative(process.cwd(), file);
+
+    for (const match of source.matchAll(CALL_KEY_RE)) {
+      const key = match[2];
+      const files = refs.get(key) ?? new Set<string>();
+      files.add(rel);
+      refs.set(key, files);
+    }
+    for (const match of source.matchAll(T_COMPONENT_KEY_RE)) {
+      const key = match[1] ?? match[2];
+      const files = refs.get(key) ?? new Set<string>();
+      files.add(rel);
+      refs.set(key, files);
+    }
+  }
+
+  return refs;
+}
+
 describe("i18n ui key parity", () => {
   it("ships exactly the three known locales", () => {
     expect(Object.keys(ui).sort()).toEqual([...LOCALES].sort());
   });
 
-  it("walks nested objects and arrays to full depth", () => {
+  it("defines exactly the fixed-chrome key set", () => {
     const paths = collectKeyPaths(ui[REFERENCE]);
 
-    // A plain nested key, a key inside an array element, and an array leaf.
-    expect(paths.has("home.interests.photography")).toBe(true);
-    expect(paths.has("acgPage.approach[].title")).toBe(true);
-    expect(paths.has("acgPage.commissionPoints[]")).toBe(true);
+    expect(paths.has("nav.about")).toBe(true);
+    expect(paths.has("blog.pageOf")).toBe(true);
+    expect(paths.has("a11y.language")).toBe(true);
+
+    expect([...paths].sort()).toEqual([...FIXED_KEYS].sort());
   });
 
   it("every locale defines exactly the keys of the reference locale", () => {
@@ -92,5 +206,25 @@ describe("i18n ui key parity", () => {
     }
 
     expect(offenders).toEqual([]);
+  });
+
+  it("every literal key referenced from source exists in the dictionary", () => {
+    const paths = collectKeyPaths(ui[REFERENCE]);
+    const referenced = collectReferencedKeys();
+
+    expect(referenced.size).toBeGreaterThan(0);
+
+    const missing = [...referenced.entries()]
+      .filter(([key]) => !paths.has(key))
+      .map(([key, files]) => `${key} (used in ${[...files].join(", ")})`);
+
+    if (missing.length > 0) {
+      throw new Error(
+        `used-key guard failed (${missing.length} unknown key(s)):\n` +
+          missing.map((line) => `  - ${line}`).join("\n"),
+      );
+    }
+
+    expect(missing).toEqual([]);
   });
 });
