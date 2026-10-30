@@ -13,6 +13,12 @@
  *  - id?: string       card modifier, e.g. "photography" → `interest--photography`
  *  - title: string     the card label (rendered as <h3 class="interest__label">)
  *  - className?: string
+ *  - hidden?: boolean | "empty"
+ *      true    → render nothing at all (no card, label or body).
+ *      "empty" → render nothing while the default slot has no rendered
+ *                content; adding real Markdown body makes the card appear
+ *                again. Use it for a card whose placeholder copy is kept as
+ *                an MDX comment until the owner supplies the real body.
  *
  * The body slot keeps the primitive's typography: paragraphs are muted and
  * margin-free (the stack gap owns spacing), matching the React card's
@@ -24,18 +30,27 @@ interface Props {
   id?: string;
   title: string;
   className?: string;
+  hidden?: boolean | "empty";
 }
 
-const { id, title, className } = Astro.props;
+const { id, title, className, hidden = false } = Astro.props;
+const bodyHtml =
+  hidden === "empty" ? ((await Astro.slots.render("default")) ?? "") : "";
+const isHidden =
+  hidden === true || (hidden === "empty" && bodyHtml.trim() === "");
 ---
 
-<div class:list={["card", "interest", id && `interest--${id}`, className]}>
-  <h3 class="interest__label">{title}</h3>
+{
+  !isHidden && (
+    <div class:list={["card", "interest", id && `interest--${id}`, className]}>
+      <h3 class="interest__label">{title}</h3>
 
-  <Stack gap={3}>
-    <slot />
-  </Stack>
-</div>
+      <Stack gap={3}>
+        <slot />
+      </Stack>
+    </div>
+  )
+}
 
 <style is:global>
   /*

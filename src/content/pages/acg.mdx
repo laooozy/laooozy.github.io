@@ -6,7 +6,6 @@ description: 一個喜歡突然喜歡拍照的純興趣驅動的新手。
 import AcgMasthead from "../../components/mdx/AcgMasthead.astro";
 import Section from "../../components/mdx/Section.astro";
 import Stack from "../../components/mdx/Stack.astro";
-import Grid from "../../components/mdx/Grid.astro";
 import Cluster from "../../components/mdx/Cluster.astro";
 import Cta from "../../components/mdx/Cta.astro";
 import InstagramWall from "../../components/mdx/InstagramWall.astro";
@@ -43,7 +42,10 @@ import { contactIdentity } from "../../i18n";
   </Stack>
 </Section>
 
-<Section id="approach" className="reveal" heading="我的拍攝方式">
+{/*
+Placeholder awaiting the owner's copy. The section stays hidden while its
+body is empty; add real Markdown children below and it appears on rebuild.
+
   <Grid min="16rem" gap={6} className="acg-approach">
     <div class="acg-approach__item">
       <h3 class="acg-approach__title">傾向保留原始構圖</h3>
@@ -52,9 +54,18 @@ import { contactIdentity } from "../../i18n";
       </p>
     </div>
   </Grid>
-</Section>
+*/}
+<Section
+  id="approach"
+  className="reveal"
+  heading="我的拍攝方式"
+  hidden="empty"
+></Section>
 
-<Section id="commission" className="reveal" heading="委託與合作">
+{/*
+Placeholder awaiting the owner's copy. The section stays hidden while its
+body is empty; add real Markdown children below and it appears on rebuild.
+
   <div class="card acg-commission">
     <Stack gap={5}>
       <p class="text text--muted">內容待補</p>
@@ -73,4 +84,10 @@ import { contactIdentity } from "../../i18n";
       </Cluster>
     </Stack>
   </div>
-</Section>
+*/}
+<Section
+  id="commission"
+  className="reveal"
+  heading="委託與合作"
+  hidden="empty"
+></Section>

@@ -37,11 +37,20 @@ language switcher) stays a React island and is **not** part of this kit.
 
 3. **Props carry the structure, slots carry the prose.**
    - `Section`: `heading` (renders `<h2>` and wires `aria-labelledby`), `lead`
-     (muted supporting paragraph), `id` (anchor), `className`. The body is the
-     default slot; an optional `actions` named slot fills the heading row.
+     (muted supporting paragraph), `id` (anchor), `className`, `hidden`. The
+     body is the default slot; an optional `actions` named slot fills the
+     heading row.
    - `InterestCard`: `title` (renders `<h3 class="interest__label">`), `id`
-     (card modifier → `interest--<id>`), `className`. The body is the default
-     slot.
+     (card modifier → `interest--<id>`), `className`, `hidden`. The body is the
+     default slot.
+
+   `hidden` accepts `true` or `"empty"`. `hidden` (the boolean) always renders
+   nothing for that section/card. `hidden="empty"` renders nothing while the
+   default slot produces no content, and renders the section/card normally as
+   soon as real Markdown children are present. Use it to keep an unfinished
+   section out of the public page without deleting the placeholder copy: leave
+   the placeholder as an MDX comment inside the call, and replace that comment
+   with the real body when the owner supplies it.
    - `Hero`: `title`, `tagline`, `meta` (array of `{ label, value }` rows).
      The "now" status line is rendered by `NowTicker.astro` from
      `src/data/now.json`; there are no `nowLabel`/`nowText` props. The default
@@ -97,6 +106,26 @@ language switcher) stays a React island and is **not** part of this kit.
 | `LatestPosts.astro`  | `.grid` of build-time `post-card` entries, or the empty copy                      | build-time, no hydration       |
 | `AcgMasthead.astro`  | `header.acg-masthead` + hero `<h1>` + intro stack                                 | ACG intro                      |
 
+## Hiding unfinished content
+
+Never ship placeholder copy. When a section or card has no real copy yet, keep
+the placeholder in an MDX comment and mark the component `hidden="empty"`:
+
+```mdx
+{/*
+Placeholder awaiting the owner's copy (was: 內容待補).
+Replace this comment with real Markdown and the card appears on rebuild.
+*/}
+
+<InterestCard id="runner" title="Runner" hidden="empty"></InterestCard>
+```
+
+`hidden="empty"` renders no `<section>`/card, no heading and no empty rule or
+gap while the body is empty; adding real Markdown children makes it appear on
+the next build. For a fixed, permanent hide use `hidden` (boolean). This is a
+presentation gate only — the placeholder copy stays in the MDX, ready to be
+replaced, and no final copy is invented in the component or the i18n files.
+
 ## Example — a section with cards
 
 ```mdx
@@ -125,5 +154,7 @@ import Chips from "../../components/mdx/Chips.astro";
   `src/styles/pages.css`.
 - Do not add scoped page styles to chase a design change — change the shared
   token or primitive instead.
-- Empty usage is valid: a `Section` with no heading or an `InterestCard` with
-  no children still renders the same wrapper, just empty.
+- Empty usage is valid by default: a `Section` with no heading or an
+  `InterestCard` with no children still renders the same wrapper, just empty.
+  Add `hidden="empty"` when that empty wrapper should not be emitted at all
+  (the unfinished-placeholder case above).
