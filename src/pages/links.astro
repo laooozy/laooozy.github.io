@@ -37,6 +37,9 @@ const t = useTranslations("zh-hant");
 		<header class="links__header">
 			<h1 class="links__title"><T k="links.title" /></h1>
 		</header>
+		<p class="links__note" lang="zh-Hant">
+			以下為本網站與相關專案的來源連結，內容以繁體中文呈現。
+		</p>
 		<div class="links__body">
 			<Content />
 		</div>
@@ -96,6 +99,14 @@ const t = useTranslations("zh-hant");
 		line-height: var(--leading-tight);
 		letter-spacing: var(--tracking-display);
 		text-wrap: balance;
+	}
+
+	.links__note {
+		max-width: var(--measure);
+		margin: 0;
+		padding-bottom: var(--space-4);
+		font-size: var(--text-sm);
+		color: var(--text-muted);
 	}
 
 	.links__body {

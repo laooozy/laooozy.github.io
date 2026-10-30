@@ -14,6 +14,8 @@
  *  - label: string       the muted field label
  *  - href: string        link target (mailto:, https://, …)
  *  - value?: string      visible link text; omit it to use the default slot
+ *  - ariaLabel?: string  accessible name when the visible value alone (a
+ *                        handle) does not say which account it is
  *  - external?: boolean  adds target="_blank" rel="noopener"
  *  - className?: string
  */
@@ -21,11 +23,19 @@ interface Props {
   label: string;
   href: string;
   value?: string;
+  ariaLabel?: string;
   external?: boolean;
   className?: string;
 }
 
-const { label, href, value, external = false, className } = Astro.props;
+const {
+  label,
+  href,
+  value,
+  ariaLabel,
+  external = false,
+  className,
+} = Astro.props;
 ---
 
 <li class:list={["contact__item", className]}>
@@ -33,6 +43,7 @@ const { label, href, value, external = false, className } = Astro.props;
   <a
     class="contact__link"
     href={href}
+    aria-label={ariaLabel}
     target={external ? "_blank" : undefined}
     rel={external ? "noopener" : undefined}
   >

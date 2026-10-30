@@ -34,7 +34,7 @@ interface InstagramGateProps {
   scriptSrc: string;
   /** The profile the fallback link-out points at. */
   profileHref: string;
-  /** The handle shown in the fallback label, e.g. `@acg.laoozy`. */
+  /** The handle shown in the fallback label, e.g. `@acg.laooozy`. */
   handle: string;
   /** How many posts the wall resolves, so the button states the cost. */
   postCount: number;
