@@ -215,7 +215,7 @@ export const ui = {
       searching: "Searching…",
       noResults: "No results found.",
       error: "Search is unavailable right now. Please try again.",
-      resultCount: "{count} results",
+      resultCount: "Results: {count}",
       close: "Close search",
     },
     links: {

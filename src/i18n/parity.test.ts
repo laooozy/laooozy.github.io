@@ -26,7 +26,7 @@ import { extname, join, relative } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { ui } from "./index";
+import { t, ui } from "./index";
 
 /** The three site locales. zh-hant is the default/fallback, used as reference. */
 const LOCALES = ["zh-hant", "zh-hans", "en"] as const;
@@ -232,5 +232,20 @@ describe("i18n ui key parity", () => {
     }
 
     expect(missing).toEqual([]);
+  });
+});
+
+
+describe("search result count copy", () => {
+  it("is grammatical for 0/1/2+ results in English", () => {
+    expect(t("en", "search.resultCount", { count: 0 })).toBe("Results: 0");
+    expect(t("en", "search.resultCount", { count: 1 })).toBe("Results: 1");
+    expect(t("en", "search.resultCount", { count: 2 })).toBe("Results: 2");
+    expect(t("en", "search.resultCount", { count: 12 })).toBe("Results: 12");
+  });
+
+  it("leaves the Chinese result counts unchanged", () => {
+    expect(t("zh-hant", "search.resultCount", { count: 1 })).toBe("找到 1 筆結果");
+    expect(t("zh-hans", "search.resultCount", { count: 2 })).toBe("找到 2 条结果");
   });
 });
