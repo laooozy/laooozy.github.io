@@ -1135,6 +1135,7 @@ a.now-ticker__item:focus-visible {
 
 .blog-index__title {
   margin: 0;
+  font-size: var(--text-page-title);
 }
 
 .blog-list {
@@ -1296,7 +1297,7 @@ a.now-ticker__item:focus-visible {
 
 .post__title {
   margin: 0 0 var(--space-4);
-  font-size: clamp(var(--text-2xl), 5vw, var(--text-4xl));
+  font-size: var(--text-page-title);
   line-height: var(--leading-tight);
   text-wrap: balance;
 }

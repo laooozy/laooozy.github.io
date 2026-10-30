@@ -118,6 +118,11 @@
   --text-2xl: 1.5rem;
   --text-3xl: 2rem;
   --text-4xl: clamp(2.25rem, 5vw, 3.5rem);
+  /* Page titles (blog index, links, article) share one scale. The 2rem floor
+   * keeps an article h1 (32px) clearly above its body h2 (--text-2xl, 24px)
+   * at 320px, where the old 5vw clamp collapsed both to 24px. Heroes use
+   * --text-hero and are deliberately outside this scale. */
+  --text-page-title: clamp(2rem, 6vw, 3.5rem);
   /* Hero ceiling stays under 6rem so the page never shouts. */
   --text-hero: clamp(2.75rem, 9vw, 5.5rem);
 
