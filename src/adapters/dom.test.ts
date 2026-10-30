@@ -59,6 +59,9 @@ describe("noopDomAdapter", () => {
 
     expect(noopDomAdapter.createIntersectionObserver(() => {})).toBeNull();
     expect(() => noopDomAdapter.setHeaderHidden(true)).not.toThrow();
+    expect(noopDomAdapter.isHeaderFocusWithin()).toBe(false);
+    expect(typeof noopDomAdapter.keepHeaderFocusStable()).toBe("function");
+    expect(() => noopDomAdapter.keepHeaderFocusStable()()).not.toThrow();
     expect(() => noopDomAdapter.applyLocale("en")).not.toThrow();
   });
 });
@@ -95,6 +98,79 @@ describe("domAdapter prefersReducedMotion", () => {
     });
 
     expect(domAdapter.prefersReducedMotion()).toBe(false);
+  });
+});
+
+describe("domAdapter header semantics", () => {
+  it("adds and removes `data-hidden` and `inert` together", () => {
+    const attrs = new Set<string>();
+    const header = {
+      setAttribute: (name: string) => attrs.add(name),
+      removeAttribute: (name: string) => attrs.delete(name),
+    };
+    defineGlobal("document", { querySelector: () => header });
+
+    domAdapter.setHeaderHidden(true);
+    expect([...attrs]).toEqual(["data-hidden", "inert"]);
+
+    domAdapter.setHeaderHidden(false);
+    expect(attrs.size).toBe(0);
+  });
+
+  it("reports focus inside the header only", () => {
+    const inside = { id: "nav-link" };
+    const header = { contains: (node: unknown) => node === inside };
+
+    defineGlobal("document", {
+      querySelector: () => header,
+      activeElement: inside,
+    });
+    expect(domAdapter.isHeaderFocusWithin()).toBe(true);
+
+    defineGlobal("document", {
+      querySelector: () => header,
+      activeElement: { id: "page-body" },
+    });
+    expect(domAdapter.isHeaderFocusWithin()).toBe(false);
+  });
+
+  it("restores the scroll offset when focus lands in the shown header", () => {
+    const inside = { id: "nav-link" };
+    const listeners = new Set<(event: { target: unknown }) => void>();
+    const header = {
+      hasAttribute: () => false,
+      contains: (node: unknown) => node === inside,
+    };
+    const scrollTo = vi.fn();
+    defineGlobal("document", {
+      querySelector: () => header,
+      addEventListener: (
+        _type: string,
+        cb: (event: { target: unknown }) => void,
+      ) => listeners.add(cb),
+      removeEventListener: (
+        _type: string,
+        cb: (event: { target: unknown }) => void,
+      ) => listeners.delete(cb),
+    });
+    defineGlobal("window", {
+      scrollX: 3,
+      scrollY: 900,
+      scrollTo,
+      requestAnimationFrame: (cb: (time: number) => void) => {
+        cb(16);
+        return 1;
+      },
+    });
+
+    const stop = domAdapter.keepHeaderFocusStable();
+    expect(listeners.size).toBe(1);
+
+    for (const cb of listeners) cb({ target: inside });
+    expect(scrollTo).toHaveBeenCalledWith(3, 900);
+
+    stop();
+    expect(listeners.size).toBe(0);
   });
 });
 

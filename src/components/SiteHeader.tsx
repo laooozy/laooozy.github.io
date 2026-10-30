@@ -38,6 +38,7 @@
 
 import { Menu, X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useStore } from "zustand";
 
 import { clientDeps } from "@/client/bootstrap";
 import { useT, type Translate } from "@/hooks/useT";
@@ -102,6 +103,10 @@ export default function SiteHeader({
   // hydration render agree; flipped after mount to adopt the store locale.
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const headerHidden = useStore(
+    clientDeps.store,
+    (state) => state.headerHidden,
+  );
 
   const menuRef = useRef<HTMLDetailsElement>(null);
   const summaryRef = useRef<HTMLElement>(null);
@@ -115,6 +120,18 @@ export default function SiteHeader({
     setMenuOpen(false);
   }, [currentPath]);
 
+  // Publish the panel state for the scroll-header guard so a scroll-down can
+  // never hide the bar out from under an open menu.
+  useEffect(() => {
+    clientDeps.store.getState().setHeaderMenuOpen(menuOpen);
+  }, [menuOpen]);
+
+  // Safety net: if the bar is ever hidden anyway, close the panel instead of
+  // leaving it translated off-screen.
+  useEffect(() => {
+    if (headerHidden && menuOpen) setMenuOpen(false);
+  }, [headerHidden, menuOpen]);
+
   // Close when the pointer presses outside the disclosure.
   useEffect(() => {
     if (!menuOpen) return;
@@ -127,7 +144,9 @@ export default function SiteHeader({
 
   const closeMenu = (returnFocus: boolean) => {
     setMenuOpen(false);
-    if (returnFocus) summaryRef.current?.focus();
+    // The trigger is already visible inside the sticky bar; restoring focus
+    // must not scroll the page to the header's static position.
+    if (returnFocus) summaryRef.current?.focus({ preventScroll: true });
   };
 
   const tr = mounted ? t : defaultTranslate;

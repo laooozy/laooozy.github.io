@@ -53,8 +53,26 @@ export interface DomPort {
   onScroll(callback: (scrollY: number) => void): () => void;
   /** `true` when the user asked for reduced motion. `false` when unknown. */
   prefersReducedMotion(): boolean;
-  /** Toggle the `data-hidden` attribute on `[data-site-header]`. */
+  /**
+   * Toggle the header's hidden state: the `data-hidden` attribute (the
+   * off-screen transform) and `inert` (so a hidden bar's links/buttons leave
+   * the tab order and the accessibility tree). Both are removed when shown.
+   */
   setHeaderHidden(hidden: boolean): void;
+  /**
+   * `true` while keyboard focus is on, or inside, `[data-site-header]`. The
+   * scroll-header guard uses it so a focused bar never slides away under the
+   * user. `false` without a DOM, an active element or a header.
+   */
+  isHeaderFocusWithin(): boolean;
+  /**
+   * Stop focus inside the sticky header from moving the page. Chrome scrolls
+   * a focused sticky descendant toward its static (off-screen) position, so
+   * this listener restores the pre-focus scroll offset on the next frame.
+   * It ignores an inert/hidden header (nothing there can hold focus). Returns
+   * an unsubscribe.
+   */
+  keepHeaderFocusStable(): () => void;
   /**
    * Apply a locale to the document root: sets `<html lang>` to its BCP-47 tag
    * (`langAttr`) and mirrors the code into `document.documentElement.dataset.locale`
@@ -133,10 +151,55 @@ function createDomAdapter(): DomPort {
         if (typeof document === "undefined") return;
         const header = document.querySelector("[data-site-header]");
         if (!header) return;
-        if (hidden) header.setAttribute("data-hidden", "");
-        else header.removeAttribute("data-hidden");
+        if (hidden) {
+          header.setAttribute("data-hidden", "");
+          header.setAttribute("inert", "");
+        } else {
+          header.removeAttribute("data-hidden");
+          header.removeAttribute("inert");
+        }
       } catch {
         // Best-effort: header visibility must never break the caller.
+      }
+    },
+
+    isHeaderFocusWithin() {
+      try {
+        if (typeof document === "undefined") return false;
+        const header = document.querySelector("[data-site-header]");
+        const active = document.activeElement;
+        return Boolean(header && active && header.contains(active));
+      } catch {
+        return false;
+      }
+    },
+
+    keepHeaderFocusStable() {
+      try {
+        if (typeof document === "undefined") return () => {};
+        const handleFocusIn = (event: FocusEvent) => {
+          try {
+            if (typeof window === "undefined") return;
+            const header = document.querySelector("[data-site-header]");
+            if (
+              !header ||
+              header.hasAttribute("inert") ||
+              !header.contains(event.target as Node)
+            ) {
+              return;
+            }
+            const x = window.scrollX;
+            const y = window.scrollY;
+            window.requestAnimationFrame(() => window.scrollTo(x, y));
+          } catch {
+            // Best-effort: focus stability must never break the event.
+          }
+        };
+        document.addEventListener("focusin", handleFocusIn, true);
+        return () =>
+          document.removeEventListener("focusin", handleFocusIn, true);
+      } catch {
+        return () => {};
       }
     },
 
@@ -230,6 +293,8 @@ export const noopDomAdapter: DomPort = {
   onScroll: () => () => {},
   prefersReducedMotion: () => false,
   setHeaderHidden: () => {},
+  isHeaderFocusWithin: () => false,
+  keepHeaderFocusStable: () => () => {},
   applyLocale: () => {},
   startLoop: () => () => {},
   onVisibilityChange: () => () => {},

@@ -141,6 +141,15 @@
   --container-narrow: 46rem;
   --measure: 68ch;
 
+  /*
+   * Live height of the sticky header row: inner content + `padding-block` +
+   * the 1px bottom border. Measured against the rendered chrome at the
+   * desktop breakpoint (brand line 18px × 1.65 + 2 × 1rem + 1px). It is the
+   * ONE source for the anchor offset below, so in-page targets and the skip
+   * link land under the bar instead of behind it.
+   */
+  --header-height: 62.7px;
+
   /* ------------------------------------------------------------------ *
    * Motion — ease-out, no bounce
    * ------------------------------------------------------------------ */
@@ -164,4 +173,15 @@
   --z-modal: 400;
   --z-toast: 500;
   --z-tooltip: 600;
+}
+
+/*
+ * Compact header breakpoint (same ≤621px switch as the chrome). The row
+ * drops to `padding-block: var(--space-3)` around the 44px controls:
+ * 44px + 2 × 0.75rem + 1px = 69px.
+ */
+@media (max-width: 621px) {
+  :root {
+    --header-height: 69px;
+  }
 }

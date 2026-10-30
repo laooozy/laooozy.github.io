@@ -44,4 +44,34 @@ describe("resolveHeaderHidden", () => {
       resolveHeaderHidden({ scrollY: 200, lastScrollY: 200, hidden: false }),
     ).toBe(false);
   });
+
+  it("never hides while the mobile menu is open", () => {
+    expect(
+      resolveHeaderHidden(
+        { scrollY: 240, lastScrollY: 120, hidden: false },
+        NEAR_TOP_PX,
+        { menuOpen: true, focusWithinHeader: false },
+      ),
+    ).toBe(false);
+  });
+
+  it("never hides while focus is inside the header", () => {
+    expect(
+      resolveHeaderHidden(
+        { scrollY: 240, lastScrollY: 120, hidden: true },
+        NEAR_TOP_PX,
+        { menuOpen: false, focusWithinHeader: true },
+      ),
+    ).toBe(false);
+  });
+
+  it("hides again on scroll-down once the guard is clear", () => {
+    expect(
+      resolveHeaderHidden(
+        { scrollY: 240, lastScrollY: 120, hidden: false },
+        NEAR_TOP_PX,
+        { menuOpen: false, focusWithinHeader: false },
+      ),
+    ).toBe(true);
+  });
 });

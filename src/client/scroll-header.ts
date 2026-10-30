@@ -28,22 +28,44 @@ export function attachScrollHeader(deps: ClientDeps): () => void {
     deps.adapters.dom.setHeaderHidden(hidden);
   };
 
-  return deps.adapters.dom.onScroll((scrollY) => {
+  // A sticky header's focused links would otherwise drag the page toward the
+  // header's static position; this keeps the scroll offset where the user
+  // left it.
+  const stopFocusStability = deps.adapters.dom.keepHeaderFocusStable();
+
+  const stopScroll = deps.adapters.dom.onScroll((scrollY) => {
     if (deps.adapters.dom.prefersReducedMotion()) {
       lastScrollY = scrollY;
       apply(false);
       return;
     }
 
+    const state = deps.store.getState();
+    /*
+     * The bar never hides while the user is using it: the open mobile panel
+     * (store flag, kept in sync by SiteHeader) or focus anywhere inside it
+     * (read through the port, never `document.activeElement` here). Because
+     * those guards prevent hiding, an open menu/language popover can never be
+     * left translated off-screen — no separate close-on-hide is reachable.
+     */
     const hidden = resolveHeaderHidden(
       {
         scrollY,
         lastScrollY,
-        hidden: deps.store.getState().headerHidden,
+        hidden: state.headerHidden,
       },
       NEAR_TOP_PX,
+      {
+        menuOpen: state.headerMenuOpen,
+        focusWithinHeader: deps.adapters.dom.isHeaderFocusWithin(),
+      },
     );
     lastScrollY = scrollY;
     apply(hidden);
   });
+
+  return () => {
+    stopScroll();
+    stopFocusStability();
+  };
 }

@@ -32,6 +32,7 @@ export const appStore = createStore<AppStore>()((set) => ({
   // the store itself only owns the default.
   locale: defaultLang,
   headerHidden: false,
+  headerMenuOpen: false,
   search: {
     open: false,
     query: "",
@@ -42,6 +43,8 @@ export const appStore = createStore<AppStore>()((set) => ({
   setLocale: (locale) => set({ locale }),
 
   setHeaderHidden: (hidden) => set({ headerHidden: hidden }),
+
+  setHeaderMenuOpen: (open) => set({ headerMenuOpen: open }),
 
   openSearch: () =>
     set((state) => ({ search: { ...state.search, open: true } })),

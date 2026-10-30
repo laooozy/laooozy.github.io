@@ -253,7 +253,7 @@ export default function LanguageSwitcher() {
 
   const close = useCallback((returnFocus: boolean) => {
     setOpen(false);
-    if (returnFocus) triggerRef.current?.focus();
+    if (returnFocus) triggerRef.current?.focus({ preventScroll: true });
   }, []);
 
   // Close on a pointer press outside the switcher.
@@ -271,7 +271,7 @@ export default function LanguageSwitcher() {
     if (!open) return;
     const items = getItems();
     const active = items.find((el) => el.dataset.lang === locale);
-    (active ?? items[0])?.focus();
+    (active ?? items[0])?.focus({ preventScroll: true });
     // `locale` is intentionally not a dependency: this should run once per
     // open, not refocus the list every time the locale changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -282,7 +282,7 @@ export default function LanguageSwitcher() {
     const items = getItems();
     if (items.length === 0) return;
     const next = (index + items.length) % items.length;
-    items[next]?.focus();
+    items[next]?.focus({ preventScroll: true });
   };
 
   const onItemKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
@@ -324,7 +324,7 @@ export default function LanguageSwitcher() {
           for (let step = 1; step <= items.length; step += 1) {
             const candidate = items[(current + step) % items.length];
             if (candidate && matches(candidate)) {
-              candidate.focus();
+              candidate.focus({ preventScroll: true });
               break;
             }
           }

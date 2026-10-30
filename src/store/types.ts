@@ -37,6 +37,11 @@ export interface AppState {
   locale: Locale;
   /** Whether the site header is currently hidden (scroll direction). */
   headerHidden: boolean;
+  /**
+   * Whether the compact header's disclosure panel is open. The scroll-header
+   * guard reads it so the bar never hides while the menu is in use.
+   */
+  headerMenuOpen: boolean;
   /** Search overlay state. */
   search: SearchState;
 }
@@ -45,6 +50,7 @@ export interface AppState {
 export interface AppActions {
   setLocale(locale: Locale): void;
   setHeaderHidden(hidden: boolean): void;
+  setHeaderMenuOpen(open: boolean): void;
   openSearch(): void;
   closeSearch(): void;
   setSearchQuery(query: string): void;

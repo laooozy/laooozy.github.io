@@ -17,14 +17,28 @@ export interface ScrollSample {
 }
 
 /**
- * Pure header-visibility decision for one scroll frame. Near the top OR any
- * upward movement reveals (`false`); otherwise a downward move hides (`true`).
- * A no-op frame keeps the current visibility.
+ * Reasons the bar must stay put even while the page scrolls down: the user is
+ * using it. Either one forces a reveal.
+ */
+export interface ScrollHeaderGuard {
+  /** The compact disclosure panel is open. */
+  menuOpen: boolean;
+  /** Keyboard focus is on or inside the header. */
+  focusWithinHeader: boolean;
+}
+
+/**
+ * Pure header-visibility decision for one scroll frame. An active guard (open
+ * menu or focus in the header) always reveals; otherwise near the top OR any
+ * upward movement reveals (`false`), a downward move hides (`true`), and a
+ * no-op frame keeps the current visibility.
  */
 export function resolveHeaderHidden(
   sample: ScrollSample,
   nearTopPx: number = NEAR_TOP_PX,
+  guard?: ScrollHeaderGuard,
 ): boolean {
+  if (guard?.menuOpen || guard?.focusWithinHeader) return false;
   if (sample.scrollY <= nearTopPx) return false;
   if (sample.scrollY > sample.lastScrollY) return true;
   if (sample.scrollY < sample.lastScrollY) return false;

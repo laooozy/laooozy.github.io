@@ -102,7 +102,12 @@ if (!themeColor) {
 			<LanguageSwitcher client:idle />
 		</SiteHeader>
 
-		<main id="main" class="site-main">
+		{/*
+		 * `tabindex="-1"` makes the skip link's target programmatically
+		 * focusable (so focus actually lands in the content, not the bar);
+		 * the anchor offset comes from `html { scroll-padding-top }` alone.
+		 */}
+		<main id="main" class="site-main" tabindex="-1">
 			<Container>
 				<slot />
 			</Container>
