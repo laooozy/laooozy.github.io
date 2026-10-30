@@ -22,11 +22,11 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";
+import BlogEmpty from "@/components/BlogEmpty";
 import BlogFilters from "@/components/BlogFilters";
 import BlogPagination from "@/components/BlogPagination";
 import PostCard from "@/components/PostCard";
 import Heading from "@/components/ui/Heading";
-import Text from "@/components/ui/Text";
 import type { FilterLink, Pagination } from "@/components/types";
 import { useLocale } from "@/hooks/useLocale";
 import { useT, type Translate } from "@/hooks/useT";
@@ -143,7 +143,7 @@ export default function BlogList({
           ))}
         </ul>
       ) : (
-        <Text tone="muted">{tr("blog.empty")}</Text>
+        <BlogEmpty />
       )}
 
       {pagination && pagination.lastPage > 1 && (

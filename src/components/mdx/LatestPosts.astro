@@ -15,13 +15,13 @@
 import { defaultLang, t } from "../../i18n/index";
 import { formatPostDate, toBlogListItem } from "../../lib/domain/posts";
 import { getAllPosts } from "../../lib/io/posts";
+import BlogEmptyView from "../BlogEmptyView";
 import PostCardView from "../PostCardView";
 import Grid from "./Grid.astro";
 
 const posts = (await getAllPosts()).slice(0, 4).map((post) =>
   toBlogListItem(post),
 );
-const emptyLabel = t(defaultLang, "blog.empty");
 ---
 
 {
@@ -42,6 +42,11 @@ const emptyLabel = t(defaultLang, "blog.empty");
       ))}
     </Grid>
   ) : (
-    <p class="text text--base text--muted">{emptyLabel}</p>
+    <BlogEmptyView
+      heading={t(defaultLang, "nav.blog")}
+      message={t(defaultLang, "blog.empty")}
+      homeLabel={t(defaultLang, "notFound.backHome")}
+      acgLabel={t(defaultLang, "nav.acg")}
+    />
   )
 }

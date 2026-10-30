@@ -971,6 +971,21 @@ a.chip--tag:focus-visible {
   list-style: none;
 }
 
+/* Intentional zero-post panel (task 19) — replaces the bare muted sentence.
+   The card surface comes from `.card`; keep the panel to a readable measure and
+   give both actions a 44px hit box at every width. */
+.blog-empty {
+  max-inline-size: 44rem;
+}
+
+.blog-empty__title {
+  margin: 0;
+}
+
+.blog-empty__action {
+  min-block-size: 44px;
+}
+
 .post-card {
   height: 100%;
 }
