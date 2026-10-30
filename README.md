@@ -7,8 +7,8 @@ an ACG (anime / comic / games) persona. It is a fully static
 [Astro](https://astro.build) build published to GitHub Pages at
 <https://laooozy.github.io>.
 
-There is no CMS and no server. Content lives in the repo as Markdown, the site is
-rendered at build time, and the deployed output is plain HTML/CSS/JS.
+There is no CMS and no server. Content lives in the repo as Markdown/MDX, the
+site is rendered at build time, and the deployed output is plain HTML/CSS/JS.
 
 ## What's here
 
@@ -16,19 +16,20 @@ rendered at build time, and the deployed output is plain HTML/CSS/JS.
 src/
 ├── adapters/          Ports for storage, locale detection, DOM and search, each with a real adapter and a test double
 ├── client/            Client-only entry points (bootstrap composition root, locale-boot, scroll-header, atmosphere)
-├── components/        Astro and React UI (layout, ui primitives, feature components)
+├── components/        Astro and React UI (chrome, MDX page kit, layout primitives, feature components)
 ├── content/blog/      Blog posts, one Markdown file per post
 ├── content/links/     The useful-links list, one Markdown file for the whole page
-├── content.config.ts  Zod schemas for the blog and links collections
-├── data/              Locale-independent data (About card order + gear, Instagram permalinks)
+├── content/pages/     Page bodies authored in MDX (home.mdx, acg.mdx)
+├── content.config.ts  Zod schemas for the blog, links and pages collections
+├── data/              Locale-independent data (Instagram permalinks; the planned now.json ticker)
 ├── hooks/             Client hooks over the store and its injected adapters
-├── i18n/              Pure dictionaries and t() (index.ts, ui.ts re-export, types.ts)
+├── i18n/              Fixed-chrome dictionaries and t() (index.ts, ui.ts re-export, types.ts)
 ├── layouts/           BaseLayout.astro (SEO, nav, footer, pre-paint boot)
 ├── lib/
 │   ├── domain/        Pure post domain: sort, tags, periods, paths, formatting
-│   ├── io/            I/O edge: getAllPosts() over astro:content
+│   ├── io/            I/O edge: getAllPosts() over astro:content, Instagram oEmbed
 │   └── seo.ts         The SITE_INDEXABLE switch
-├── pages/             Routes (one URL space: /, /acg/, /links/, /blog/…)
+├── pages/             Thin route shells (one URL space: /, /acg/, /links/, /blog/…)
 ├── store/             The single client store (app-store.ts, types.ts)
 └── styles/            Design tokens and global styles
 public/                Static assets copied verbatim into the build
@@ -54,9 +55,10 @@ Resolution order, applied before the first paint by an inline script in `<head>`
 The script sets `<html lang>` and `data-locale` before paint. Locale-dependent
 text is rendered by hydrated React components that read the locale from the
 Zustand store through `useT(clientDeps)` (`src/hooks/useT.ts`). When the language
-changes, those components re-render in place: no navigation, no reload. The
-`<T>` component survives only for the language switcher's static screen-reader
-a11y label.
+changes, those components re-render in place: no navigation, no reload. Page
+bodies in `src/content/pages/*.mdx` are outside that mechanism: they stay
+zh-hant in every locale. The `<T>` component survives only for the static
+all-locale labels on the language switcher and the `/links/` heading.
 
 Because the build is static and single-URL, the server-rendered HTML is always
 the default locale (`zh-hant`), and each island renders that default until it
@@ -101,15 +103,21 @@ adapters push values in through its actions.
 
 ## Components
 
-React is used where a UI library or interactivity is needed, and any surface
-that renders locale-dependent text is a hydrated React island so it can
-re-render with the client locale. Hydration is split by surface:
+React is used only for interactive or locale-reactive chrome. Everything a page
+is made of, including its prose and layout, is Astro/MDX rendered at build time.
+Hydration is split by chrome surface:
 
-- `client:load` for the chrome (`SiteHeader`, `SiteFooter`), the pages
-  (`HomePage`, `AcgPage`, `NotFound`), the article chrome (`PostArticle`) and
-  the blog listing (`BlogList`).
+- `client:load` for the header and footer (`SiteHeader`, `SiteFooter`), the 404
+  (`NotFound`), the article chrome (`PostArticle`) and the blog listing
+  (`BlogList`).
 - `client:idle` for the language switcher (`LanguageSwitcher`) and the search
   modal (`SearchModal`).
+
+The home and ACG pages are not islands. Their bodies live in
+`src/content/pages/home.mdx` and `src/content/pages/acg.mdx`, and the route
+shells (`src/pages/index.astro`, `src/pages/acg.astro`) only load the entry,
+render it with `<Content/>` and supply `BaseLayout` plus the `lang="zh-Hant"`
+content wrapper. The page kit is described under [Authoring a page](#authoring-a-page).
 
 `PostArticle` (`src/components/PostArticle.tsx`) renders the article chrome
 only: the back link, title, date / reading time and tags. The Markdown body
@@ -121,15 +129,86 @@ The links page (`src/pages/links.astro`) follows the same split: its Markdown
 list is Astro-rendered, and its heading is emitted in all three locales with the
 static `[data-l]` toggle, so it needs no React island and no client state.
 
-The header nav is `About · Blog · Contact · Useful Links`; Useful Links is its
-own page at `/links/`, and the project's GitHub repository is the first entry in
-that page's list rather than a separate external nav link. The ACG persona keeps
-its own page at `/acg/` and is reached from the home About grid, not from the
-header. The home hero carries the wordmark, tagline, "now" line and a small spec
-panel only: the old quick-link row is gone. The language control is a single
-glassy dropdown button (a globe icon plus the current language) whose menu lists
-the three locales; selecting one switches in place, with no URL change and no
-reload.
+The header nav is `About · Blog · ACG · Contact · Useful Links`. Blog points at
+the listing index, `/blog/`, not a home anchor, and ACG has its own entry at
+`/acg/` rather than being reachable only from the home About grid. Useful Links
+is its own page at `/links/`; the project's GitHub repository is the first entry
+in that page's list, not a separate external nav link. The home hero carries the
+wordmark, tagline, "now" line and a small spec panel. The language control is a
+single glassy dropdown button (a globe icon plus the current language) whose
+menu lists the three locales; selecting one switches in place, with no URL
+change and no reload.
+
+## Authoring a page
+
+Home and ACG are MDX entries, not React pages. To change copy, reorder a
+section or add a card, edit `src/content/pages/home.mdx` or
+`src/content/pages/acg.mdx`; no React component, route or i18n file changes.
+The route shells in `src/pages/` only load the entry, call `render()` and wrap
+`<Content/>` in `BaseLayout`.
+
+The presentational kit lives in `src/components/mdx/**`. Each page imports every
+component it uses in its own MDX body, then composes it:
+
+```mdx
+import Section from "../../components/mdx/Section.astro";
+import Grid from "../../components/mdx/Grid.astro";
+import InterestCard from "../../components/mdx/InterestCard.astro";
+
+<Section id="about" heading="關於我" lead="A short intro.">
+  <Grid min="18rem" gap={5}>
+    <InterestCard id="runner" title="跑步的我">
+      Write normal Markdown here.
+    </InterestCard>
+  </Grid>
+</Section>
+```
+
+There is no global registration and no component magic: a missing import is a
+build error. Props carry structure (`heading`, `id`, `title`, `gap`), and the
+default slot carries authored Markdown. Do not pass an HTML string through
+`set:html`; write Markdown children instead. The full contract, including every
+prop, is in `src/components/mdx/README.md`.
+
+| Component             | Purpose                                                       |
+| :-------------------- | :------------------------------------------------------------ |
+| `Hero.astro`          | Home masthead: wordmark, tagline, now line, spec panel.       |
+| `Section.astro`       | Section shell with heading, lead and optional `actions` slot. |
+| `InterestCard.astro`  | One About-grid card with a title and Markdown body.           |
+| `Grid.astro`          | Responsive auto-fit grid.                                     |
+| `Stack.astro`         | Vertical flow.                                                |
+| `Cluster.astro`       | Wrapping row.                                                 |
+| `Chips.astro`         | Tag or filter chips.                                          |
+| `Cta.astro`           | Link-arrow or ACG accent call to action.                      |
+| `ContactRow.astro`    | One contact list row; wrap rows in `Stack as="ul"`.           |
+| `LatestPosts.astro`   | Build-time latest-posts grid, or its empty copy.              |
+| `AcgMasthead.astro`   | ACG page masthead and intro.                                  |
+| `InstagramWall.astro` | Build-time Instagram oEmbed wall with link-out fallbacks.     |
+
+Frontmatter `title` and `description` feed `BaseLayout` and the Open Graph tags.
+Omit them only when the `home.title` / `home.tagline` chrome fallback is the
+right document metadata.
+
+**Page content stays zh-hant.** The MDX bodies are authored in Traditional
+Chinese and are never translated; only the fixed chrome (nav, footer, search,
+blog listing, 404, links heading) switches with the locale. Each route wraps the
+body in `lang="zh-Hant"`, so screen readers read the Chinese content as Chinese
+even when `<html lang>` follows an English chrome choice. Do not add page copy to
+`src/i18n` or `src/data`, and do not create per-locale page folders.
+
+Two content surfaces are planned but **not live yet**:
+
+- **Now ticker.** `src/data/now.json` will hold an array of `{ text, href? }`
+  items for the hero's "now" line, so the owner can update it without touching
+  code. The intended contract: an empty array hides the whole status line, one
+  item renders statically, two or more scroll with a pause/play control, and
+  reduced motion gets a static wrapped line. Until the ticker lands, the hero
+  keeps its `nowText` prop.
+- **Instagram gate.** `src/data/instagram.ts` is the single list of post
+  permalinks; `InstagramWall.astro` resolves them through Meta's oEmbed endpoint
+  at build time and falls back to a link-out card when a post cannot be embedded.
+  A click-to-load consent gate is planned so `instagram.com/embed.js` is not
+  requested on page load; it is not implemented yet.
 
 ## Atmosphere
 
@@ -195,6 +274,11 @@ Filename rules:
   be a real calendar date, so `2026-02-29` is rejected while `2024-02-29` is
   accepted. There is no frontmatter `date` field: the date is derived from the
   filename.
+- The date is a **calendar date, not an instant**. The listing, the article
+  header, `<time datetime>` and period/sort membership must use the filename
+  `YYYY-MM-DD` as-is, so every timezone sees the same day. Never format the date
+  through `toISOString()` or a build-local midnight instant; a visitor in New
+  York must see the same day as a visitor in Hong Kong.
 - The `<slug>` after the underscore must be lowercase `a-z`/`0-9` segments joined
   by single hyphens (`^[a-z0-9]+(-[a-z0-9]+)*$`): no uppercase, underscores,
   spaces, slashes, or leading, trailing or doubled hyphens.
@@ -269,15 +353,20 @@ The site ships in three locales, all served from the same URLs:
 | `en`      | English  |                                            |
 
 - **UI strings** live in `src/i18n/index.ts` (`ui.ts` is a thin re-export
-  barrel). They are authored per locale; LLM-assisted translation is permitted
-  as long as each locale reads naturally and keeps the same voice (see
-  `PRODUCT.md`) — never raw machine output. Shared, locale-independent values
-  such as the public contact handles and email live there too.
-- **Locale-independent data** lives in `src/data/**` (for example the About card
-  order and photography gear in `src/data/about.ts`). It holds no translated
-  text; every user-facing label stays in the i18n dictionaries.
+  barrel) and cover fixed chrome only: nav, footer, search, blog listing, 404,
+  the links heading, and the brand/meta strings. They are authored per locale;
+  LLM-assisted translation is permitted as long as each locale reads naturally
+  and keeps the same voice (see `PRODUCT.md`), never raw machine output. Shared,
+  locale-independent values such as the public contact handles and email live
+  there too.
+- **Page content is not translated.** The home and ACG bodies stay zh-hant in
+  `src/content/pages/*.mdx`. There are no content keys in `src/i18n` and no
+  per-locale page folders. Only the chrome follows the locale.
+- **Locale-independent assets** live in `src/data/**` (for example the Instagram
+  permalinks in `src/data/instagram.ts`). Do not put translated strings there.
 - **`<html lang>`** uses BCP-47 casing via `langAttr` (`zh-Hant`, `zh-Hans`,
-  `en`), while locale codes stay lowercase.
+  `en`), while locale codes stay lowercase. It describes the chrome locale; the
+  MDX content wrappers are always `lang="zh-Hant"`.
 - **Locale is client state.** Each page emits one canonical URL and no `hreflang`
   alternates, because there is only one URL per page.
 
