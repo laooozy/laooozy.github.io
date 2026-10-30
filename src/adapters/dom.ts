@@ -42,6 +42,17 @@ export interface DomIntersectionObserver {
   disconnect(): void;
 }
 
+/** Options for `DomPort.loadScript`. */
+export interface DomScriptOptions {
+  /**
+   * Stable element id used for dedupe: a second call that finds a tag with
+   * this id resolves as already loaded instead of appending a duplicate.
+   */
+  id?: string;
+  /** Set the tag's `async` flag; defaults to `true`. */
+  async?: boolean;
+}
+
 /** Browser side effects for scroll + header concerns. */
 export interface DomPort {
   /**
@@ -80,6 +91,21 @@ export interface DomPort {
    * matching `[data-l]` spans. Never throws.
    */
   applyLocale(locale: Locale): void;
+  /**
+   * Toggle the `hidden` attribute on every element matching `selector`. The
+   * consent gate uses it to reveal the server-rendered third-party embed layer
+   * (which ships `hidden`) and to put it back when the provider fails, so the
+   * component never touches `document` itself. Never throws.
+   */
+  setHidden(selector: string, hidden: boolean): void;
+  /**
+   * Append one `<script src>` and resolve `true` once it loads, `false` when
+   * the platform lacks a DOM, the tag cannot be created, or the request
+   * errors (the failed tag is removed so a retry injects a fresh one).
+   * `options.id` dedupes: a call that finds a loaded tag with that id resolves
+   * `true` without appending a duplicate. Never rejects.
+   */
+  loadScript(src: string, options?: DomScriptOptions): Promise<boolean>;
   /**
    * Run `frame` once per animation frame until the returned stop function is
    * called; `frame` receives the rAF timestamp. This is the ONE shared animation
@@ -215,6 +241,63 @@ function createDomAdapter(): DomPort {
       }
     },
 
+    setHidden(selector, hidden) {
+      try {
+        if (typeof document === "undefined") return;
+        for (const element of document.querySelectorAll(selector)) {
+          element.toggleAttribute("hidden", hidden);
+        }
+      } catch {
+        // Best-effort: visibility toggling must never break the caller.
+      }
+    },
+
+    loadScript(src, options = {}) {
+      if (typeof document === "undefined") return Promise.resolve(false);
+
+      try {
+        if (options.id) {
+          const existing = document.getElementById(options.id);
+          if (existing) return Promise.resolve(true);
+        }
+
+        const script = document.createElement("script");
+        if (options.id) script.id = options.id;
+        script.src = src;
+        script.async = options.async ?? true;
+
+        return new Promise<boolean>((resolve) => {
+          script.addEventListener("load", () => resolve(true), { once: true });
+          script.addEventListener(
+            "error",
+            () => {
+              try {
+                script.remove();
+              } catch {
+                // A detached/immutable tag still counts as a failed load.
+              }
+              resolve(false);
+            },
+            { once: true },
+          );
+
+          const parent = document.head ?? document.body;
+          if (!parent) {
+            resolve(false);
+            return;
+          }
+
+          try {
+            parent.appendChild(script);
+          } catch {
+            resolve(false);
+          }
+        });
+      } catch {
+        return Promise.resolve(false);
+      }
+    },
+
     startLoop(frame) {
       if (
         typeof window === "undefined" ||
@@ -296,6 +379,8 @@ export const noopDomAdapter: DomPort = {
   isHeaderFocusWithin: () => false,
   keepHeaderFocusStable: () => () => {},
   applyLocale: () => {},
+  setHidden: () => {},
+  loadScript: () => Promise.resolve(false),
   startLoop: () => () => {},
   onVisibilityChange: () => () => {},
   createIntersectionObserver: () => null,

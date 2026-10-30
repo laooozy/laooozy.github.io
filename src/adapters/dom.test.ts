@@ -42,7 +42,7 @@ afterEach(() => {
 });
 
 describe("noopDomAdapter", () => {
-  it("satisfies the port and stays inert", () => {
+  it("satisfies the port and stays inert", async () => {
     expect(noopDomAdapter.prefersReducedMotion()).toBe(false);
 
     const stopLoop = noopDomAdapter.startLoop(() => {});
@@ -63,11 +63,17 @@ describe("noopDomAdapter", () => {
     expect(typeof noopDomAdapter.keepHeaderFocusStable()).toBe("function");
     expect(() => noopDomAdapter.keepHeaderFocusStable()()).not.toThrow();
     expect(() => noopDomAdapter.applyLocale("en")).not.toThrow();
+    expect(() =>
+      noopDomAdapter.setHidden("[data-ig-embeds]", false),
+    ).not.toThrow();
+    await expect(
+      noopDomAdapter.loadScript("https://example.com/x.js"),
+    ).resolves.toBe(false);
   });
 });
 
 describe("domAdapter without a DOM", () => {
-  it("degrades the new surface to a no-op / null", () => {
+  it("degrades the new surface to a no-op / null", async () => {
     expect(domAdapter.prefersReducedMotion()).toBe(false);
 
     const stopLoop = domAdapter.startLoop(() => {});
@@ -78,6 +84,10 @@ describe("domAdapter without a DOM", () => {
       stopVisibility();
     }).not.toThrow();
     expect(domAdapter.createIntersectionObserver(() => {})).toBeNull();
+    expect(() => domAdapter.setHidden("[data-ig-embeds]", false)).not.toThrow();
+    await expect(
+      domAdapter.loadScript("https://example.com/x.js"),
+    ).resolves.toBe(false);
   });
 });
 
@@ -292,5 +302,173 @@ describe("domAdapter createIntersectionObserver", () => {
 
     observer?.disconnect();
     expect(disconnectCount).toBe(1);
+  });
+});
+
+describe("domAdapter setHidden", () => {
+  it("toggles the hidden attribute on every match", () => {
+    const makeElement = () => {
+      const attributes = new Set<string>();
+      return {
+        attributes,
+        toggleAttribute: (name: string, force?: boolean) => {
+          if (force) attributes.add(name);
+          else attributes.delete(name);
+          return attributes.has(name);
+        },
+      };
+    };
+    const first = makeElement();
+    const second = makeElement();
+    const selectors: string[] = [];
+    defineGlobal("document", {
+      querySelectorAll: (selector: string) => {
+        selectors.push(selector);
+        return [first, second];
+      },
+    });
+
+    domAdapter.setHidden("[data-ig-embeds]", true);
+    expect(selectors).toEqual(["[data-ig-embeds]"]);
+    expect([...first.attributes]).toEqual(["hidden"]);
+    expect([...second.attributes]).toEqual(["hidden"]);
+
+    domAdapter.setHidden("[data-ig-embeds]", false);
+    expect(first.attributes.size).toBe(0);
+    expect(second.attributes.size).toBe(0);
+  });
+
+  it("stays silent when the document throws", () => {
+    defineGlobal("document", {
+      querySelectorAll: () => {
+        throw new Error("boom");
+      },
+    });
+
+    expect(() => domAdapter.setHidden("[data-ig-embeds]", false)).not.toThrow();
+  });
+});
+
+interface FakeScript {
+  id: string;
+  src: string;
+  async: boolean;
+  removed: boolean;
+  listeners: Map<string, () => void>;
+  addEventListener(type: string, callback: () => void): void;
+  remove(): void;
+}
+
+/**
+ * Install a minimal `document` whose `head` records appended scripts by id, so
+ * the load/error events and the dedupe lookup can be exercised deterministically.
+ */
+function installScriptDocument(): {
+  appended: FakeScript[];
+  fire(script: FakeScript, type: "load" | "error"): void;
+} {
+  const appended: FakeScript[] = [];
+  const tags = new Map<string, FakeScript>();
+
+  const head = {
+    appendChild(script: FakeScript) {
+      appended.push(script);
+      if (script.id) tags.set(script.id, script);
+      return script;
+    },
+  };
+
+  defineGlobal("document", {
+    head,
+    body: head,
+    createElement: (): FakeScript => {
+      const listeners = new Map<string, () => void>();
+      const script: FakeScript = {
+        id: "",
+        src: "",
+        async: false,
+        removed: false,
+        listeners,
+        addEventListener(type, callback) {
+          listeners.set(type, callback);
+        },
+        remove() {
+          script.removed = true;
+          if (script.id) tags.delete(script.id);
+        },
+      };
+      return script;
+    },
+    getElementById: (id: string) => tags.get(id) ?? null,
+  });
+
+  return {
+    appended,
+    fire(script, type) {
+      script.listeners.get(type)?.();
+    },
+  };
+}
+
+describe("domAdapter loadScript", () => {
+  const src = "https://www.instagram.com/embed.js";
+  const id = "instagram-embed";
+
+  it("appends one async tag and resolves true after load", async () => {
+    const { appended, fire } = installScriptDocument();
+
+    const pending = domAdapter.loadScript(src, { id });
+
+    expect(appended).toHaveLength(1);
+    expect(appended[0].src).toBe(src);
+    expect(appended[0].id).toBe(id);
+    expect(appended[0].async).toBe(true);
+
+    fire(appended[0], "load");
+    await expect(pending).resolves.toBe(true);
+  });
+
+  it("dedupes a second call with the same id", async () => {
+    const { appended, fire } = installScriptDocument();
+
+    const first = domAdapter.loadScript(src, { id });
+    fire(appended[0], "load");
+    await expect(first).resolves.toBe(true);
+
+    await expect(domAdapter.loadScript(src, { id })).resolves.toBe(true);
+    expect(appended).toHaveLength(1);
+  });
+
+  it("removes the failed tag, resolves false, and allows a retry", async () => {
+    const { appended, fire } = installScriptDocument();
+
+    const first = domAdapter.loadScript(src, { id });
+    fire(appended[0], "error");
+    await expect(first).resolves.toBe(false);
+
+    expect(appended[0].removed).toBe(true);
+
+    const retry = domAdapter.loadScript(src, { id });
+    expect(appended).toHaveLength(2);
+    fire(appended[1], "load");
+    await expect(retry).resolves.toBe(true);
+  });
+
+  it("resolves false when the tag cannot be appended", async () => {
+    defineGlobal("document", {
+      head: {
+        appendChild: () => {
+          throw new Error("boom");
+        },
+      },
+      body: {},
+      createElement: () => ({
+        addEventListener: () => {},
+        remove: () => {},
+      }),
+      getElementById: () => null,
+    });
+
+    await expect(domAdapter.loadScript(src, { id })).resolves.toBe(false);
   });
 });

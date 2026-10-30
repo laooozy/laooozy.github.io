@@ -78,7 +78,7 @@ Every browser, network and storage effect sits behind a port under
 | :----------------- | :------------------------------------------------------------------------------ | :--------------------- |
 | `StoragePort`      | `localStorageAdapter` (degrades to memory when storage is blocked)              | `memoryStorageAdapter` |
 | `LocaleSourcePort` | `navigatorLocaleSource`                                                         | `fixedLocaleSource`    |
-| `DomPort`          | `domAdapter` (scroll, reduced motion, header visibility, the shared frame loop) | `noopDomAdapter`       |
+| `DomPort`          | `domAdapter` (scroll, reduced motion, header visibility, the shared frame loop, script injection) | `noopDomAdapter`       |
 | `PagefindPort`     | `pagefindAdapter` (lazy dynamic import)                                         | `fakePagefind`         |
 
 Adapters are wired in exactly one place: the composition root
@@ -110,8 +110,8 @@ Hydration is split by chrome surface:
 - `client:load` for the header and footer (`SiteHeader`, `SiteFooter`), the 404
   (`NotFound`), the article chrome (`PostArticle`) and the blog listing
   (`BlogList`).
-- `client:idle` for the language switcher (`LanguageSwitcher`) and the search
-  modal (`SearchModal`).
+- `client:idle` for the language switcher (`LanguageSwitcher`), the search
+  modal (`SearchModal`) and the Instagram consent gate (`InstagramGate`).
 
 The home and ACG pages are not islands. Their bodies live in
 `src/content/pages/home.mdx` and `src/content/pages/acg.mdx`, and the route
@@ -183,7 +183,7 @@ prop, is in `src/components/mdx/README.md`.
 | `ContactRow.astro`    | One contact list row; wrap rows in `Stack as="ul"`.           |
 | `LatestPosts.astro`   | Build-time latest-posts grid, or its empty copy.              |
 | `AcgMasthead.astro`   | ACG page masthead and intro.                                  |
-| `InstagramWall.astro` | Build-time Instagram oEmbed wall with link-out fallbacks.     |
+| `InstagramWall.astro` | Build-time Instagram oEmbed wall, consent gate, link-outs.    |
 
 Frontmatter `title` and `description` feed `BaseLayout` and the Open Graph tags.
 Omit them only when the `home.title` / `home.tagline` chrome fallback is the
@@ -208,13 +208,16 @@ field. The server-rendered base is a static, readable line (no-JS safe) and
 is zh-hant and is never translated; the label and pause/play names are fixed
 chrome in `src/i18n`.
 
-One content surface is still planned but **not live yet**:
-
-- **Instagram gate.** `src/data/instagram.ts` is the single list of post
-  permalinks; `InstagramWall.astro` resolves them through Meta's oEmbed endpoint
-  at build time and falls back to a link-out card when a post cannot be embedded.
-  A click-to-load consent gate is planned so `instagram.com/embed.js` is not
-  requested on page load; it is not implemented yet.
+**Instagram gate.** `src/data/instagram.ts` is the single list of post
+permalinks; `InstagramWall.astro` resolves them through Meta's oEmbed endpoint
+at build time and falls back to a link-out card when a post cannot be embedded.
+`instagram.com/embed.js` is never requested on page load: the wall shows a
+zh-hant "載入 Instagram 貼文" button, and only a click injects the library (once)
+through the `DomPort.loadScript` seam. On success the server-rendered
+blockquotes are revealed and the link cards are replaced; if the script is
+blocked the link cards stay, the gate reports the failure and a local link-out
+card is shown. The gate itself is `InstagramGate.tsx` (`client:idle`) and never
+touches `document`/`window` directly.
 
 ## Atmosphere
 
