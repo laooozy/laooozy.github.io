@@ -76,6 +76,39 @@ const readingMinutes = estimateReadingTime(post.body);
 		font-size: var(--text-xl);
 	}
 
+	/*
+	 * h4–h6 continue the same display scale one step at a time (xl → lg → base →
+	 * sm) and tighten the top margin as the level drops, so a sub-heading never
+	 * floats as far from its text as an h2 does. The global base styles only set
+	 * the display family for h1–h4; h5/h6 need it stated here.
+	 */
+	.post__body :global(h4) {
+		margin: var(--space-5) 0 var(--space-2);
+		font-size: var(--text-lg);
+		line-height: var(--leading-snug);
+	}
+
+	.post__body :global(h5) {
+		margin: var(--space-4) 0 var(--space-2);
+		font-family: var(--font-display);
+		font-size: var(--text-base);
+		font-weight: 600;
+		line-height: var(--leading-snug);
+		letter-spacing: var(--tracking-display);
+		text-wrap: balance;
+	}
+
+	.post__body :global(h6) {
+		margin: var(--space-4) 0 var(--space-1);
+		font-family: var(--font-display);
+		font-size: var(--text-sm);
+		font-weight: 600;
+		line-height: var(--leading-snug);
+		letter-spacing: var(--tracking-wide);
+		color: var(--text-muted);
+		text-wrap: balance;
+	}
+
 	.post__body :global(p) {
 		margin: 0 0 var(--space-4);
 	}
