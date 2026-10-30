@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { t, type Locale } from "@/i18n";
+import { langAttr, t, type Locale } from "@/i18n";
 
 /**
  * Static all-locale translation component.
@@ -13,6 +13,11 @@ import { t, type Locale } from "@/i18n";
  * state and runs no effects, so its output is identical at build and on the
  * client and it never hydrates. It is usable both inside React components and
  * directly in `.astro` files.
+ *
+ * Each span also carries the BCP-47 `lang` of its own text, so a mixed-language
+ * document (an English `<html lang>` chrome around a zh-hant label rendered
+ * here, or the trilingual switcher labels) announces each value in its actual
+ * language. `data-l` remains the CSS toggle contract.
  *
  * With no `data-locale` on `<html>` (e.g. JavaScript disabled) the CSS falls
  * back to showing `data-l="zh-hant"`, the default locale.
@@ -30,7 +35,7 @@ export default function T({ k, as: Tag = "span" }: TProps) {
   return (
     <>
       {LOCALES.map((locale) => (
-        <Tag key={locale} data-l={locale}>
+        <Tag key={locale} data-l={locale} lang={langAttr[locale]}>
           {t(locale, k)}
         </Tag>
       ))}

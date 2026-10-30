@@ -8,6 +8,12 @@
  * brand glow behind the masthead is the only ornament (styled in `global.css`,
  * because an Astro scoped `<style>` cannot reach React markup).
  *
+ * The page owns the ONE `<article>` landmark (`[slug].astro` wraps this chrome
+ * and the Markdown body), so this component's wrapper is a plain `<div>` with
+ * the same `.post__article` class. The post title and tags are zh-hant content
+ * and carry `lang="zh-Hant"`; the back link, date and reading time are fixed
+ * chrome and inherit the surrounding `<html lang>` instead.
+ *
  * Hydration safety mirrors `SiteHeader`/`SiteFooter`: the single URL space
  * renders every page in the DEFAULT locale at build time, while the store may
  * already hold another locale on the first client render. We render the default
@@ -78,9 +84,11 @@ export default function PostArticle({
         </a>
       </nav>
 
-      <article className="post__article">
+      <div className="post__article">
         <header className="post__header">
-          <h1 className="post__title">{title}</h1>
+          <h1 className="post__title" lang="zh-Hant">
+            {title}
+          </h1>
           <Cluster as="p" gap={3} align="baseline" className="post__meta">
             <time className="post__date" dateTime={date}>
               {formatPostDate(date, activeLocale)}
@@ -91,15 +99,12 @@ export default function PostArticle({
             {readLabel && <span className="post__reading">{readLabel}</span>}
           </Cluster>
           {tagItems.length > 0 && (
-            <ChipRow
-              className="post__tags"
-              gap={2}
-              ariaLabel={tr("blog.tagged")}
-              items={tagItems}
-            />
+            <div className="post__tags" lang="zh-Hant">
+              <ChipRow gap={2} ariaLabel={tr("blog.tagged")} items={tagItems} />
+            </div>
           )}
         </header>
-      </article>
+      </div>
     </>
   );
 }

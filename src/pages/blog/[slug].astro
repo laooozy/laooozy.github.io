@@ -30,7 +30,14 @@ const readingMinutes = estimateReadingTime(post.body);
 	description={post.data.description}
 	ogType="article"
 >
-	<div class="post" data-pagefind-body>
+	{/*
+	 * ONE article landmark: the hydrated chrome (back link, title, meta, tags)
+	 * and the Markdown body share the same `<article>`, so assistive tech sees a
+	 * complete post rather than a chrome-only article followed by loose body
+	 * content. Only the body, title and tags are zh-hant (`lang="zh-Hant"`); the
+	 * back link / date / reading time inherit the chrome locale from `<html>`.
+	 */}
+	<article class="post" data-pagefind-body>
 		<PostArticle
 			client:load
 			title={post.data.title}
@@ -38,10 +45,10 @@ const readingMinutes = estimateReadingTime(post.body);
 			tags={post.data.tags}
 			readingMinutes={readingMinutes}
 		/>
-		<div class="post__body">
+		<div class="post__body" lang="zh-Hant">
 			<Content />
 		</div>
-	</div>
+	</article>
 </BaseLayout>
 
 <style>

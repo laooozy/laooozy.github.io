@@ -64,6 +64,15 @@ if (!themeColor) {
 		 * engines. Flip it to true in src/lib/seo.ts to emit nothing here.
 		 */}
 		{!SITE_INDEXABLE && <meta name="robots" content="noindex, nofollow" />}
+		{/*
+		 * DOCUMENT TITLE POLICY: `document.title` is the build-locale (zh-hant)
+		 * page title and is deliberately NOT re-rendered when the client locale
+		 * changes. The URL is the identity (one URL space), and the boot script
+		 * + lang switcher only mutate `<html lang>` / `data-locale`; a title flip
+		 * without a navigation would desynchronise the visible tab label from the
+		 * canonical/OG metadata emitted for this URL. Keep it build-locale unless
+		 * an explicit task changes the policy.
+		 */}
 		<title>{pageTitle}</title>
 		<link rel="canonical" href={canonical} />
 		<meta property="og:type" content={ogType} />

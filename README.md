@@ -375,7 +375,13 @@ The site ships in three locales, all served from the same URLs:
   permalinks in `src/data/instagram.ts`). Do not put translated strings there.
 - **`<html lang>`** uses BCP-47 casing via `langAttr` (`zh-Hant`, `zh-Hans`,
   `en`), while locale codes stay lowercase. It describes the chrome locale; the
-  MDX content wrappers are always `lang="zh-Hant"`.
+  MDX and article-body wrappers, post titles and post tags are always
+  `lang="zh-Hant"`, and each `<T>` span carries its own locale's `lang`.
+- **`document.title` stays build-locale.** The tab title is emitted in the
+  default locale (`zh-hant`) and is deliberately not rewritten when the client
+  locale changes: the URL is the page's identity, and the canonical/OG metadata
+  stays tied to this build. Only `<html lang>` / `data-locale` and the hydrated
+  chrome follow the store locale.
 - **Locale is client state.** Each page emits one canonical URL and no `hreflang`
   alternates, because there is only one URL per page.
 
