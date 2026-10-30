@@ -153,6 +153,7 @@ export default function SearchModal() {
       <dialog
         id="search-modal"
         className="search-modal"
+        data-pagefind-ignore
         ref={dialogRef}
         aria-labelledby="search-modal-title"
         onClose={() => closeSearch()}

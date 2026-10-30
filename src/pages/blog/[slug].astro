@@ -37,7 +37,7 @@ const readingMinutes = estimateReadingTime(post.body);
 	 * content. Only the body, title and tags are zh-hant (`lang="zh-Hant"`); the
 	 * back link / date / reading time inherit the chrome locale from `<html>`.
 	 */}
-	<article class="post" data-pagefind-body>
+	<article class="post">
 		<PostArticle
 			client:load
 			title={post.data.title}
