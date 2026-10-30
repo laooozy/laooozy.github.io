@@ -32,11 +32,8 @@ const posts = (await getAllPosts()).slice(0, 4).map((post) =>
           href={post.href}
           title={post.title}
           description={post.description}
-          dateLabel={formatPostDate(
-            new Date(`${post.date}T00:00:00`),
-            defaultLang,
-          )}
-          datetime={post.datetime}
+          dateLabel={formatPostDate(post.date, defaultLang)}
+          datetime={post.date}
           tags={post.tags}
         />
       ))}

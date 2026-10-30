@@ -37,17 +37,32 @@ export interface Post {
 export const PAGE_SIZE = 4;
 
 /**
- * The post date, derived from the filename id (`yyyy-mm-dd_slug`).
+ * The post's calendar date, the filename `YYYY-MM-DD` taken verbatim
+ * (`yyyy-mm-dd_slug`). This is a date, not an instant: it never passes through
+ * a `Date`, so it is identical in every build and viewer timezone.
  *
  * A malformed id is a build-time error and throws.
  */
-export function postDate(post: Post): Date {
+export function postDateString(post: Post): string {
   const parsed = parsePostId(post.id);
   if (!parsed.ok) {
     throw new Error(`Invalid post filename id "${post.id}": ${parsed.reason}`);
   }
-  const [y, m, d] = parsed.date.split("-").map(Number);
-  return new Date(y, m - 1, d);
+  return parsed.date;
+}
+
+/**
+ * Newest first by the filename calendar date, title as the tie-break. ISO
+ * `YYYY-MM-DD` strings compare lexicographically in date order, so no `Date`
+ * (and no timezone) is involved.
+ */
+export function sortPosts(posts: Post[]): Post[] {
+  return [...posts].sort((a, b) => {
+    const dateA = postDateString(a);
+    const dateB = postDateString(b);
+    if (dateA !== dateB) return dateA < dateB ? 1 : -1;
+    return a.data.title.localeCompare(b.data.title);
+  });
 }
 
 /** The three locale codes, in i18n declaration order. */
@@ -67,11 +82,9 @@ export function collectPeriods(posts: Post[]): string[] {
   const years = new Set<string>();
   const months = new Set<string>();
   for (const post of posts) {
-    const date = postDate(post);
-    const year = String(date.getFullYear());
-    const month = `${year}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    years.add(year);
-    months.add(month);
+    const date = postDateString(post);
+    years.add(date.slice(0, 4));
+    months.add(date.slice(0, 7));
   }
   const desc = (a: string, b: string) => b.localeCompare(a);
   return [...[...months].sort(desc), ...[...years].sort(desc)];
@@ -79,11 +92,9 @@ export function collectPeriods(posts: Post[]): string[] {
 
 /** Does a post belong to a `YYYY` or `YYYY-MM` archive period? */
 export function matchesPeriod(post: Post, period: string): boolean {
-  const date = postDate(post);
-  const year = String(date.getFullYear());
-  if (period.length === 4) return year === period;
-  const month = `${year}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-  return month === period;
+  const date = postDateString(post);
+  if (period.length === 4) return date.slice(0, 4) === period;
+  return date.slice(0, 7) === period;
 }
 
 /** The unfiltered blog index. */
@@ -107,41 +118,26 @@ export function blogPostPath(slug: string): string {
 }
 
 /**
- * `YYYY-MM-DD` for a Date's LOCAL calendar day. Build-time dates are
- * formatted on the client, so the calendar day is frozen here (never the raw
- * instant) to keep the same day in every timezone — `getFullYear`/`getMonth`/
- * `getDate` read the local day, and the client rehydrates it with
- * `new Date(\`${date}T00:00:00\`)` (local midnight).
- */
-export function toLocalDateString(date: Date): string {
-  const pad = (value: number) => String(value).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-}
-
-/**
  * A blog post reduced to the plain, serializable fields a listing island needs.
- * `date` is the build-local calendar day (`YYYY-MM-DD`); `datetime` keeps the
- * full ISO instant for `<time datetime>`; `readingMinutes` is precomputed so no
- * markdown body ships to the client.
+ * `date` is the filename calendar day (`YYYY-MM-DD`) and doubles as the
+ * `datetime` value of `<time>`; `readingMinutes` is precomputed so no markdown
+ * body ships to the client.
  */
 export interface BlogListItem {
   href: string;
   title: string;
   description: string;
   date: string;
-  datetime: string;
   readingMinutes: number;
   tags: string[];
 }
 
 export function toBlogListItem(post: Post): BlogListItem {
-  const date = postDate(post);
   return {
     href: blogPostPath(post.id),
     title: post.data.title,
     description: post.data.description,
-    date: toLocalDateString(date),
-    datetime: date.toISOString(),
+    date: postDateString(post),
     readingMinutes: estimateReadingTime(post.body),
     tags: post.data.tags,
   };
@@ -181,13 +177,15 @@ const EN_MONTHS = [
   "December",
 ] as const;
 
-/** Human-readable single date, per locale. */
-export function formatPostDate(date: Date, lang: Locale): string {
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const day = date.getDate();
-  if (lang === "en") return `${EN_MONTHS[month]} ${day}, ${year}`;
-  return `${year}年${month + 1}月${day}日`;
+/**
+ * Human-readable single date, per locale, from the filename calendar day
+ * (`YYYY-MM-DD`). Split-and-format only: no `Date`, so a viewer's timezone can
+ * never move the day.
+ */
+export function formatPostDate(date: string, lang: Locale): string {
+  const [year, month, day] = date.split("-").map(Number);
+  if (lang === "en") return `${EN_MONTHS[month - 1]} ${day}, ${year}`;
+  return `${year}年${month}月${day}日`;
 }
 
 /** Human-readable label for a `YYYY` or `YYYY-MM` archive period, per locale. */

@@ -2,8 +2,8 @@
  * Unit tests for the pure post domain — no DOM, no `astro:content`, no I/O.
  *
  * Fixtures are plain objects structurally identical to a `blog` collection
- * entry, built with `new Date(y, m, d)` (local construction + local getters)
- * so assertions stay deterministic regardless of the runner's timezone.
+ * entry. Every date assertion works on the filename `YYYY-MM-DD` string, so the
+ * results are byte-identical in every runner timezone (`TZ` is irrelevant).
  */
 import { describe, expect, it } from "vitest";
 import {
@@ -19,7 +19,9 @@ import {
   formatPeriodLabel,
   formatPostDate,
   matchesPeriod,
-  postDate,
+  postDateString,
+  sortPosts,
+  toBlogListItem,
 } from "./posts";
 import type { Post, PostData } from "./posts";
 
@@ -124,17 +126,56 @@ describe("matchesPeriod", () => {
   });
 });
 
-describe("postDate", () => {
-  it("derives the date from the filename id", () => {
-    expect(postDate(makePost({}, "2026-02-14_post"))).toEqual(
-      new Date(2026, 1, 14),
-    );
+describe("postDateString", () => {
+  it("returns the filename calendar date verbatim", () => {
+    expect(postDateString(makePost({}, "2026-02-14_post"))).toBe("2026-02-14");
   });
 
   it("throws on a malformed id", () => {
-    expect(() => postDate(makePost({}, "not-a-post"))).toThrow(
+    expect(() => postDateString(makePost({}, "not-a-post"))).toThrow(
       /Invalid post filename id/,
     );
+  });
+});
+
+describe("calendar-date invariance", () => {
+  it("formats the same long label from the filename date in every TZ", () => {
+    expect(formatPostDate("2026-10-20", "en")).toBe("October 20, 2026");
+    expect(formatPostDate("2026-10-20", "zh-hant")).toBe("2026年10月20日");
+    expect(formatPostDate("2026-10-20", "zh-hans")).toBe("2026年10月20日");
+  });
+
+  it("keeps a January 1 post on its own day, month and year", () => {
+    const post = makePost({}, "2026-01-01_new-year");
+
+    expect(postDateString(post)).toBe("2026-01-01");
+    expect(formatPostDate(postDateString(post), "en")).toBe("January 1, 2026");
+    expect(matchesPeriod(post, "2026")).toBe(true);
+    expect(matchesPeriod(post, "2026-01")).toBe(true);
+    expect(matchesPeriod(post, "2025")).toBe(false);
+    expect(matchesPeriod(post, "2025-12")).toBe(false);
+    expect(collectPeriods([post])).toEqual(["2026-01", "2026"]);
+  });
+
+  it("carries the date-only filename string into the listing item", () => {
+    const item = toBlogListItem(makePost({}, "2026-10-20_post"));
+
+    expect(item.date).toBe("2026-10-20");
+    expect(formatPostDate(item.date, "en")).toBe("October 20, 2026");
+    expect(formatPostDate(item.date, "zh-hant")).toBe("2026年10月20日");
+    expect(item.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it("sorts by the filename date, newest first, with a title tie-break", () => {
+    const older = makePost({ title: "Older" }, "2025-12-31_old");
+    const jan = makePost({ title: "New year" }, "2026-01-01_new-year");
+    const sameDay = makePost({ title: "Another" }, "2025-12-31_another");
+
+    expect(sortPosts([jan, older, sameDay]).map((post) => post.id)).toEqual([
+      "2026-01-01_new-year",
+      "2025-12-31_another",
+      "2025-12-31_old",
+    ]);
   });
 });
 
@@ -166,7 +207,7 @@ describe("estimateReadingTime", () => {
 });
 
 describe("formatPostDate", () => {
-  const date = new Date(2026, 1, 5); // February 5, 2026
+  const date = "2026-02-05"; // February 5, 2026 (filename calendar date)
 
   it("formats English as `Month D, YYYY`", () => {
     expect(formatPostDate(date, "en")).toBe("February 5, 2026");

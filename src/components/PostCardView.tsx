@@ -23,7 +23,7 @@ export interface PostCardViewProps {
   description: string;
   /** Already-formatted calendar day, e.g. `2026年10月20日`. */
   dateLabel?: string;
-  /** Full ISO-8601 instant for `<time datetime>`. */
+  /** Date-only `YYYY-MM-DD` for `<time datetime>`. */
   datetime?: string;
   /** Already-formatted reading-time label, e.g. `約 3 分鐘閱讀`. */
   readingTime?: string;

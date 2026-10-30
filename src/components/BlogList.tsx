@@ -135,7 +135,6 @@ export default function BlogList({
                 title={post.title}
                 description={post.description}
                 date={post.date}
-                datetime={post.datetime}
                 readingMinutes={post.readingMinutes}
                 tags={post.tags}
               />

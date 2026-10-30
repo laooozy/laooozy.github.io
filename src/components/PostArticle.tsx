@@ -32,8 +32,8 @@ const defaultTranslate: Translate = (key, vars) =>
 interface PostArticleProps {
   /** Post title (from frontmatter). */
   title: string;
-  /** ISO-8601 date; formatted per-locale on the client. */
-  datetime: string;
+  /** Filename calendar day `YYYY-MM-DD`; formatted per-locale on the client. */
+  date: string;
   /** Post tags; each becomes a link to its tag archive. */
   tags?: string[];
   /** Estimated whole-minute reading time (locale-independent). */
@@ -42,7 +42,7 @@ interface PostArticleProps {
 
 export default function PostArticle({
   title,
-  datetime,
+  date,
   tags = [],
   readingMinutes,
 }: PostArticleProps) {
@@ -82,8 +82,8 @@ export default function PostArticle({
         <header className="post__header">
           <h1 className="post__title">{title}</h1>
           <Cluster as="p" gap={3} align="baseline" className="post__meta">
-            <time className="post__date" dateTime={datetime}>
-              {formatPostDate(new Date(datetime), activeLocale)}
+            <time className="post__date" dateTime={date}>
+              {formatPostDate(date, activeLocale)}
             </time>
             <span className="post__sep" aria-hidden="true">
               ·

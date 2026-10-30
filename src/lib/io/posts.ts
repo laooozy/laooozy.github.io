@@ -6,7 +6,7 @@
  * pure domain module (`../domain/posts`).
  */
 import { getCollection } from "astro:content";
-import { postDate, type Post } from "../domain/posts";
+import { sortPosts, type Post } from "../domain/posts";
 
 /**
  * Per-build memo of the in-flight collection promise. A module-level binding
@@ -25,11 +25,7 @@ let cached: Promise<Post[]> | undefined;
  */
 export function getAllPosts(): Promise<Post[]> {
   cached ??= getCollection("blog", ({ data }) => !data.draft).then((posts) =>
-    [...posts].sort(
-      (a, b) =>
-        postDate(b).getTime() - postDate(a).getTime() ||
-        a.data.title.localeCompare(b.data.title),
-    ),
+    sortPosts(posts),
   );
   return cached;
 }

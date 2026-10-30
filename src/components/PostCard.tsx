@@ -5,8 +5,8 @@
  *  - href: string
  *  - title: string
  *  - description: string
- *  - date?: string           build-local calendar day `YYYY-MM-DD`
- *  - datetime?: string       full ISO-8601 instant for <time datetime>
+ *  - date?: string           filename calendar day `YYYY-MM-DD`; also the
+ *                            `<time datetime>` value
  *  - readingMinutes?: number estimated whole minutes (locale-independent)
  *  - tags?: string[]
  *  - headingLevel?: 2 | 3    default: 2 (page title is the h1); row variant only
@@ -41,7 +41,6 @@ interface PostCardProps {
   title: string;
   description: string;
   date?: string;
-  datetime?: string;
   readingMinutes?: number;
   tags?: string[];
   headingLevel?: 2 | 3;
@@ -54,7 +53,6 @@ export default function PostCard({
   title,
   description,
   date,
-  datetime,
   readingMinutes,
   tags = [],
   headingLevel = 2,
@@ -74,9 +72,7 @@ export default function PostCard({
   const tr = mounted ? t : defaultTranslate;
   const activeLocale = mounted ? locale : defaultLang;
 
-  const dateLabel = date
-    ? formatPostDate(new Date(`${date}T00:00:00`), activeLocale)
-    : undefined;
+  const dateLabel = date ? formatPostDate(date, activeLocale) : undefined;
   const readingTime =
     readingMinutes === undefined
       ? undefined
@@ -88,7 +84,7 @@ export default function PostCard({
       title={title}
       description={description}
       dateLabel={dateLabel}
-      datetime={datetime}
+      datetime={date}
       readingTime={readingTime}
       tags={tags}
       headingLevel={headingLevel}
