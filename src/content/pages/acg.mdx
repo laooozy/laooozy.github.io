@@ -1,6 +1,76 @@
 ---
-title: ACG
-description: Placeholder ACG page entry.
+title: ACG 攝影
+description: 一個喜歡突然喜歡拍照的純興趣驅動的新手。
 ---
 
-Placeholder ACG page content.
+import AcgMasthead from "../../components/mdx/AcgMasthead.astro";
+import Section from "../../components/mdx/Section.astro";
+import Stack from "../../components/mdx/Stack.astro";
+import Grid from "../../components/mdx/Grid.astro";
+import Cluster from "../../components/mdx/Cluster.astro";
+import Cta from "../../components/mdx/Cta.astro";
+import InstagramWall from "../../components/mdx/InstagramWall.astro";
+import { contactIdentity } from "../../i18n";
+
+<AcgMasthead
+  handle={`@${contactIdentity.acgIg}`}
+  title="攝影師（？）"
+  label="ACG"
+  intro="我是喜歡拍 cosplayer 的業餘攝影新手，2026 年才剛拿起相機。"
+>
+  2026 年我第一次參加
+  ACGHK。用手機拍的照片怎麼看都不滿意，於是我買了第一台相機。
+</AcgMasthead>
+
+<Section
+  id="work"
+  className="reveal"
+  heading="追蹤我的作品"
+  lead="作品與約拍資訊，主要都放在 Instagram。"
+>
+  <Stack gap={6}>
+    <InstagramWall />
+
+    <Cluster gap={4}>
+      <Cta
+        variant="acg"
+        external
+        href={`https://instagram.com/${contactIdentity.acgIg}`}
+        label="在 Instagram 看更多"
+      />
+    </Cluster>
+
+  </Stack>
+</Section>
+
+<Section id="approach" className="reveal" heading="我的拍攝方式">
+  <Grid min="16rem" gap={6} className="acg-approach">
+    <div class="acg-approach__item">
+      <h3 class="acg-approach__title">傾向保留原始構圖</h3>
+      <p class="text text--muted">
+        「我的拍攝方式」這段內容還沒決定，之後會補上。
+      </p>
+    </div>
+  </Grid>
+</Section>
+
+<Section id="commission" className="reveal" heading="委託與合作">
+  <div class="card acg-commission">
+    <Stack gap={5}>
+      <p class="text text--muted">內容待補</p>
+      <ul class="acg-commission__list">
+        <li class="acg-commission__item">
+          「委託與合作」這段內容還沒決定，之後會補上。
+        </li>
+      </ul>
+      <Cluster gap={4}>
+        <Cta
+          variant="acg"
+          external
+          href={`https://instagram.com/${contactIdentity.acgIg}`}
+          label="在 Instagram 看更多"
+        />
+      </Cluster>
+    </Stack>
+  </div>
+</Section>

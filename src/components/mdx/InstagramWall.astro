@@ -1,0 +1,70 @@
+---
+/**
+ * InstagramWall — the ACG photo wall shell.
+ *
+ * This component OWNS the build-time network I/O: it resolves the permalinks in
+ * `src/data/instagram.ts` through Meta's oEmbed endpoint with
+ * `await getInstagramEmbeds(...)` and renders the already-resolved result. The
+ * route (`src/pages/acg.astro`) stays a thin MDX renderer and never fetches.
+ *
+ * The markup is the current photo wall verbatim: a `.grid .acg-wall` of
+ * `.ig-embed` figures (the oEmbed blockquote injected with `set:html`) or a
+ * `.ig-fallback` link-out when a permalink failed, and one `.acg-empty`
+ * link-out panel when the list is empty. No client-side fetch, no API secret.
+ *
+ * Instagram's embed library is loaded once for the page here, guarded so it is
+ * only emitted when there is at least one embed. `is:inline` is required:
+ * Astro otherwise bundles/strips this external script and the embeds never
+ * upgrade.
+ */
+import { contactIdentity } from "../../i18n";
+import { instagramPosts } from "../../data/instagram";
+import { getInstagramEmbeds } from "../../lib/io/instagram";
+import Grid from "./Grid.astro";
+
+const embeds = await getInstagramEmbeds(instagramPosts);
+const igHandle = `@${contactIdentity.acgIg}`;
+const igHref = `https://instagram.com/${contactIdentity.acgIg}`;
+---
+
+{
+  embeds.length > 0 ? (
+    <Grid min="19rem" gap={6} className="acg-wall">
+      {embeds.map((embed) =>
+        embed.html ? (
+          <figure class="ig-embed" set:html={embed.html} />
+        ) : (
+          <a
+            class="ig-fallback"
+            href={embed.url}
+            target="_blank"
+            rel="noopener"
+            aria-label="View this post on Instagram"
+            data-embed-failed={embed.failed ? "" : undefined}
+          >
+            <span class="ig-fallback__glyph" aria-hidden="true">
+              ↗
+            </span>
+            <span class="ig-fallback__label">
+              View this post on Instagram
+            </span>
+          </a>
+        ),
+      )}
+    </Grid>
+  ) : (
+    <a class="acg-empty" href={igHref} target="_blank" rel="noopener">
+      <span class="acg-empty__label">在 Instagram 看更多</span>
+      <span class="acg-empty__handle">{igHandle}</span>
+      <span class="acg-empty__arrow" aria-hidden="true">
+        ↗
+      </span>
+    </a>
+  )
+}
+
+{
+  embeds.length > 0 && (
+    <script is:inline async src="https://www.instagram.com/embed.js" />
+  )
+}

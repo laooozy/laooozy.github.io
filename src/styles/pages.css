@@ -1,9 +1,10 @@
 /**
- * Global page styles for the React page islands.
+ * Global page styles for the MDX/Astro pages and the remaining React page
+ * islands.
  *
- * `HomePage`, `AcgPage`, `InstagramEmbed`, `Section` and `NotFound` are hydrated
- * React components. React-rendered elements receive no Astro `data-astro-cid-*`
- * scope attribute, so the styles that used to live in their scoped `<style>`
+ * `InstagramEmbed` and `NotFound` are hydrated React components. React-rendered
+ * elements receive no Astro `data-astro-cid-*` scope attribute, so the styles
+ * that used to live in their scoped `<style>`
  * blocks would no longer reach the markup. They are therefore global here, with
  * every class name and value unchanged from the scoped originals.
  *
@@ -358,7 +359,7 @@
  * Entrance reveal for the ACG page's major blocks. Same contract as the home
  * reveal in global.css — base visible, animated only under
  * `prefers-reduced-motion: no-preference`, scoped to the `.reveal` blocks
- * (applied in `AcgPage.tsx`) rather than every section. The shared
+ * (applied in `acg.mdx`) rather than every section. The shared
  * `reveal-rise` keyframe is defined in global.css and reuses the existing
  * `acg-rise` motion shape, so no second motion language is introduced.
  */

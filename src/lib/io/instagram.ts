@@ -16,7 +16,7 @@
  * offline build or a bad permalink renders a plain link-out instead of a hole.
  *
  * This is the I/O edge (network), so it lives outside the pure domain. The
- * result is plain, serializable data the AcgPage island receives as props.
+ * result is plain, serializable data rendered by `InstagramWall.astro`.
  */
 
 /** One resolved Instagram embed: the source URL plus its build-time result. */
