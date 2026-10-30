@@ -1,9 +1,9 @@
 /**
  * SiteFooter — the site chrome's footer as a hydrated React island.
  *
- * It renders the copyright line and the contact button, both driven by `useT`
- * (store-bound locale), so the footer text re-renders in place when the language
- * switcher changes the locale — no navigation, no reload.
+ * It renders the copyright line, driven by `useT` (store-bound locale), so the
+ * footer text re-renders in place when the language switcher changes the locale
+ * — no navigation, no reload.
  *
  * Hydration safety mirrors `SiteHeader`: the build-time SSR HTML is always the
  * DEFAULT locale, while the store may already hold another locale on the first
@@ -15,7 +15,6 @@
 import { useEffect, useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";
-import LinkButton from "@/components/LinkButton";
 import { useT, type Translate } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
 
@@ -42,7 +41,6 @@ export default function SiteFooter() {
         <p className="site-footer__copy">
           © {year} {tr("home.title")} · {tr("footer.rights")}
         </p>
-        <LinkButton href="/#contact" label={tr("nav.contact")} />
       </div>
     </footer>
   );
