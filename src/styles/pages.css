@@ -535,3 +535,24 @@
     color: var(--text);
   }
 }
+
+/*
+ * Touch targets for the page-level controls (compact header breakpoint,
+ * ≤621px). Same contract as the global block: a 44x44 CSS-px minimum hit area,
+ * no change to colour, radius or type, and desktop untouched. The contact row
+ * switches its baseline alignment to centre so the label and the now-taller
+ * link share one vertical axis.
+ */
+@media (max-width: 621px) {
+  .contact__item {
+    align-items: center;
+  }
+
+  .contact__link,
+  .acg-back,
+  .not-found__link {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 44px;
+  }
+}

@@ -75,10 +75,24 @@ const t = useTranslations("zh-hant");
 	}
 
 	.links__body :global(li) {
+		position: relative;
+		min-inline-size: 0;
 		padding: var(--space-4) var(--space-5);
 		border: 1px solid var(--glass-border);
 		border-radius: var(--radius-md);
 		background: var(--surface);
+		transition: border-color var(--dur-fast) var(--ease-out);
+	}
+
+	/*
+	 * Stretched link: the row's own anchor owns a transparent overlay that
+	 * covers the whole card, so the padding and the note next to the link are
+	 * tappable too. The Markdown is untouched and the card look is unchanged.
+	 */
+	.links__body :global(li > a::after) {
+		content: "";
+		position: absolute;
+		inset: 0;
 	}
 
 	.links__body :global(a) {
@@ -87,13 +101,24 @@ const t = useTranslations("zh-hant");
 		text-decoration: none;
 	}
 
+	.links__body :global(li:hover) {
+		border-color: var(--glass-border-strong);
+	}
+
 	.links__body :global(a:hover) {
 		color: var(--text);
 		text-decoration: underline;
 		text-underline-offset: 0.2em;
 	}
 
+	/* The focus ring marks the row that is now the target, not the text box. */
 	.links__body :global(li:has(> a:focus-visible)) {
 		border-color: var(--glass-border-strong);
+		outline: 2px solid var(--accent);
+		outline-offset: 3px;
+	}
+
+	.links__body :global(li > a:focus-visible) {
+		outline: none;
 	}
 </style>

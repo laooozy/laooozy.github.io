@@ -1353,3 +1353,42 @@ a.chip--tag:focus-visible {
     transition: none;
   }
 }
+
+/*
+ * Touch targets (compact header breakpoint, ≤621px).
+ *
+ * Every control-style link/button above grows to a 44x44 CSS-px minimum hit
+ * area — the WCAG 2.5.5 target size and the same 44px used by the compact
+ * header controls (`BaseLayout.astro`, `LanguageSwitcher`). Only the hit box
+ * changes: padding, radius, colour and type stay as they are, so the compact
+ * look is preserved. Desktop keeps its denser 41/35/23px boxes because this
+ * block is mobile-only.
+ *
+ * Genuine inline text links (prose, section "see all", post tag labels) keep
+ * their text box and rely on the WCAG 2.5.8 AA 24px spacing exception instead;
+ * see task-10 evidence for the per-control measurement.
+ */
+@media (max-width: 621px) {
+  .chip {
+    /* A single long tag must wrap inside the column, never overflow it. */
+    max-inline-size: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .chip--filter,
+  .link-arrow,
+  .pagination__link,
+  .post__back-link,
+  .search__trigger,
+  .search-results__link {
+    min-block-size: 44px;
+  }
+
+  .search-modal__close {
+    inline-size: 44px;
+    block-size: 44px;
+    align-items: center;
+    justify-content: center;
+  }
+}
