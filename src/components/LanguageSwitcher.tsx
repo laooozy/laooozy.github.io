@@ -266,19 +266,6 @@ export default function LanguageSwitcher() {
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, [open]);
 
-  // A history navigation (back/forward, or a router swap) must not leave the
-  // popover stranded open over the new route.
-  useEffect(() => {
-    if (!open) return;
-    const onRouteChange = () => setOpen(false);
-    window.addEventListener("popstate", onRouteChange);
-    document.addEventListener("astro:page-load", onRouteChange);
-    return () => {
-      window.removeEventListener("popstate", onRouteChange);
-      document.removeEventListener("astro:page-load", onRouteChange);
-    };
-  }, [open]);
-
   // Move focus into the menu when it opens, landing on the active locale.
   useEffect(() => {
     if (!open) return;
