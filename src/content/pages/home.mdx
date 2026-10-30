@@ -11,6 +11,7 @@ import InterestCard from "../../components/mdx/InterestCard.astro";
 import LatestPosts from "../../components/mdx/LatestPosts.astro";
 import Section from "../../components/mdx/Section.astro";
 import Stack from "../../components/mdx/Stack.astro";
+import { contactIdentity } from "../../i18n";
 
 <Hero
   title="laooozy"
@@ -19,7 +20,11 @@ import Stack from "../../components/mdx/Stack.astro";
   nowText="讀書，練跑，拍照。"
   meta={[
     { label: "所在地", value: "香港" },
-    { label: "Instagram", value: "@laooozy" },
+    {
+      label: "Instagram",
+      value: `@${contactIdentity.personalIg}`,
+      href: `https://instagram.com/${contactIdentity.personalIg}`,
+    },
   ]}
 />
 
