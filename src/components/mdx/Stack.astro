@@ -1,0 +1,32 @@
+---
+/**
+ * Stack — 1D vertical flow with a token gap.
+ *
+ * Astro port of `src/components/layout/Stack.tsx`; same `stack` class and
+ * `--stack-gap` / `--stack-align` custom properties.
+ *
+ * Props
+ *  - gap?: 1..12        default: 4  → gap: var(--space-N)
+ *  - as?: tag           element tag, default: "div" (e.g. "ul", "section")
+ *  - align?: "stretch" | "start" | "center"   default: "stretch"
+ *  - className?: string
+ */
+interface Props {
+  gap?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+  as?: keyof HTMLElementTagNameMap;
+  align?: "stretch" | "start" | "center";
+  className?: string;
+}
+
+const { gap = 4, as: Tag = "div", align = "stretch", className } = Astro.props;
+---
+
+<Tag
+  class:list={["stack", className]}
+  style={{
+    "--stack-gap": `var(--space-${gap})`,
+    "--stack-align": align,
+  }}
+>
+  <slot />
+</Tag>

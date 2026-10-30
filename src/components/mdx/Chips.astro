@@ -1,0 +1,79 @@
+---
+/**
+ * Chips — a wrapping row of chips, driven by data.
+ *
+ * Astro port of `ChipRow` + `Chip` from the React kit. It emits the same
+ * `chip-row` `<ul>` / `<li>` / `chip chip--<variant>` markup, so tag rows and
+ * filter controls are visually identical to the current pages.
+ *
+ * Props
+ *  - items: { label; href?; active? }[]
+ *  - variant?: "tag" | "filter"   default: "tag"
+ *      tag    → muted, non-interactive labels (post tags, interest items)
+ *      filter → interactive controls (idle = outlined, active = filled)
+ *  - ariaLabel?: string   names the row; needed for filter control groups
+ *  - gap?: 1..12          default: 2
+ *  - className?: string
+ *
+ * The optional default slot renders after the row; it is only for extra
+ * authored Markdown, never for chip items (those come from `items`).
+ */
+import type { ChipItem } from "../types";
+
+interface Props {
+  items: ChipItem[];
+  variant?: "tag" | "filter";
+  ariaLabel?: string;
+  gap?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+  className?: string;
+}
+
+const {
+  items,
+  variant = "tag",
+  ariaLabel,
+  gap = 2,
+  className,
+} = Astro.props;
+---
+
+{
+  items.length > 0 && (
+    <ul
+      class:list={["chip-row", className]}
+      style={{ "--chip-row-gap": `var(--space-${gap})` }}
+      aria-label={ariaLabel}
+    >
+      {items.map((item) => (
+        <li>
+          {item.href ? (
+            <a
+              class:list={[
+                "chip",
+                `chip--${variant}`,
+                item.active && "is-active",
+              ]}
+              href={item.href}
+              aria-current={item.active ? "page" : undefined}
+            >
+              {item.label}
+            </a>
+          ) : variant === "filter" ? (
+            <button
+              class:list={["chip", "chip--filter", item.active && "is-active"]}
+              type="button"
+              aria-pressed={item.active ? "true" : undefined}
+            >
+              {item.label}
+            </button>
+          ) : (
+            <span class:list={["chip", "chip--tag", item.active && "is-active"]}>
+              {item.label}
+            </span>
+          )}
+        </li>
+      ))}
+    </ul>
+  )
+}
+<slot />

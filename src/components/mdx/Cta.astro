@@ -1,0 +1,73 @@
+---
+/**
+ * Cta — the two call-to-action pills already on the site.
+ *
+ * Props
+ *  - href: string
+ *  - label?: string      one-line visible text (preferred); omit it and pass
+ *                        Markdown children instead
+ *  - variant?: "link" | "acg"   default: "link"
+ *      link → `.link-arrow` (quiet pill, used in the ACG About card)
+ *      acg  → `.acg-cta` (accent pill, used on the ACG page)
+ *  - external?: boolean  adds target="_blank" rel="noopener" (ACG links)
+ *  - className?: string
+ *
+ * The arrow glyph and its wrapper class match the current markup exactly, so
+ * the existing hover translations in global.css/pages.css keep working. With a
+ * `label` the output is byte-identical to the React markup; with Markdown
+ * children the children's paragraph is flattened back to inline.
+ */
+interface Props {
+  href: string;
+  label?: string;
+  variant?: "link" | "acg";
+  external?: boolean;
+  className?: string;
+}
+
+const {
+  href,
+  label,
+  variant = "link",
+  external = false,
+  className,
+} = Astro.props;
+
+const isAcg = variant === "acg";
+const target = external ? "_blank" : undefined;
+const rel = external ? "noopener" : undefined;
+---
+
+<a
+  class:list={[isAcg ? "acg-cta" : "link-arrow", className]}
+  href={href}
+  target={target}
+  rel={rel}
+>
+  {
+    isAcg ? (
+      label ? (
+        <span>{label}</span>
+      ) : (
+        <slot />
+      )
+    ) : label ? (
+      label
+    ) : (
+      <slot />
+    )
+  }
+  <span
+    class={isAcg ? "acg-cta__arrow" : "link-arrow__arrow"}
+    aria-hidden="true">→</span
+  >
+</a>
+
+<style is:global>
+  /* Markdown children are parsed as a paragraph; the pill is an inline row. */
+  .link-arrow p,
+  .acg-cta p {
+    display: inline;
+    margin: 0;
+  }
+</style>

@@ -1,0 +1,76 @@
+---
+/**
+ * InterestCard — one About-grid card on the home page.
+ *
+ * Astro port of the card composition in `src/components/HomePage.tsx`:
+ * `Card className="interest interest--<id>"` with an `<h3>` label and a
+ * `Stack` gap 3 body. The default slot renders the body Markdown, so an
+ * author writes ordinary paragraphs, lists and imported controls instead of
+ * passing an HTML string.
+ *
+ * Props
+ *  - id?: string       card modifier, e.g. "photography" → `interest--photography`
+ *  - title: string     the card label (rendered as <h3 class="interest__label">)
+ *  - className?: string
+ *
+ * The body slot keeps the primitive's typography: paragraphs are muted and
+ * margin-free (the stack gap owns spacing), matching the React card's
+ * `<Text tone="muted">` children.
+ */
+import Stack from "./Stack.astro";
+
+interface Props {
+  id?: string;
+  title: string;
+  className?: string;
+}
+
+const { id, title, className } = Astro.props;
+---
+
+<div class:list={["card", "interest", id && `interest--${id}`, className]}>
+  <h3 class="interest__label">{title}</h3>
+
+  <Stack gap={3}>
+    <slot />
+  </Stack>
+</div>
+
+<style is:global>
+  /*
+   * Slotted Markdown lives in the consuming page's scope, so these parity
+   * rules are global descendants of this card only (the class names are unique
+   * to the About cards). They reproduce the React card's children (`Text` =
+   * margin 0, muted colour) without touching article prose.
+   */
+  .interest > .stack > p,
+  .interest > .stack > ul,
+  .interest > .stack > ol {
+    margin: 0;
+  }
+
+  .interest > .stack > p {
+    color: var(--text-muted);
+  }
+
+  /* The paragraph that introduces a list is the smaller "gear intro" line. */
+  .interest > .stack > p:has(+ ul) {
+    font-size: var(--text-sm);
+  }
+
+  /*
+   * A Markdown list in a card is the gear list: one muted small line per item,
+   * no bullets, one space-1 row gap — the same result as the React
+   * `<Stack as="ul" gap={1} className="interest__gear">` with `Text size="sm"`.
+   */
+  .interest > .stack > ul {
+    display: grid;
+    gap: var(--space-1);
+    list-style: none;
+  }
+
+  .interest > .stack > ul > li {
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+  }
+</style>
