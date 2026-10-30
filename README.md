@@ -155,7 +155,7 @@ toggle.
 
 ## Requirements
 
-- **Node.js >= 22.12.0** (see `engines` in `package.json`)
+- **Node.js >= 22.22.0** (see `engines` in `package.json`)
 - bun
 
 Install dependencies once:

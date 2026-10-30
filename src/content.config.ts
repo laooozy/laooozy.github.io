@@ -25,4 +25,17 @@ const links = defineCollection({
   }),
 });
 
-export const collections = { blog, links };
+/**
+ * Page bodies authored in MDX. Each entry is a whole page (`home`, `acg`) whose
+ * prose and layout components live in `src/content/pages/*.mdx`; the route
+ * files stay in `src/pages/` and decide when an entry is rendered.
+ */
+const pages = defineCollection({
+  loader: glob({ pattern: "*.mdx", base: "./src/content/pages" }),
+  schema: z.object({
+    title: z.string().optional(),
+    description: z.string().optional(),
+  }),
+});
+
+export const collections = { blog, links, pages };

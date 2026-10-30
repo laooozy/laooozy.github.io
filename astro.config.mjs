@@ -5,6 +5,7 @@ import { SITE_INDEXABLE } from './src/lib/seo.ts';
 
 import tailwindcss from '@tailwindcss/vite';
 import react from '@astrojs/react';
+import mdx from '@astrojs/mdx';
 
 // https://astro.build/config
 export default defineConfig({
@@ -12,7 +13,7 @@ export default defineConfig({
   // The sitemap is only useful for an indexable site; skip it while hidden so
   // it cannot contradict the noindex meta tags. Re-enables automatically with
   // SITE_INDEXABLE in src/lib/seo.ts.
-  integrations: [...(SITE_INDEXABLE ? [sitemap()] : []), react()],
+  integrations: [...(SITE_INDEXABLE ? [sitemap()] : []), react(), mdx()],
 
   vite: {
     plugins: [tailwindcss()],
