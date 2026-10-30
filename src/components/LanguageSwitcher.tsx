@@ -16,8 +16,9 @@
  * is read at render time, so the first client render matches the SSR HTML
  * exactly: no hydration mismatch and no `zh-hant` flash in this control.
  *
- * The menu is only mounted once the user opens it (client state that starts
- * `false` on both server and client), so it too never causes a mismatch.
+ * The menu is always rendered but `hidden` while closed (client state that
+ * starts `false` on both server and client), so it never causes a mismatch and
+ * the trigger's `aria-controls` always resolves.
  *
  * The accessible name is rendered with the all-locale `<T>` component (three
  * `[data-l]` spans toggled by the same CSS), so it is mismatch-free as well.
@@ -106,6 +107,7 @@ const SWITCHER_CSS = `
 	display: flex;
 	flex-direction: column;
 	min-width: 10rem;
+	max-inline-size: calc(100vw - 2rem);
 	margin: 0;
 	padding: var(--space-1);
 	list-style: none;
@@ -117,11 +119,18 @@ const SWITCHER_CSS = `
 	box-shadow: var(--shadow-lift);
 }
 
+/* Always-rendered but closed: keeps the trigger's aria-controls resolvable
+   while leaving the menu out of the accessibility tree and tab order. */
+.lang-switch__menu[hidden] {
+	display: none;
+}
+
 .lang-switch__item {
 	display: flex;
 	align-items: center;
 	gap: var(--space-2);
 	width: 100%;
+	min-block-size: 44px;
 	padding: var(--space-2) var(--space-3);
 	border: 0;
 	border-radius: var(--radius-sm);
@@ -190,6 +199,17 @@ const SWITCHER_CSS = `
 		justify-content: center;
 	}
 
+	/*
+	 * The compact row places the 44px disclosure button one --space-3 gap to
+	 * the right of the trigger, so the action cluster ends
+	 * (44px + var(--space-3)) past the trigger's right edge. Offset the menu
+	 * by exactly that so it right-aligns with the cluster instead of hanging
+	 * off the left-aligned trigger; the width cap keeps it inside 320px.
+	 */
+	.lang-switch__menu {
+		right: calc(-1 * (44px + var(--space-3)));
+	}
+
 	.lang-switch__trigger [data-l] {
 		position: absolute;
 		inline-size: 1px;
@@ -246,6 +266,19 @@ export default function LanguageSwitcher() {
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, [open]);
 
+  // A history navigation (back/forward, or a router swap) must not leave the
+  // popover stranded open over the new route.
+  useEffect(() => {
+    if (!open) return;
+    const onRouteChange = () => setOpen(false);
+    window.addEventListener("popstate", onRouteChange);
+    document.addEventListener("astro:page-load", onRouteChange);
+    return () => {
+      window.removeEventListener("popstate", onRouteChange);
+      document.removeEventListener("astro:page-load", onRouteChange);
+    };
+  }, [open]);
+
   // Move focus into the menu when it opens, landing on the active locale.
   useEffect(() => {
     if (!open) return;
@@ -285,8 +318,32 @@ export default function LanguageSwitcher() {
         event.preventDefault();
         moveFocus(items.length - 1);
         break;
-      default:
+      default: {
+        // Typeahead: a printable character jumps to the next item whose
+        // locale name or code starts with it (English / 繁 / 簡, or en/zh).
+        if (
+          event.key.length === 1 &&
+          event.key.trim() !== "" &&
+          !event.ctrlKey &&
+          !event.metaKey &&
+          !event.altKey
+        ) {
+          const char = event.key.toLocaleLowerCase();
+          const matches = (item: HTMLButtonElement) => {
+            const label = (item.textContent ?? "").trim().toLocaleLowerCase();
+            const code = item.dataset.lang?.toLocaleLowerCase() ?? "";
+            return label.startsWith(char) || code.startsWith(char);
+          };
+          for (let step = 1; step <= items.length; step += 1) {
+            const candidate = items[(current + step) % items.length];
+            if (candidate && matches(candidate)) {
+              candidate.focus();
+              break;
+            }
+          }
+        }
         break;
+      }
     }
   };
 
@@ -314,6 +371,9 @@ export default function LanguageSwitcher() {
             event.preventDefault();
             close(true);
           }
+          // Tab dismisses the menu; the browser then moves focus naturally
+          // past the hidden items (back to the trigger on Shift+Tab).
+          if (open && event.key === "Tab") setOpen(false);
         }}
         onBlurCapture={(event) => {
           // Tabbing out of the switcher closes it without stealing focus back.
@@ -352,37 +412,36 @@ export default function LanguageSwitcher() {
             size={16}
           />
         </button>
-        {open && (
-          <ul
-            id="lang-switch-menu"
-            className="lang-switch__menu"
-            role="menu"
-            aria-labelledby="language-switcher-label"
-          >
-            {MENU_ORDER.map((code, index) => (
-              <li key={code} role="none">
-                <button
-                  type="button"
-                  role="menuitemradio"
-                  aria-checked={locale === code}
-                  className="lang-switch__item"
-                  data-lang={code}
-                  lang={langAttr[code]}
-                  ref={(el) => {
-                    itemRefs.current[index] = el;
-                  }}
-                  onClick={() => select(code)}
-                  onKeyDown={onItemKeyDown}
-                >
-                  <span className="lang-switch__check" aria-hidden="true">
-                    {locale === code && <Check size={14} />}
-                  </span>
-                  {languages[code]}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+        <ul
+          id="lang-switch-menu"
+          className="lang-switch__menu"
+          role="menu"
+          aria-labelledby="language-switcher-label"
+          hidden={!open}
+        >
+          {MENU_ORDER.map((code, index) => (
+            <li key={code} role="none">
+              <button
+                type="button"
+                role="menuitemradio"
+                aria-checked={locale === code}
+                className="lang-switch__item"
+                data-lang={code}
+                lang={langAttr[code]}
+                ref={(el) => {
+                  itemRefs.current[index] = el;
+                }}
+                onClick={() => select(code)}
+                onKeyDown={onItemKeyDown}
+              >
+                <span className="lang-switch__check" aria-hidden="true">
+                  {locale === code && <Check size={14} />}
+                </span>
+                {languages[code]}
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
     </nav>
   );
