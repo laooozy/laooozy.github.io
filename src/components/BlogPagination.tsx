@@ -46,7 +46,7 @@ export default function BlogPagination({
   return (
     <nav
       className={["pagination", className].filter(Boolean).join(" ")}
-      aria-label={status}
+      aria-label={tr("blog.pagination")}
     >
       {pagination.url.prev ? (
         <a className="pagination__link" href={pagination.url.prev} rel="prev">

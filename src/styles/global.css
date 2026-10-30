@@ -1412,7 +1412,11 @@ a.now-ticker__item:focus-visible {
 
 .search-modal__close {
   display: inline-flex;
-  padding: var(--space-2);
+  align-items: center;
+  justify-content: center;
+  inline-size: 44px;
+  block-size: 44px;
+  padding: 0;
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   background: transparent;
@@ -1580,12 +1584,5 @@ a.now-ticker__item:focus-visible {
   .search__trigger,
   .search-results__link {
     min-block-size: 44px;
-  }
-
-  .search-modal__close {
-    inline-size: 44px;
-    block-size: 44px;
-    align-items: center;
-    justify-content: center;
   }
 }

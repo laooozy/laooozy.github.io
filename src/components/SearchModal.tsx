@@ -46,6 +46,7 @@ export default function SearchModal() {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
     setMounted(true);
@@ -62,6 +63,26 @@ export default function SearchModal() {
     } else if (!open && dialog.open) {
       dialog.close();
     }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const root = document.documentElement;
+    const previousOverflow = root.style.overflow;
+    root.style.overflow = "hidden";
+    return () => {
+      root.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      wasOpenRef.current = true;
+      return;
+    }
+    if (!wasOpenRef.current) return;
+    wasOpenRef.current = false;
+    triggerRef.current?.focus();
   }, [open]);
 
   // ⌘K (macOS) / Ctrl+K (elsewhere) opens the modal, from anywhere.
@@ -89,8 +110,9 @@ export default function SearchModal() {
       case "results":
         return tr("search.resultCount", { count: results.length });
       case "empty":
-      case "error":
         return tr("search.noResults");
+      case "error":
+        return tr("search.error");
       default:
         return tr("search.hint");
     }
@@ -104,6 +126,7 @@ export default function SearchModal() {
         ref={triggerRef}
         aria-haspopup="dialog"
         aria-expanded={open}
+        aria-controls="search-modal"
         onClick={() => openSearch()}
       >
         <svg
@@ -128,15 +151,19 @@ export default function SearchModal() {
       </button>
 
       <dialog
+        id="search-modal"
         className="search-modal"
         ref={dialogRef}
         aria-labelledby="search-modal-title"
-        onClose={() => {
-          closeSearch();
-          triggerRef.current?.focus();
-        }}
+        onClose={() => closeSearch()}
         onClick={(event) => {
           if (event.target === dialogRef.current) closeSearch();
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            closeSearch();
+          }
         }}
       >
         <div className="search-modal__panel">
