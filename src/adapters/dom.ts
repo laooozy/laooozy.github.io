@@ -62,6 +62,13 @@ export interface DomPort {
    * frame.
    */
   onScroll(callback: (scrollY: number) => void): () => void;
+  /**
+   * Observe same-document hash changes (`hashchange`). The callback receives
+   * the new `location.hash`, including the leading `#`, or `""` when cleared.
+   * The disclosure uses it to close on an anchor jump that does not change the
+   * pathname. Returns an unsubscribe. Never throws.
+   */
+  onHashChange(callback: (hash: string) => void): () => void;
   /** `true` when the user asked for reduced motion. `false` when unknown. */
   prefersReducedMotion(): boolean;
   /**
@@ -158,6 +165,17 @@ function createDomAdapter(): DomPort {
       };
     },
 
+    onHashChange(callback) {
+      if (typeof window === "undefined") return () => {};
+
+      const handleHashChange = () => {
+        callback(window.location?.hash ?? "");
+      };
+
+      window.addEventListener("hashchange", handleHashChange);
+      return () => window.removeEventListener("hashchange", handleHashChange);
+    },
+
     prefersReducedMotion() {
       try {
         if (
@@ -234,10 +252,12 @@ function createDomAdapter(): DomPort {
             const location = window.location;
             if (!location) return false;
             const url = new URL(href, location.href);
-            return Boolean(url.hash) &&
+            return (
+              Boolean(url.hash) &&
               url.origin === location.origin &&
               url.pathname === location.pathname &&
-              url.search === location.search;
+              url.search === location.search
+            );
           } catch {
             return false;
           }
@@ -442,6 +462,7 @@ export const domAdapter: DomPort = createDomAdapter();
 /** Deterministic no-op test double: observes nothing, mutates nothing. */
 export const noopDomAdapter: DomPort = {
   onScroll: () => () => {},
+  onHashChange: () => () => {},
   prefersReducedMotion: () => false,
   setHeaderHidden: () => {},
   isHeaderFocusWithin: () => false,

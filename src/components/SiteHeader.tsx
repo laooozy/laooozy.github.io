@@ -120,6 +120,13 @@ export default function SiteHeader({
     setMenuOpen(false);
   }, [currentPath]);
 
+  // A same-page fragment link keeps the pathname, so close on the hash jump
+  // too (e.g. `/#about` from `/`) and never leave the panel over the target.
+  useEffect(() => {
+    if (!menuOpen) return;
+    return clientDeps.adapters.dom.onHashChange(() => setMenuOpen(false));
+  }, [menuOpen]);
+
   // Publish the panel state for the scroll-header guard so a scroll-down can
   // never hide the bar out from under an open menu.
   useEffect(() => {
@@ -220,6 +227,7 @@ export default function SiteHeader({
                           className="site-menu__link"
                           href={item.href}
                           aria-current={current ? "page" : undefined}
+                          onClick={() => setMenuOpen(false)}
                         >
                           {tr(item.key)}
                         </a>

@@ -62,6 +62,9 @@ describe("noopDomAdapter", () => {
     expect(noopDomAdapter.isHeaderFocusWithin()).toBe(false);
     expect(typeof noopDomAdapter.keepHeaderFocusStable()).toBe("function");
     expect(() => noopDomAdapter.keepHeaderFocusStable()()).not.toThrow();
+    const stopHashChange = noopDomAdapter.onHashChange(() => {});
+    expect(typeof stopHashChange).toBe("function");
+    expect(() => stopHashChange()).not.toThrow();
     expect(() => noopDomAdapter.applyLocale("en")).not.toThrow();
     expect(() =>
       noopDomAdapter.setHidden("[data-ig-embeds]", false),
@@ -108,6 +111,33 @@ describe("domAdapter prefersReducedMotion", () => {
     });
 
     expect(domAdapter.prefersReducedMotion()).toBe(false);
+  });
+});
+
+describe("domAdapter onHashChange", () => {
+  it("subscribes to hashchange and unsubscribes", () => {
+    const listeners = new Map<string, () => void>();
+    defineGlobal("window", {
+      location: { hash: "#about" },
+      addEventListener: (type: string, callback: () => void) =>
+        listeners.set(type, callback),
+      removeEventListener: (type: string) => listeners.delete(type),
+    });
+
+    const callback = vi.fn();
+    const stop = domAdapter.onHashChange(callback);
+
+    expect([...listeners.keys()]).toEqual(["hashchange"]);
+    listeners.get("hashchange")!();
+    expect(callback).toHaveBeenCalledWith("#about");
+
+    stop();
+    expect(listeners.size).toBe(0);
+  });
+
+  it("is a no-op without a window", () => {
+    const stop = domAdapter.onHashChange(() => {});
+    expect(() => stop()).not.toThrow();
   });
 });
 

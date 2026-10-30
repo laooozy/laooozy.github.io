@@ -727,9 +727,10 @@ a.chip--tag:focus-visible {
  * reduced motion; that class is what turns the line into a CSS marquee. No
  * JavaScript animation loop is involved. The second track copy is aria-hidden
  * and its links are tabIndex -1, so the marquee never adds a duplicate tab
- * stop. `:hover` / `:focus-within` and the pause button all freeze the same
- * CSS animation. Under reduced motion the class never lands, and the rule below
- * is a belt-and-braces override. */
+ * stop. Hovering the ticker line, focusing an item link, or pressing the pause
+ * button freezes the same CSS animation; the toggle's own hover/focus never
+ * does, so Play can resume in place. Under reduced motion the class never
+ * lands, and the rule below is a belt-and-braces override. */
 .now-ticker {
   max-width: 100%;
 }
@@ -812,8 +813,8 @@ a.now-ticker__item:focus-visible {
   padding-right: var(--space-2);
 }
 
-.now-ticker.is-running:hover .now-ticker__track,
-.now-ticker.is-running:focus-within .now-ticker__track,
+.now-ticker.is-running .now-ticker__viewport:hover .now-ticker__track,
+.now-ticker.is-running:has(.now-ticker__item:focus-visible) .now-ticker__track,
 .now-ticker[data-paused="true"] .now-ticker__track {
   animation-play-state: paused;
 }
