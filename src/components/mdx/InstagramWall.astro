@@ -7,15 +7,26 @@
  * `await getInstagramEmbeds(...)` and renders the already-resolved result. The
  * route (`src/pages/acg.astro`) stays a thin MDX renderer and never fetches.
  *
- * The markup is the current photo wall verbatim: a `.grid .acg-wall` of
- * `.ig-embed` figures (the oEmbed blockquote injected with `set:html`) or a
- * `.ig-fallback` link-out when a permalink failed, and one `.acg-empty`
- * link-out panel when the list is empty. No client-side fetch, no API secret.
+ * Two layers, deliberately separated:
  *
- * Instagram's embed library is loaded once for the page here, guarded so it is
- * only emitted when there is at least one embed. `is:inline` is required:
- * Astro otherwise bundles/strips this external script and the embeds never
- * upgrade.
+ *  1. The AT-REST surface is a compact dark link-card grid (`.ig-gate`, 2-up
+ *     where the column has room, otherwise one column). Every card links to the
+ *     post on Instagram and names the handle plus the post path, so the wall is
+ *     useful before any third-party asset is allowed to load.
+ *  2. The build-time oEmbed blockquotes stay in the DOM inside `.ig-embeds`,
+ *     which is `hidden` until consent. Keeping them server-rendered preserves
+ *     the privacy-safe fallback and lets the consent gate reveal real markup
+ *     instead of re-fetching. Nothing from Instagram is visible at rest, so the
+ *     old light blockquote / white 950px blank never reaches the screen.
+ *
+ * The embed.js loader is NOT emitted here: the consent gate (the next task)
+ * injects it only after the visitor opts in. Until then this is a pure
+ * build-time component with no third-party request.
+ *
+ * Meta's embed.js creates the final `<iframe>` itself, so build-time markup
+ * cannot set that iframe's `title`/`loading`. The figure therefore carries the
+ * wrapper label (`aria-label`) and the CSS constrains every embed descendant to
+ * the figure width; this is the documented Meta limitation allowed by the plan.
  */
 import { contactIdentity } from "../../i18n";
 import { instagramPosts } from "../../data/instagram";
@@ -25,33 +36,107 @@ import Grid from "./Grid.astro";
 const embeds = await getInstagramEmbeds(instagramPosts);
 const igHandle = `@${contactIdentity.acgIg}`;
 const igHref = `https://instagram.com/${contactIdentity.acgIg}`;
+
+/** `/p/<shortcode>/` for a post, or the raw URL if it cannot be parsed. */
+function postPath(url: string): string {
+  try {
+    const { pathname } = new URL(url);
+    return pathname.endsWith("/") ? pathname : `${pathname}/`;
+  } catch {
+    return url;
+  }
+}
 ---
 
 {
   embeds.length > 0 ? (
-    <Grid min="19rem" gap={6} className="acg-wall">
-      {embeds.map((embed) =>
-        embed.html ? (
-          <figure class="ig-embed" set:html={embed.html} />
-        ) : (
-          <a
-            class="ig-fallback"
-            href={embed.url}
-            target="_blank"
-            rel="noopener"
-            aria-label="View this post on Instagram"
-            data-embed-failed={embed.failed ? "" : undefined}
-          >
-            <span class="ig-fallback__glyph" aria-hidden="true">
-              ↗
-            </span>
-            <span class="ig-fallback__label">
-              View this post on Instagram
-            </span>
-          </a>
-        ),
-      )}
-    </Grid>
+    <div class="ig-wall" data-ig-wall>
+      <Grid as="ul" min="17rem" gap={4} className="ig-gate">
+        {embeds.map((embed) => (
+          <li class="ig-gate__item">
+            <a
+              class="ig-gate__card"
+              href={embed.url}
+              target="_blank"
+              rel="noopener"
+              aria-label={`在 Instagram 觀看 ${igHandle} 的貼文 ${postPath(embed.url)}`}
+            >
+              <span class="ig-gate__badge" aria-hidden="true">
+                <svg
+                  class="ig-gate__glyph"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                </svg>
+              </span>
+              <span class="ig-gate__body">
+                <span class="ig-gate__handle">{igHandle}</span>
+                <span class="ig-gate__path">{postPath(embed.url)}</span>
+                <span class="ig-gate__action">
+                  在 Instagram 觀看
+                  <svg
+                    class="ig-gate__arrow"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M7 7h10v10" />
+                    <path d="M7 17 17 7" />
+                  </svg>
+                </span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </Grid>
+
+      {/*
+        Consent-gated layer. `hidden` keeps the raw oEmbed blockquotes and the
+        per-post link fallback out of paint (and out of the accessibility tree)
+        until the gate reveals them. `data-ig-embeds` is the hook the gate uses.
+      */}
+      <div class="ig-embeds" data-ig-embeds hidden>
+        <Grid min="19rem" gap={6} className="acg-wall">
+          {embeds.map((embed) =>
+            embed.html ? (
+              <figure
+                class="ig-embed"
+                role="group"
+                aria-label={`Instagram post: ${embed.url}`}
+                set:html={embed.html}
+              />
+            ) : (
+              <a
+                class="ig-fallback"
+                href={embed.url}
+                target="_blank"
+                rel="noopener"
+                aria-label={`在 Instagram 觀看 ${igHandle} 的貼文 ${postPath(embed.url)}`}
+                data-embed-failed={embed.failed ? "" : undefined}
+              >
+                <span class="ig-fallback__glyph" aria-hidden="true">
+                  ↗
+                </span>
+                <span class="ig-fallback__label">
+                  在 Instagram 觀看
+                </span>
+              </a>
+            ),
+          )}
+        </Grid>
+      </div>
+    </div>
   ) : (
     <a class="acg-empty" href={igHref} target="_blank" rel="noopener">
       <span class="acg-empty__label">在 Instagram 看更多</span>
@@ -60,11 +145,5 @@ const igHref = `https://instagram.com/${contactIdentity.acgIg}`;
         ↗
       </span>
     </a>
-  )
-}
-
-{
-  embeds.length > 0 && (
-    <script is:inline async src="https://www.instagram.com/embed.js" />
   )
 }

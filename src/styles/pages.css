@@ -2,17 +2,15 @@
  * Global page styles for the MDX/Astro pages and the remaining React page
  * islands.
  *
- * `InstagramEmbed` and `NotFound` are hydrated React components. React-rendered
- * elements receive no Astro `data-astro-cid-*` scope attribute, so the styles
- * that used to live in their scoped `<style>`
- * blocks would no longer reach the markup. They are therefore global here, with
- * every class name and value unchanged from the scoped originals.
+ * The Instagram wall is build-time Astro markup inside an MDX entry and
+ * `NotFound` is a hydrated React component. This sheet is imported globally, so
+ * the wall rules reach the MDX-rendered blockquotes without scoping.
  *
  * This sheet is imported by `BaseLayout.astro` right after `global.css`, so it
  * loads on every route. It is kept as its own file (rather than appended to
  * `global.css`) so page-island styling stays a self-contained unit.
  *
- * Sections: Section primitive → Home page → ACG page → Instagram embed → 404.
+ * Sections: Section primitive → Home page → ACG page → Instagram wall → 404.
  */
 
 /* ---------------------------------------------------------------- *
@@ -385,31 +383,201 @@
 }
 
 /* ---------------------------------------------------------------- *
- * Instagram embed
+ * Instagram wall
  * ---------------------------------------------------------------- */
+/*
+ * At rest the wall is a compact dark link-card grid, not Instagram's light
+ * oEmbed card. Each card names the handle and the post path and offers the
+ * localized "view on Instagram" action, so the ACG page is useful before any
+ * third-party asset is allowed to load. The build-time blockquotes stay in the
+ * DOM inside `.ig-embeds[hidden]` for the consent gate to reveal.
+ */
+.ig-wall {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ig-gate {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ig-gate__item {
+  min-width: 0;
+}
+
+.ig-gate__card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: 100%;
+  min-width: 0;
+  padding: var(--space-5);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface);
+  background-image: var(--card-bg);
+  box-shadow: var(--card-inset);
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    border-color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+.ig-gate__card:hover,
+.ig-gate__card:focus-visible {
+  border-color: var(--glass-border-strong);
+  background-color: var(--surface-hover);
+  color: var(--text);
+  transform: translateY(-2px);
+}
+
+.ig-gate__badge {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-surface);
+  color: var(--accent);
+}
+
+.ig-gate__glyph {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.ig-gate__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.ig-gate__handle {
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
+}
+
+.ig-gate__path {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.ig-gate__action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+  color: var(--accent);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.ig-gate__arrow {
+  width: 0.85rem;
+  height: 0.85rem;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.ig-gate__card:hover .ig-gate__arrow,
+.ig-gate__card:focus-visible .ig-gate__arrow {
+  transform: translate(2px, -2px);
+}
+
+/* The consent-gated layer. Hidden until the gate reveals it. */
+.ig-embeds {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ig-embeds[hidden] {
+  display: none;
+}
+
 /*
  * Instagram's embed is always a LIGHT card, which would otherwise punch a
  * white hole in the near-black page. Framing it on a brand surface (glass
  * border + rounded, clipped corners) reads it as a deliberately mounted photo
  * on the darkroom wall rather than a broken block.
+ *
+ * The `::after` layer is the dark loading skeleton: it covers the light
+ * placeholder with an opaque brand surface and a slow sheen until Meta's
+ * embed library swaps the blockquote for the real iframe. Every descendant is
+ * constrained to the figure so the oEmbed card's inline `min-width:326px`
+ * can never overflow a 320px viewport.
  */
 .ig-embed {
-  margin: 0;
+  position: relative;
+  isolation: isolate;
+  width: 100%;
   min-width: 0;
+  max-width: 100%;
+  margin: 0;
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   background-color: var(--surface);
+  background-image: var(--card-bg);
   box-shadow: var(--card-inset);
   overflow: hidden;
 }
 
+.ig-embed::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  background-image:
+    linear-gradient(
+      100deg,
+      transparent 35%,
+      var(--surface-strong) 50%,
+      transparent 65%
+    ),
+    linear-gradient(var(--bg-elevated), var(--bg-elevated));
+  background-size:
+    220% 100%,
+    100% 100%;
+  animation: ig-skeleton-sweep 1.6s linear infinite;
+  pointer-events: none;
+}
+
+.ig-embed:has(iframe)::after {
+  display: none;
+}
+
+@keyframes ig-skeleton-sweep {
+  from {
+    background-position:
+      180% 0,
+      0 0;
+  }
+
+  to {
+    background-position:
+      -80% 0,
+      0 0;
+  }
+}
+
 /*
- * The oEmbed blockquote arrives with LIGHT inline styles (background:#FFF …).
- * Inline styles win over a stylesheet unless the rule is `!important`, so the
- * overrides below keep the embed on-brand before the Instagram library swaps
- * the blockquote for a themeable iframe. Values stay on brand tokens.
+ * The oEmbed blockquote arrives with LIGHT inline styles (background:#FFF …)
+ * plus `min-width:326px`; inline styles win over a stylesheet unless the rule
+ * is `!important`. These overrides keep the embed on-brand and unclipped before
+ * the library swaps it for the iframe. Values stay on brand tokens.
  */
 .ig-embed blockquote.instagram-media {
+  position: relative;
+  z-index: 1;
   background: var(--surface) !important;
   background-image: var(--card-bg) !important;
   border: 1px solid var(--glass-border) !important;
@@ -424,6 +592,15 @@
 
 .ig-embed blockquote.instagram-media a {
   color: var(--text-muted) !important;
+}
+
+/* Meta's embed.js creates the iframe; constrain it to the figure here. */
+.ig-embed iframe {
+  display: block;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  border: 0;
 }
 
 .ig-fallback {
