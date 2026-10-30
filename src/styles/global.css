@@ -610,6 +610,9 @@ a.chip--tag:focus-visible {
   display: grid;
   gap: var(--space-8);
   padding-bottom: clamp(var(--space-4), 3vw, var(--space-6));
+  /* A grid/flex item defaults to min-width:auto; the marquee's nowrap track
+     would otherwise widen the whole hero past the viewport. */
+  min-width: 0;
 }
 
 /* The masthead's local aurora glow is gone: it is replaced by the single fixed
@@ -626,6 +629,7 @@ a.chip--tag:focus-visible {
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-5);
+  min-width: 0;
 }
 
 .hero__status {
@@ -649,6 +653,170 @@ a.chip--tag:focus-visible {
 .hero__status-label {
   font-weight: 600;
   color: var(--accent);
+}
+
+/* "Now" ticker (title of the fixed-chrome status row).
+ *
+ * Base state = a plain readable line. `NowTickerClient` adds `.is-running`
+ * after hydration only for 2+ items and when the visitor has not asked for
+ * reduced motion; that class is what turns the line into a CSS marquee. No
+ * JavaScript animation loop is involved. The second track copy is aria-hidden
+ * and its links are tabIndex -1, so the marquee never adds a duplicate tab
+ * stop. `:hover` / `:focus-within` and the pause button all freeze the same
+ * CSS animation. Under reduced motion the class never lands, and the rule below
+ * is a belt-and-braces override. */
+.now-ticker {
+  max-width: 100%;
+}
+
+.now-ticker.is-running {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100%;
+  max-width: 40rem;
+}
+
+.now-ticker__viewport {
+  min-width: 0;
+}
+
+.now-ticker.is-running .now-ticker__viewport {
+  flex: 1 1 auto;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 6%,
+    #000 94%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 6%,
+    #000 94%,
+    transparent
+  );
+}
+
+.now-ticker__track {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.now-ticker__group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.now-ticker__item {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.now-ticker__sep {
+  color: var(--text-muted);
+}
+
+a.now-ticker__item:hover,
+a.now-ticker__item:focus-visible {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.now-ticker.is-running .now-ticker__track,
+.now-ticker.is-running .now-ticker__group {
+  flex-wrap: nowrap;
+  width: max-content;
+}
+
+.now-ticker.is-running .now-ticker__track {
+  gap: 0;
+  animation: now-ticker-scroll 22s linear infinite;
+  will-change: transform;
+}
+
+/* Trailing space is part of the group, so translating the two equal groups by
+ * -50% loops with no seam. */
+.now-ticker.is-running .now-ticker__group {
+  padding-right: var(--space-2);
+}
+
+.now-ticker.is-running:hover .now-ticker__track,
+.now-ticker.is-running:focus-within .now-ticker__track,
+.now-ticker[data-paused="true"] .now-ticker__track {
+  animation-play-state: paused;
+}
+
+.now-ticker__toggle {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid color-mix(in oklab, var(--glass-border) 55%, transparent);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.now-ticker__toggle:hover {
+  color: var(--text);
+  border-color: color-mix(
+    in oklab,
+    var(--glass-border-strong) 70%,
+    transparent
+  );
+  background: var(--surface-hover);
+}
+
+.now-ticker__toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@keyframes now-ticker-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .now-ticker.is-running .now-ticker__viewport {
+    overflow: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .now-ticker.is-running .now-ticker__track {
+    animation: none;
+  }
+
+  .now-ticker.is-running .now-ticker__track,
+  .now-ticker.is-running .now-ticker__group {
+    flex-wrap: wrap;
+    width: auto;
+  }
+
+  .now-ticker__group[aria-hidden="true"] {
+    display: none;
+  }
 }
 
 .hero__title {

@@ -66,6 +66,10 @@ export const ui = {
       tagline: "一個關於我自己的網站。",
       nowLabel: "最近",
     },
+    now: {
+      pause: "暫停",
+      play: "播放",
+    },
     blog: {
       heading: "最新文章",
       allPosts: "所有文章",
@@ -121,6 +125,10 @@ export const ui = {
       tagline: "摄影、游戏，以及我写下的一些东西。",
       nowLabel: "最近",
     },
+    now: {
+      pause: "暂停",
+      play: "播放",
+    },
     blog: {
       heading: "最新文章",
       allPosts: "所有文章",
@@ -175,6 +183,10 @@ export const ui = {
       title: "laooozy",
       tagline: "Photography, games, and a few things I write down.",
       nowLabel: "Now",
+    },
+    now: {
+      pause: "Pause",
+      play: "Play",
     },
     blog: {
       heading: "Latest posts",

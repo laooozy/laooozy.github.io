@@ -21,7 +21,7 @@ src/
 ├── content/links/     The useful-links list, one Markdown file for the whole page
 ├── content/pages/     Page bodies authored in MDX (home.mdx, acg.mdx)
 ├── content.config.ts  Zod schemas for the blog, links and pages collections
-├── data/              Locale-independent data (Instagram permalinks; the planned now.json ticker)
+├── data/              Locale-independent data (Instagram permalinks, the now ticker JSON)
 ├── hooks/             Client hooks over the store and its injected adapters
 ├── i18n/              Fixed-chrome dictionaries and t() (index.ts, ui.ts re-export, types.ts)
 ├── layouts/           BaseLayout.astro (SEO, nav, footer, pre-paint boot)
@@ -196,14 +196,20 @@ body in `lang="zh-Hant"`, so screen readers read the Chinese content as Chinese
 even when `<html lang>` follows an English chrome choice. Do not add page copy to
 `src/i18n` or `src/data`, and do not create per-locale page folders.
 
-Two content surfaces are planned but **not live yet**:
+## The "now" ticker
 
-- **Now ticker.** `src/data/now.json` will hold an array of `{ text, href? }`
-  items for the hero's "now" line, so the owner can update it without touching
-  code. The intended contract: an empty array hides the whole status line, one
-  item renders statically, two or more scroll with a pause/play control, and
-  reduced motion gets a static wrapped line. Until the ticker lands, the hero
-  keeps its `nowText` prop.
+`src/data/now.json` is an array of `{ text, href? }` items for the hero's
+"now" line, so the owner can update it without touching code. The contract:
+an empty array hides the whole status line, one item renders statically, and
+two or more scroll with a 44px pause/play control. It is a build-time read
+validated by a Zod schema, so a malformed file fails the build naming the bad
+field. The server-rendered base is a static, readable line (no-JS safe) and
+`prefers-reduced-motion: reduce` keeps that static wrapped line. The item text
+is zh-hant and is never translated; the label and pause/play names are fixed
+chrome in `src/i18n`.
+
+One content surface is still planned but **not live yet**:
+
 - **Instagram gate.** `src/data/instagram.ts` is the single list of post
   permalinks; `InstagramWall.astro` resolves them through Meta's oEmbed endpoint
   at build time and falls back to a link-out card when a post cannot be embedded.

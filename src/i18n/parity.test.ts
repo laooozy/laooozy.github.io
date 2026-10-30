@@ -83,6 +83,8 @@ const FIXED_KEYS = [
   "home.title",
   "home.tagline",
   "home.nowLabel",
+  "now.pause",
+  "now.play",
 ] as const;
 
 /**

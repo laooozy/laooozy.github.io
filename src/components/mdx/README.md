@@ -42,9 +42,10 @@ language switcher) stays a React island and is **not** part of this kit.
    - `InterestCard`: `title` (renders `<h3 class="interest__label">`), `id`
      (card modifier → `interest--<id>`), `className`. The body is the default
      slot.
-   - `Hero`: `title`, `tagline`, `nowLabel`, `nowText`, `meta` (array of
-     `{ label, value }` rows). The default slot is optional extra masthead
-     Markdown.
+   - `Hero`: `title`, `tagline`, `meta` (array of `{ label, value }` rows).
+     The "now" status line is rendered by `NowTicker.astro` from
+     `src/data/now.json`; there are no `nowLabel`/`nowText` props. The default
+     slot is optional extra masthead Markdown.
    - `AcgMasthead`: `handle`, `title`, `label`, `intro` (the larger muted
      lead). The default slot is the remaining intro Markdown.
    - `ContactRow`: `label` and `href`; pass the one-line visible text as

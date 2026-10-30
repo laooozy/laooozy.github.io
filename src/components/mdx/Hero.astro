@@ -8,15 +8,18 @@
  * Props
  *  - title: string                     the wordmark (rendered as <h1>)
  *  - tagline: string                   one-line description
- *  - nowLabel?: string                 small status label, e.g. "Now"
- *  - nowText?: string                  the "now" line beside the status dot
  *  - meta?: { label; value; href? }[]  right-column spec rows (Base / Now / …);
  *                                      a row with `href` renders its value as a link
  *  - className?: string
  *
  * The default slot is optional extra masthead Markdown, appended after the
  * tagline. Two columns ≥60rem (text + spec panel), stacked below.
+ *
+ * The "now" status line is `NowTicker.astro`: it validates the owner-edited
+ * JSON at build time and renders nothing when the list is empty, so the label
+ * is fixed chrome owned by the client island, not a Hero prop.
  */
+import NowTicker from "./NowTicker.astro";
 interface HeroMeta {
   label: string;
   value: string;
@@ -27,33 +30,16 @@ interface HeroMeta {
 interface Props {
   title: string;
   tagline: string;
-  nowLabel?: string;
-  nowText?: string;
   meta?: HeroMeta[];
   className?: string;
 }
 
-const {
-  title,
-  tagline,
-  nowLabel,
-  nowText,
-  meta = [],
-  className,
-} = Astro.props;
+const { title, tagline, meta = [], className } = Astro.props;
 ---
 
 <header class:list={["hero", className]}>
   <div class="hero__main">
-    {
-      nowLabel && (
-        <p class="hero__status">
-          <span class="hero__dot" aria-hidden="true" />
-          <span class="hero__status-label">{nowLabel}</span>
-          {nowText && <span class="hero__status-text">{nowText}</span>}
-        </p>
-      )
-    }
+    <NowTicker />
 
     <h1 class="hero__title">
       {title}<span class="hero__period" aria-hidden="true">.</span>
