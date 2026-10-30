@@ -144,43 +144,118 @@ describe("domAdapter header semantics", () => {
     expect(domAdapter.isHeaderFocusWithin()).toBe(false);
   });
 
-  it("restores the scroll offset when focus lands in the shown header", () => {
-    const inside = { id: "nav-link" };
-    const listeners = new Set<(event: { target: unknown }) => void>();
+  function installHeaderHarness(anchorHref: string | null) {
+    const inside = {
+      id: "nav-link",
+      closest: () =>
+        anchorHref === null
+          ? null
+          : { getAttribute: (name: string) => (name === "href" ? anchorHref : null) },
+    };
+    const listeners = new Map<string, (event: { target?: unknown; type?: string; key?: string }) => void>();
+    const frames = new Map<number, (time: number) => void>();
+    let nextId = 0;
+    const scrollTo = vi.fn();
+    const cancelAnimationFrame = vi.fn((id: number) => {
+      frames.delete(id);
+    });
     const header = {
       hasAttribute: () => false,
       contains: (node: unknown) => node === inside,
     };
-    const scrollTo = vi.fn();
     defineGlobal("document", {
       querySelector: () => header,
+      activeElement: inside,
       addEventListener: (
-        _type: string,
-        cb: (event: { target: unknown }) => void,
-      ) => listeners.add(cb),
-      removeEventListener: (
-        _type: string,
-        cb: (event: { target: unknown }) => void,
-      ) => listeners.delete(cb),
+        type: string,
+        cb: (event: { target?: unknown; type?: string; key?: string }) => void,
+      ) => listeners.set(type, cb),
+      removeEventListener: (type: string) => listeners.delete(type),
     });
     defineGlobal("window", {
       scrollX: 3,
       scrollY: 900,
       scrollTo,
-      requestAnimationFrame: (cb: (time: number) => void) => {
-        cb(16);
-        return 1;
+      location: {
+        href: "https://example.com/",
+        origin: "https://example.com",
+        pathname: "/",
+        search: "",
+        hash: "",
       },
+      requestAnimationFrame: (cb: (time: number) => void) => {
+        nextId += 1;
+        frames.set(nextId, cb);
+        return nextId;
+      },
+      cancelAnimationFrame,
     });
+    const runFrame = () => {
+      const entry = [...frames.entries()][0];
+      if (!entry) return;
+      frames.delete(entry[0]);
+      entry[1](16);
+    };
+    return { inside, listeners, frames, scrollTo, cancelAnimationFrame, runFrame };
+  }
 
+  it("restores the scroll offset when focus lands in the shown header", () => {
+    const h = installHeaderHarness(null);
     const stop = domAdapter.keepHeaderFocusStable();
-    expect(listeners.size).toBe(1);
+    expect([...h.listeners.keys()].sort()).toEqual(["click", "focusin", "keydown"]);
 
-    for (const cb of listeners) cb({ target: inside });
-    expect(scrollTo).toHaveBeenCalledWith(3, 900);
+    h.listeners.get("focusin")!({ target: h.inside });
+    h.runFrame();
+    expect(h.scrollTo).toHaveBeenCalledWith(3, 900);
 
     stop();
-    expect(listeners.size).toBe(0);
+    expect(h.listeners.size).toBe(0);
+  });
+
+  it("does not undo a fragment navigation that lands before the restore frame", () => {
+    const h = installHeaderHarness(null);
+    domAdapter.keepHeaderFocusStable();
+
+    h.listeners.get("focusin")!({ target: h.inside });
+    const win = (globalThis as { window: { location: { hash: string } } }).window;
+    win.location.hash = "#about";
+    h.runFrame();
+    expect(h.scrollTo).not.toHaveBeenCalled();
+  });
+
+  it("cancels the restore when a fragment link is activated", () => {
+    const h = installHeaderHarness("#about");
+    const stop = domAdapter.keepHeaderFocusStable();
+
+    h.listeners.get("focusin")!({ target: h.inside });
+    expect(h.frames.size).toBe(1);
+    h.listeners.get("click")!({ type: "click", target: h.inside });
+    expect(h.cancelAnimationFrame).toHaveBeenCalledWith(1);
+    expect(h.frames.size).toBe(0);
+    expect(h.scrollTo).not.toHaveBeenCalled();
+
+    stop();
+  });
+
+  it("keeps the restore for a non-fragment header link activation", () => {
+    const h = installHeaderHarness("/");
+    domAdapter.keepHeaderFocusStable();
+
+    h.listeners.get("focusin")!({ target: h.inside });
+    h.listeners.get("click")!({ type: "click", target: h.inside });
+    expect(h.cancelAnimationFrame).not.toHaveBeenCalled();
+    h.runFrame();
+    expect(h.scrollTo).toHaveBeenCalledWith(3, 900);
+  });
+
+  it("cancels the restore for keyboard Enter on a fragment link", () => {
+    const h = installHeaderHarness("#contact");
+    domAdapter.keepHeaderFocusStable();
+
+    h.listeners.get("focusin")!({ target: h.inside });
+    h.listeners.get("keydown")!({ type: "keydown", key: "Enter" });
+    expect(h.cancelAnimationFrame).toHaveBeenCalledWith(1);
+    expect(h.frames.size).toBe(0);
   });
 });
 
