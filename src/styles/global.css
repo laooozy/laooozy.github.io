@@ -38,6 +38,10 @@ body {
   min-height: 100vh;
   /* dvh tracks the mobile browser chrome; 100vh above is the fallback. */
   min-height: 100dvh;
+  /* Page shell: header, main, footer stack in one column so `main` can take
+     the leftover height and the footer never floats mid-viewport. */
+  display: flex;
+  flex-direction: column;
   font-family: var(--font-body);
   font-size: var(--text-base);
   line-height: var(--leading-normal);
