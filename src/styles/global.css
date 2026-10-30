@@ -36,6 +36,8 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
+  /* dvh tracks the mobile browser chrome; 100vh above is the fallback. */
+  min-height: 100dvh;
   font-family: var(--font-body);
   font-size: var(--text-base);
   line-height: var(--leading-normal);
@@ -1584,5 +1586,82 @@ a.now-ticker__item:focus-visible {
   .search__trigger,
   .search-results__link {
     min-block-size: 44px;
+  }
+}
+
+/*
+ * Print.
+ *
+ * Every entrance/reveal animation is declared under
+ * `prefers-reduced-motion: no-preference` with `animation-fill-mode: both`, so
+ * a print render can freeze a block on its `opacity: 0` start frame. This
+ * block settles every animated block to its final frame and repaints the dark
+ * theme onto white paper (browsers do not print background graphics by
+ * default, and light-on-white text would otherwise vanish). Tokens are
+ * re-pointed instead of every component, so cards, chips and links all follow
+ * without new print-only component rules. Screen styles are untouched.
+ */
+@media print {
+  @page {
+    margin: 14mm;
+  }
+
+  :root {
+    --bg-base: #fff;
+    --bg-deep: #fff;
+    --bg-elevated: #fff;
+    --surface: #fff;
+    --surface-strong: #fff;
+    --surface-hover: #fff;
+    --card-bg: none;
+    --card-inset: none;
+    --glass-border: #999;
+    --glass-border-strong: #666;
+    --glass-glow: none;
+    --shadow-lift: none;
+    --accent: #5b1b9e;
+    --accent-text: #5b1b9e;
+    --accent-soft: #eee;
+    --accent-surface: #eee;
+    --accent-surface-hover: #e4e4e4;
+    --text: #111;
+    --text-muted: #333;
+    --text-on-accent: #fff;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: var(--text);
+  }
+
+  body::before,
+  #atmosphere-canvas {
+    display: none !important;
+  }
+
+  .hero__main > *,
+  .hero__meta,
+  .home .reveal,
+  .acg-masthead > *,
+  .now-ticker__track,
+  .now-ticker__group {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .site-header {
+    position: static !important;
+    transform: none !important;
+    background: transparent !important;
+  }
+
+  .skip-link,
+  .search,
+  .lang-switch,
+  .site-menu,
+  .now-ticker__toggle {
+    display: none !important;
   }
 }

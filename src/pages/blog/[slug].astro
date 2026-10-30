@@ -146,6 +146,48 @@ const readingMinutes = estimateReadingTime(post.body);
 		background: color-mix(in oklab, var(--glass-border) 45%, transparent);
 	}
 
+	/*
+	 * A Markdown table is its own horizontal scroll container: `display: block`
+	 * turns the table into a block box whose wider internal table can scroll,
+	 * so a wide table never widens the page at 320px. No JS wrapper.
+	 */
+	.post__body :global(table) {
+		display: block;
+		max-width: 100%;
+		overflow-x: auto;
+		margin: 0 0 var(--space-4);
+		border-collapse: collapse;
+		font-size: var(--text-base);
+	}
+
+	.post__body :global(th),
+	.post__body :global(td) {
+		padding: var(--space-2) var(--space-3);
+		border-bottom: 1px solid var(--glass-border);
+		text-align: start;
+		vertical-align: top;
+	}
+
+	.post__body :global(th) {
+		font-family: var(--font-display);
+		font-weight: 600;
+		color: var(--text);
+	}
+
+	/* Paper has no scrollbar: let a table fit the page and wrap instead. */
+	@media print {
+		.post__body :global(table) {
+			display: table;
+			width: 100%;
+			overflow: visible;
+		}
+
+		.post__body :global(th),
+		.post__body :global(td) {
+			overflow-wrap: anywhere;
+		}
+	}
+
 	.post__body :global(code) {
 		font-family: var(--font-mono);
 		font-size: 0.9em;
