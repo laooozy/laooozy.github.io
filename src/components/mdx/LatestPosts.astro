@@ -1,0 +1,47 @@
+---
+/**
+ * LatestPosts — the home page's latest-post grid, rendered at BUILD time.
+ *
+ * The route (and therefore this component) runs in Astro's server build phase,
+ * so it reads the content collection through the I/O edge (`getAllPosts`) and
+ * reduces each entry with the pure `toBlogListItem`. There is no React island
+ * here: the cards are server-rendered through the shared, hook-free
+ * `PostCardView`, the same markup the hydrated blog-listing `PostCard` uses.
+ *
+ * The page content is zh-hant, so the date label is formatted with
+ * `defaultLang` at build time (matching the static MDX body); the fixed chrome
+ * is the only locale-reactive part of the site.
+ */
+import { defaultLang, t } from "../../i18n/index";
+import { formatPostDate, toBlogListItem } from "../../lib/domain/posts";
+import { getAllPosts } from "../../lib/io/posts";
+import PostCardView from "../PostCardView";
+import Grid from "./Grid.astro";
+
+const posts = (await getAllPosts()).slice(0, 4).map((post) =>
+  toBlogListItem(post),
+);
+const emptyLabel = t(defaultLang, "blog.empty");
+---
+
+{
+  posts.length > 0 ? (
+    <Grid min="18rem" gap={5}>
+      {posts.map((post) => (
+        <PostCardView
+          href={post.href}
+          title={post.title}
+          description={post.description}
+          dateLabel={formatPostDate(
+            new Date(`${post.date}T00:00:00`),
+            defaultLang,
+          )}
+          datetime={post.datetime}
+          tags={post.tags}
+        />
+      ))}
+    </Grid>
+  ) : (
+    <p class="text text--base text--muted">{emptyLabel}</p>
+  )
+}

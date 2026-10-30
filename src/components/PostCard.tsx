@@ -16,21 +16,18 @@
  *  - className?: string
  *
  * The date and reading-time labels are formatted CLIENT-side from the store
- * locale (mounted gate, mirroring `HomePage`), so they re-render in place when
- * the language switcher changes. Both variants wrap the shared `Card`, so they
- * inherit the glass surface and the interactive hover lift. Tags are
- * NON-interactive labels (`ChipRow` default `variant="tag"`), distinct from the
- * filter controls above a list.
+ * locale (mounted gate), so they re-render in place when the language switcher
+ * changes. The markup itself lives in the pure `PostCardView`, which the
+ * build-time `LatestPosts.astro` also renders — one card definition, two
+ * consumers. Both variants wrap the shared `Card`, so they inherit the glass
+ * surface and the interactive hover lift. Tags are NON-interactive labels
+ * (`ChipRow` default `variant="tag"`), distinct from the filter controls above
+ * a list.
  */
 import { useEffect, useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";
-import ChipRow from "@/components/ChipRow";
-import Card from "@/components/Card";
-import Cluster from "@/components/layout/Cluster";
-import Stack from "@/components/layout/Stack";
-import Heading from "@/components/ui/Heading";
-import Text from "@/components/ui/Text";
+import PostCardView from "@/components/PostCardView";
 import { useLocale } from "@/hooks/useLocale";
 import { useT, type Translate } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
@@ -85,67 +82,18 @@ export default function PostCard({
       ? undefined
       : tr("blog.readTime", { minutes: readingMinutes });
 
-  if (variant === "row") {
-    return (
-      <Card
-        href={href}
-        className={["post-row", className].filter(Boolean).join(" ")}
-      >
-        <div className="post-row__inner">
-          <div className="post-row__rail">
-            <time className="post-row__date" dateTime={datetime}>
-              {dateLabel}
-            </time>
-            {readingTime && (
-              <span className="post-row__reading">{readingTime}</span>
-            )}
-          </div>
-          <div className="post-row__main">
-            <Heading level={headingLevel} size="lg" className="post-row__title">
-              {title}
-            </Heading>
-            <Text tone="muted" className="post-row__desc">
-              {description}
-            </Text>
-            {tags.length > 0 && (
-              <ChipRow
-                className="post-row__tags"
-                gap={2}
-                items={tags.map((label) => ({ label }))}
-              />
-            )}
-          </div>
-        </div>
-      </Card>
-    );
-  }
-
   return (
-    <Card
+    <PostCardView
       href={href}
-      className={["post-card", className].filter(Boolean).join(" ")}
-    >
-      <Stack gap={3}>
-        {(dateLabel || readingTime) && (
-          <Cluster justify="between" gap={3} align="baseline">
-            {dateLabel && (
-              <time className="post-card__date" dateTime={datetime}>
-                {dateLabel}
-              </time>
-            )}
-            {readingTime && (
-              <Text as="span" size="xs" tone="muted">
-                {readingTime}
-              </Text>
-            )}
-          </Cluster>
-        )}
-        <h3 className="post-card__title">{title}</h3>
-        <Text tone="muted">{description}</Text>
-        {tags.length > 0 && (
-          <ChipRow items={tags.map((label) => ({ label }))} />
-        )}
-      </Stack>
-    </Card>
+      title={title}
+      description={description}
+      dateLabel={dateLabel}
+      datetime={datetime}
+      readingTime={readingTime}
+      tags={tags}
+      headingLevel={headingLevel}
+      variant={variant}
+      className={className}
+    />
   );
 }

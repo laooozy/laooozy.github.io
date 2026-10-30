@@ -1,6 +1,118 @@
 ---
-title: Home
-description: Placeholder home page entry.
+description: 一個關於我自己的網站。
 ---
 
-Placeholder home page content.
+import ContactRow from "../../components/mdx/ContactRow.astro";
+import Chips from "../../components/mdx/Chips.astro";
+import Cta from "../../components/mdx/Cta.astro";
+import Grid from "../../components/mdx/Grid.astro";
+import Hero from "../../components/mdx/Hero.astro";
+import InterestCard from "../../components/mdx/InterestCard.astro";
+import LatestPosts from "../../components/mdx/LatestPosts.astro";
+import Section from "../../components/mdx/Section.astro";
+import Stack from "../../components/mdx/Stack.astro";
+
+<Hero
+  title="laooozy"
+  tagline="一個關於我自己的網站。"
+  nowLabel="最近"
+  nowText="讀書，練跑，拍照。"
+  meta={[
+    { label: "所在地", value: "香港" },
+    { label: "Instagram", value: "@laooozy" },
+  ]}
+/>
+
+<Section
+  id="about"
+  className="reveal"
+  heading="關於我"
+  lead="Hi，我是 laooozy，歡迎來到我的網站。"
+>
+  <Grid min="18rem" gap={5}>
+    <InterestCard id="runner" title="跑步的我">
+      內容待補
+    </InterestCard>
+
+    <InterestCard id="photography" title="攝影">
+      我現在喜歡上了拍照
+
+      目前裝備:
+
+      - Canon EOS R10
+      - Canon RF-S18-150mm F3.5-6.3 IS STM
+      - Sigma 30mm F1.4 DC DN ▏Contemporary (未買，應該會買)
+      - Godox V1mid
+      - Godox X3 Pro
+    </InterestCard>
+
+    <InterestCard id="games" title="遊戲">
+      大多是能和別人一起玩、需要彼此配合的作品。
+
+      <div class="interest__chips">
+        <Chips
+          items={[
+            { label: "Barotrauma" },
+            { label: "CS2" },
+            { label: "Dying Light 2" },
+            { label: "GTFO" },
+            { label: "L4D2" },
+            { label: "RE9" },
+            { label: "Ready or Not" },
+            { label: "Slay the Spire 1+2" },
+            { label: "Sons of the Forest" },
+            { label: "Stellaris" },
+          ]}
+        />
+      </div>
+    </InterestCard>
+
+    <InterestCard id="vtuber" title="虛擬主播">
+      固定會追的幾個台。
+
+      <div class="interest__chips">
+        <Chips items={[{ label: "Gura" }, { label: "Laplus" }]} />
+      </div>
+    </InterestCard>
+
+    <InterestCard id="acg" title="ACG">
+      我是剛接觸攝影的純新手。
+
+      <Cta href="/acg/" label="看看我的 ACG 介紹" />
+    </InterestCard>
+
+  </Grid>
+</Section>
+
+<Section id="blog" className="reveal" heading="最新文章">
+  <a slot="actions" class="section__more" href="/blog/">
+    查看全部 <span aria-hidden="true">→</span>
+  </a>
+
+  <LatestPosts />
+</Section>
+
+<Section
+  id="contact"
+  className="reveal"
+  heading="聯絡我"
+  lead="可以通過下面的方式來找我喔！"
+>
+  <Stack as="ul" gap={3}>
+    <ContactRow
+      label="Instagram"
+      href="https://instagram.com/laooozy"
+      value="@laooozy"
+    />
+    <ContactRow
+      label="Instagram"
+      href="https://instagram.com/acg.laooozy"
+      value="@acg.laooozy"
+    />
+    <ContactRow
+      label="Email"
+      href="mailto:laooozy@outlook.com"
+      value="laooozy@outlook.com"
+    />
+  </Stack>
+</Section>

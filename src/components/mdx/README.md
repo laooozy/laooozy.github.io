@@ -50,6 +50,9 @@ language switcher) stays a React island and is **not** part of this kit.
    - `ContactRow`: `label` and `href`; pass the one-line visible text as
      `value` (or use the default slot). It renders the `<li>`, so wrap rows in
      `<Stack as="ul" gap={3}>`.
+   - `LatestPosts`: no props. It reads the blog collection at BUILD time and
+     renders the newest posts with the shared `PostCardView` (or the empty
+     copy), so it never ships a React island.
    - `Chips`: `items` (`{ label, href?, active? }[]`), `variant` (`"tag"` or
      `"filter"`), `ariaLabel`, `gap`, `className`.
    - `Cta`: `href`, `label` (or a Markdown child), `variant` (`"link"` for the
@@ -90,6 +93,7 @@ language switcher) stays a React island and is **not** part of this kit.
 | `Chips.astro`        | `ul.chip-row` + `chip chip--<variant>`                                            | tag or filter chips            |
 | `Cta.astro`          | `a.link-arrow` or `a.acg-cta`                                                     | arrow glyph included           |
 | `ContactRow.astro`   | `li.contact__item` + `contact__label` / `contact__link`                           | wrap in `Stack as="ul"`        |
+| `LatestPosts.astro`  | `.grid` of build-time `post-card` entries, or the empty copy                      | build-time, no hydration       |
 | `AcgMasthead.astro`  | `header.acg-masthead` + hero `<h1>` + intro stack                                 | ACG intro                      |
 
 ## Example — a section with cards

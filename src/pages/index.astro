@@ -1,33 +1,26 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
-import HomePage from "../components/HomePage";
-import { blogPostPath, postDate } from "../lib/domain/posts";
-import { getAllPosts } from "../lib/io/posts";
-
 /**
- * The blog data is fetched here (the only place the home route touches the
- * `astro:content` I/O edge) and reduced to plain, serializable fields before it
- * crosses into the `HomePage` React island. `date` is the BUILD-LOCAL calendar
- * day (`YYYY-MM-DD`) so the client formats the same day in any timezone; the
- * full ISO instant is kept separately for `<time datetime>`.
+ * Home — `/`.
+ *
+ * The page body is authored Markdown/MDX in `src/content/pages/home.mdx`; this
+ * route stays thin: it loads the entry, renders it, and supplies the shell.
+ * `BaseLayout` owns the document metadata and falls back to `home.title` /
+ * `home.tagline` when the entry has no overrides. The content wrapper carries
+ * `lang="zh-Hant"` because page content stays zh-hant while the fixed chrome
+ * is trilingual.
  */
-const pad = (value: number) => String(value).padStart(2, "0");
-const toLocalDate = (date: Date) =>
-  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+import { getEntry, render } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
 
-const posts = (await getAllPosts()).slice(0, 4).map((post) => {
-  const date = postDate(post);
-  return {
-    href: blogPostPath(post.id),
-    title: post.data.title,
-    description: post.data.description,
-    date: toLocalDate(date),
-    datetime: date.toISOString(),
-    tags: post.data.tags,
-  };
-});
+const entry = await getEntry("pages", "home");
+if (!entry) {
+  throw new Error("Missing home entry: src/content/pages/home.mdx");
+}
+const { Content } = await render(entry);
 ---
 
-<BaseLayout>
-	<HomePage client:load posts={posts} />
+<BaseLayout title={entry.data.title} description={entry.data.description}>
+	<div class="home" lang="zh-Hant">
+		<Content />
+	</div>
 </BaseLayout>

@@ -2,8 +2,9 @@
 /**
  * InterestCard — one About-grid card on the home page.
  *
- * Astro port of the card composition in `src/components/HomePage.tsx`:
- * `Card className="interest interest--<id>"` with an `<h3>` label and a
+ * Astro port of the former home-page card composition (now authored in
+ * `src/content/pages/home.mdx`): `Card className="interest interest--<id>"`
+ * with an `<h3>` label and a
  * `Stack` gap 3 body. The default slot renders the body Markdown, so an
  * author writes ordinary paragraphs, lists and imported controls instead of
  * passing an HTML string.
@@ -51,6 +52,11 @@ const { id, title, className } = Astro.props;
 
   .interest > .stack > p {
     color: var(--text-muted);
+  }
+
+  /* The React runner card used `<Text size="sm">` for its placeholder note. */
+  .interest--runner > .stack > p {
+    font-size: var(--text-sm);
   }
 
   /* The paragraph that introduces a list is the smaller "gear intro" line. */

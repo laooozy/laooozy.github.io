@@ -10,9 +10,10 @@
  *  - `BlogPagination` when the set spans more than one page.
  *
  * Every label is re-derived per active locale on the client (mounted gate,
- * mirroring `HomePage`): the masthead from a locale-independent descriptor, the
- * period chips from their raw `YYYY`/`YYYY-MM` keys, and each post's date and
- * reading time inside `PostCard`. Paging links are locale-free. The search
+ * mirroring the hydrated chrome): the masthead from a locale-independent
+ * descriptor, the period chips from their raw `YYYY`/`YYYY-MM` keys, and each
+ * post's date and reading time inside `PostCard`. Paging links are locale-free.
+ * The search
  * island is passed in as `children` from the page so it keeps its own
  * `client:idle` hydration (Astro hydrates islands nested in a framework
  * component's children).

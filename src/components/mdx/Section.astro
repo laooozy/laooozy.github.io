@@ -2,7 +2,7 @@
 /**
  * Section — a page band with a heading slot and consistent internal rhythm.
  *
- * Astro port of `src/components/layout/Section.tsx`. The default slot is the
+ * Astro port of the former React `Section` primitive. The default slot is the
  * section body and renders Markdown; an optional `actions` named slot fills
  * the top-right control beside the heading (the React version accepted the
  * same content as a prop because MDX can express it more naturally as a slot).
@@ -54,3 +54,15 @@ const hasActions = Astro.slots.has("actions");
     <slot />
   </div>
 </section>
+
+<style is:global>
+  /*
+   * The `actions` slot is authored Markdown, so its text arrives wrapped in a
+   * paragraph. The action link is inline content; flatten that paragraph so the
+   * markup matches the React section's action prop (plain text in the anchor).
+   */
+  .section__actions p {
+    display: inline;
+    margin: 0;
+  }
+</style>

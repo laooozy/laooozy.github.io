@@ -9,7 +9,7 @@
  *
  * Labels come from `useT`, bound to the store's active locale, so they re-render
  * in place when the language switcher changes (mounted gate, mirroring
- * `HomePage`). `href`s are locale-free.
+ * the hydrated chrome). `href`s are locale-free.
  */
 import { useEffect, useState } from "react";
 

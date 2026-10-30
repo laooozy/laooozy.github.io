@@ -14,8 +14,8 @@
  *
  * Labels come from `useT`, bound to the store's active locale, so they re-render
  * in place when the language switcher changes (mounted gate, mirroring
- * `HomePage`). `href`s are locale-free, so the reset always lands on the single
- * `/blog/` index.
+ * the hydrated chrome). `href`s are locale-free, so the reset always lands on
+ * the single `/blog/` index.
  */
 import { useEffect, useState } from "react";
 
