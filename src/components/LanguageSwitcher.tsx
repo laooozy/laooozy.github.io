@@ -49,7 +49,7 @@ const SWITCHER_CSS = `
 	align-items: center;
 	gap: var(--space-2);
 	padding: var(--space-1) var(--space-3);
-	border: 1px solid color-mix(in oklab, var(--glass-border) 55%, transparent);
+	border: 1px solid var(--control-border);
 	border-radius: var(--radius-pill);
 	background: var(--surface);
 	-webkit-backdrop-filter: blur(var(--glass-blur));
@@ -68,7 +68,7 @@ const SWITCHER_CSS = `
 
 .lang-switch__trigger:hover {
 	color: var(--text);
-	border-color: color-mix(in oklab, var(--glass-border-strong) 70%, transparent);
+	border-color: var(--control-border-strong);
 	background: var(--surface-hover);
 }
 
@@ -80,7 +80,7 @@ const SWITCHER_CSS = `
 
 .lang-switch__trigger[aria-expanded="true"] {
 	color: var(--text);
-	border-color: color-mix(in oklab, var(--glass-border-strong) 70%, transparent);
+	border-color: var(--control-border-strong);
 	background: var(--accent-soft);
 }
 

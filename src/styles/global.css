@@ -125,8 +125,12 @@ ol {
 }
 
 a {
-  color: var(--accent);
-  text-decoration-color: color-mix(in oklab, var(--accent) 45%, transparent);
+  color: var(--accent-text);
+  text-decoration-color: color-mix(
+    in oklab,
+    var(--accent-text) 45%,
+    transparent
+  );
   text-underline-offset: 0.2em;
   transition: color var(--dur-fast) var(--ease-out);
 }
@@ -156,11 +160,11 @@ button {
   color: inherit;
 }
 
-/* Keyboard focus is always visible. */
+/* Keyboard focus is always visible. The outline follows the element's own
+   radius in modern browsers, so it must never rewrite `border-radius`. */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
-  border-radius: var(--radius-sm);
 }
 
 /* Centered content column. The Container primitive may override the cap with
@@ -560,7 +564,7 @@ a.chip--tag:focus-visible {
 .chip--filter {
   padding-block: 0.35rem;
   background: var(--surface);
-  border-color: var(--glass-border);
+  border-color: var(--control-border);
   color: var(--text);
   font-size: var(--text-sm);
   font-weight: 500;
@@ -573,7 +577,7 @@ a.chip--tag:focus-visible {
 
 .chip--filter:hover {
   background: var(--accent-surface);
-  border-color: var(--glass-border-strong);
+  border-color: var(--control-border-strong);
   color: var(--text);
 }
 
@@ -652,7 +656,7 @@ a.chip--tag:focus-visible {
 
 .hero__status-label {
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* "Now" ticker (title of the fixed-chrome status row).
@@ -725,7 +729,7 @@ a.chip--tag:focus-visible {
 
 a.now-ticker__item:hover,
 a.now-ticker__item:focus-visible {
-  color: var(--accent);
+  color: var(--accent-text);
   text-decoration: underline;
 }
 
@@ -762,7 +766,7 @@ a.now-ticker__item:focus-visible {
   height: 44px;
   margin: 0;
   padding: 0;
-  border: 1px solid color-mix(in oklab, var(--glass-border) 55%, transparent);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-pill);
   background: var(--surface);
   color: var(--text-muted);
@@ -775,11 +779,7 @@ a.now-ticker__item:focus-visible {
 
 .now-ticker__toggle:hover {
   color: var(--text);
-  border-color: color-mix(
-    in oklab,
-    var(--glass-border-strong) 70%,
-    transparent
-  );
+  border-color: var(--control-border-strong);
   background: var(--surface-hover);
 }
 
@@ -850,7 +850,7 @@ a.now-ticker__item:focus-visible {
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-pill);
   background: var(--surface);
   color: var(--text);
@@ -864,7 +864,7 @@ a.now-ticker__item:focus-visible {
 
 .link-arrow:hover {
   background: var(--accent-surface);
-  border-color: var(--glass-border-strong);
+  border-color: var(--control-border-strong);
   color: var(--text);
 }
 
@@ -1044,7 +1044,7 @@ a.now-ticker__item:focus-visible {
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  border: 1px solid color-mix(in oklab, var(--glass-border) 55%, transparent);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-pill);
   background: var(--surface);
   color: var(--text);
@@ -1060,7 +1060,7 @@ a.now-ticker__item:focus-visible {
 .pagination__link:hover,
 .pagination__link:focus-visible {
   background: var(--accent-surface);
-  border-color: var(--glass-border-strong);
+  border-color: var(--control-border-strong);
   color: var(--text);
 }
 
@@ -1199,7 +1199,7 @@ a.now-ticker__item:focus-visible {
 
 .post-row:hover .post-row__date,
 .post-row:focus-visible .post-row__date {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .post-row__main {
@@ -1258,7 +1258,7 @@ a.now-ticker__item:focus-visible {
   gap: var(--space-2);
   font-size: var(--text-sm);
   font-weight: 500;
-  color: var(--accent);
+  color: var(--accent-text);
   text-decoration: none;
 }
 
@@ -1322,7 +1322,7 @@ a.now-ticker__item:focus-visible {
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  border: 1px solid color-mix(in oklab, var(--glass-border) 55%, transparent);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-pill);
   background: var(--surface);
   color: var(--text-muted);
@@ -1338,7 +1338,7 @@ a.now-ticker__item:focus-visible {
 .search__trigger:hover,
 .search__trigger:focus-visible {
   color: var(--text);
-  border-color: var(--glass-border-strong);
+  border-color: var(--control-border-strong);
   background: var(--surface-hover);
 }
 
@@ -1454,7 +1454,7 @@ a.now-ticker__item:focus-visible {
 .search-modal__input {
   width: 100%;
   padding: var(--space-3) var(--space-4);
-  border: 1px solid color-mix(in oklab, var(--glass-border) 60%, transparent);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-md);
   background: var(--surface);
   color: var(--text);
@@ -1469,7 +1469,7 @@ a.now-ticker__item:focus-visible {
 .search-modal__input:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
-  border-color: var(--glass-border-strong);
+  border-color: var(--control-border-strong);
 }
 
 .search-modal__status {
@@ -1493,7 +1493,7 @@ a.now-ticker__item:focus-visible {
 .search-results__link {
   display: block;
   padding: var(--space-3) var(--space-4);
-  border: 1px solid color-mix(in oklab, var(--glass-border) 40%, transparent);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-md);
   background: var(--surface);
   color: var(--text);
@@ -1505,7 +1505,7 @@ a.now-ticker__item:focus-visible {
 
 .search-results__link:hover,
 .search-results__link:focus-visible {
-  border-color: var(--glass-border-strong);
+  border-color: var(--control-border-strong);
   background: var(--surface-hover);
 }
 

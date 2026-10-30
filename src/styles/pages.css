@@ -58,7 +58,7 @@
 
 .acg-card__cta {
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .section__more {
@@ -108,7 +108,7 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-pill);
   background: var(--surface);
   color: var(--text-muted);
@@ -123,7 +123,7 @@
 
 .acg-back:hover {
   background: var(--accent-surface);
-  border-color: var(--glass-border-strong);
+  border-color: var(--control-border-strong);
   color: var(--text);
 }
 
@@ -477,7 +477,7 @@
   align-items: center;
   gap: var(--space-1);
   margin-top: var(--space-1);
-  color: var(--accent);
+  color: var(--accent-text);
   font-size: var(--text-sm);
   font-weight: 500;
 }
@@ -682,7 +682,7 @@
   gap: var(--space-2);
   min-height: 44px;
   padding: var(--space-2) var(--space-5);
-  border: 1px solid var(--glass-border-strong);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-pill);
   background-color: var(--accent-surface);
   color: var(--text);
@@ -734,10 +734,10 @@
   gap: var(--space-2);
   min-height: 44px;
   padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-pill);
   background-color: var(--surface);
-  color: var(--accent);
+  color: var(--accent-text);
   font-size: var(--text-sm);
   font-weight: 600;
   text-decoration: none;
@@ -745,7 +745,7 @@
 
 .ig-consent__fallback:hover,
 .ig-consent__fallback:focus-visible {
-  border-color: var(--glass-border-strong);
+  border-color: var(--control-border-strong);
   background-color: var(--surface-hover);
   color: var(--text);
 }
@@ -798,7 +798,7 @@
 
 .not-found__link {
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);
   text-decoration: none;
 }
 

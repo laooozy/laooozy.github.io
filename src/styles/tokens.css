@@ -72,6 +72,28 @@
   --accent-surface-hover: oklch(0.6268 0.2325 303.9004 / 0.22);
   --text-on-accent: oklch(0.1473 0.0107 285.0074);
 
+  /*
+   * Text-safe accent. `--accent` is the brand fill: it is only 4.1:1 against
+   * the brightest sampled aurora pixel and ~3.5:1 on glass, so it is fine for
+   * icons, arrows and display punctuation but NOT for body-size text. This is
+   * the same hue lifted in lightness (and lowered in chroma) until body text
+   * clears 4.5:1 over the wash and its glass surfaces (measured >=5.0:1 on the
+   * brightest sampled backdrop, >=5.2:1 on a card surface).
+   */
+  --accent-text: oklch(0.72 0.19 303.9004);
+
+  /*
+   * Interactive control borders. `--glass-border` is a decorative 35% accent
+   * alpha that composites to ~1.6:1 on the page; it is right for cards and
+   * panels but too faint for the boundary of a control. These are SOLID tones
+   * (no alpha) so the rendered contrast does not depend on what sits behind
+   * the glass: `--control-border` clears 3:1 against the page, the wash and
+   * the control's own fill, and `--control-border-strong` carries the hover /
+   * expanded state.
+   */
+  --control-border: oklch(0.62 0.16 303.9004);
+  --control-border-strong: oklch(0.72 0.16 303.9004);
+
   /* ------------------------------------------------------------------ *
    * Colour — text (contrast measured against --bg-base; AA minimum)
    * ------------------------------------------------------------------ */
