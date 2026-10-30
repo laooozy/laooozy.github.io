@@ -1,7 +1,8 @@
 ---
 /**
- * Date archive — `/blog/archive/[period]/` where period is `YYYY` or `YYYY-MM`.
- * Build-time date filtering, linked from the index filter chips.
+ * Year archive — `/blog/archive/[period]/` where period is `YYYY`.
+ * Build-time date filtering; the index/tag filter chips only ever link years,
+ * so month routes are deliberately not generated.
  *
  * Posts are reduced to plain, serializable fields before they cross into the
  * `BlogList` React island; the heading is a locale-independent descriptor, so
@@ -25,10 +26,12 @@ const locale = "zh-hant" as const;
 
 export async function getStaticPaths() {
   const posts = await getAllPosts();
-  return collectPeriods(posts).map((period) => ({
-    params: { period },
-    props: { period },
-  }));
+  return collectPeriods(posts)
+    .filter((period) => period.length === 4)
+    .map((period) => ({
+      params: { period },
+      props: { period },
+    }));
 }
 
 const { period } = Astro.props;
@@ -40,11 +43,13 @@ const tags = collectTags(allPosts).map((tag) => ({
   tag,
   href: blogTagPath(tag),
 }));
-const periods = collectPeriods(allPosts).map((key) => ({
-  period: key,
-  href: blogArchivePath(key),
-  active: key === period,
-}));
+const periods = collectPeriods(allPosts)
+  .filter((key) => key.length === 4)
+  .map((key) => ({
+    period: key,
+    href: blogArchivePath(key),
+    active: key === period,
+  }));
 const heading = { kind: "archive", period } as const;
 ---
 
