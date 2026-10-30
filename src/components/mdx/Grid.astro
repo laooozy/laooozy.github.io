@@ -12,6 +12,8 @@
  *                       the grid reflows with NO breakpoints.
  *  - gap?: 1..12        default: 5
  *  - columns?: number   force an exact column count (skips auto-fit)
+ *  - count?: number      rendered item count, exposed as `data-count` for the
+ *                        `.grid--cards` responsive card recipes
  *  - as?: tag           element tag, default: "div"
  *  - className?: string
  *
@@ -21,12 +23,19 @@ interface Props {
   min?: string;
   gap?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
   columns?: number;
+  count?: number;
   as?: keyof HTMLElementTagNameMap;
   className?: string;
 }
 
-const { min = "16rem", gap = 5, columns, as: Tag = "div", className } =
-  Astro.props;
+const {
+  min = "16rem",
+  gap = 5,
+  columns,
+  count,
+  as: Tag = "div",
+  className,
+} = Astro.props;
 
 const template = columns
   ? `repeat(${columns}, minmax(0, 1fr))`
@@ -35,6 +44,7 @@ const template = columns
 
 <Tag
   class:list={["grid", className]}
+  data-count={count}
   style={{
     "--grid-gap": `var(--space-${gap})`,
     "--grid-template": template,

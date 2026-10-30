@@ -420,6 +420,53 @@ html:not([data-locale]) [data-l="zh-hant"] {
   gap: var(--cluster-gap);
 }
 
+/*
+ * Card grids with a known item count (`data-count` is the rendered count,
+ * capped at 4). The desktop row is exact — four cards make four columns, not
+ * three plus a hollow orphan — and steps down to two columns, then one, as
+ * the viewport narrows. A one- or two-card grid is width-capped so a single
+ * LatestPosts card reads as a card instead of a full-width banner.
+ */
+.grid--cards[data-count="1"] {
+  grid-template-columns: minmax(0, 26rem);
+}
+
+.grid--cards[data-count="2"],
+.grid--cards[data-count="3"],
+.grid--cards[data-count="4"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 75rem) {
+  .grid--cards[data-count="2"] {
+    grid-template-columns: repeat(2, minmax(0, 26rem));
+  }
+
+  .grid--cards[data-count="3"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .grid--cards[data-count="4"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Three cards on a two-column grid: the odd card is centred at one column
+   wide instead of hanging alone at the left edge. */
+@media (min-width: 40rem) and (max-width: 74.99rem) {
+  .grid--cards[data-count="3"] > :last-child {
+    grid-column: 1 / -1;
+    justify-self: center;
+    inline-size: calc(50% - var(--grid-gap) / 2);
+  }
+}
+
+@media (max-width: 39.99rem) {
+  .grid--cards[data-count] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .card {
   position: relative;
   display: block;
@@ -457,6 +504,14 @@ html:not([data-locale]) [data-l="zh-hant"] {
   .card--interactive:focus-visible {
     transition: none;
     transform: none;
+  }
+}
+
+/* Below 30rem the container leaves ~288px; space-6 padding would cut the card
+   content to 224px, so the card tightens to space-5 and keeps a 240px inner. */
+@media (max-width: 29.99rem) {
+  .card {
+    padding: var(--space-5);
   }
 }
 

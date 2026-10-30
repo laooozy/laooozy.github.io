@@ -26,7 +26,11 @@ const posts = (await getAllPosts()).slice(0, 4).map((post) =>
 
 {
   posts.length > 0 ? (
-    <Grid min="18rem" gap={5}>
+    <Grid
+      className="grid--cards"
+      count={Math.min(posts.length, 4)}
+      gap={5}
+    >
       {posts.map((post) => (
         <PostCardView
           href={post.href}

@@ -32,7 +32,8 @@ import { contactIdentity } from "../../i18n";
   heading="關於我"
   lead="Hi，我是 laooozy，歡迎來到我的網站。"
 >
-  <Grid min="18rem" gap={5}>
+  {/* `count` is the FOUR visible About cards (runner is hidden while empty). */}
+  <Grid className="grid--cards" count={4} gap={5}>
     {/*
       Placeholder awaiting the owner's copy (was: 內容待補).
       Add real Markdown children below and the card appears on rebuild.
