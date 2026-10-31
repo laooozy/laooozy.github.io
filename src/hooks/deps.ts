@@ -5,9 +5,9 @@
  * this bundle by parameter, so the caller decides which concrete ports are
  * wired in. The composition root is the ONLY place that binds the real
  * adapters (`appStore`, `localStorageAdapter`, `navigatorLocaleSource`,
- * `domAdapter`, `pagefindAdapter`); tests inject the deterministic doubles
- * (`memoryStorageAdapter`, `fixedLocaleSource`, `noopDomAdapter`,
- * `fakePagefind`).
+ * `domAdapter`, `pagefindAdapter`, `musicAdapter`); tests inject the
+ * deterministic doubles (`memoryStorageAdapter`, `fixedLocaleSource`,
+ * `noopDomAdapter`, `fakePagefind`, `fakeMusic`/`fakeMusicError`).
  *
  * `store` is the vanilla Zustand store API (`StoreApi<AppStore>`, as returned
  * by `createStore`) rather than the bare state shape: hooks subscribe through

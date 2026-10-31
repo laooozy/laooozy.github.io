@@ -75,12 +75,13 @@ Selecting a language writes the new locale to the store, to `<html lang>`, to
 Every browser, network and storage effect sits behind a port under
 `src/adapters/`. Each port ships a real adapter and a deterministic test double:
 
-| Port               | Real adapter                                                                                      | Test double            |
-| :----------------- | :------------------------------------------------------------------------------------------------ | :--------------------- |
-| `StoragePort`      | `localStorageAdapter` (degrades to memory when storage is blocked)                                | `memoryStorageAdapter` |
-| `LocaleSourcePort` | `navigatorLocaleSource`                                                                           | `fixedLocaleSource`    |
-| `DomPort`          | `domAdapter` (scroll, reduced motion, header visibility, the shared frame loop, script injection) | `noopDomAdapter`       |
-| `PagefindPort`     | `pagefindAdapter` (lazy dynamic import)                                                           | `fakePagefind`         |
+| Port               | Real adapter                                                                                      | Test double                    |
+| :----------------- | :------------------------------------------------------------------------------------------------ | :----------------------------- |
+| `StoragePort`      | `localStorageAdapter` (degrades to memory when storage is blocked)                                | `memoryStorageAdapter`         |
+| `LocaleSourcePort` | `navigatorLocaleSource`                                                                           | `fixedLocaleSource`            |
+| `DomPort`          | `domAdapter` (scroll, reduced motion, header visibility, the shared frame loop, script injection) | `noopDomAdapter`               |
+| `PagefindPort`     | `pagefindAdapter` (lazy dynamic import)                                                           | `fakePagefind`                 |
+| `MusicPort`        | `musicAdapter` (gzip/plain sniff, 10 s abort, typed errors)                                       | `fakeMusic` / `fakeMusicError` |
 
 Adapters are wired in exactly one place: the composition root
 `src/client/bootstrap.ts`, which assembles a `ClientDeps` bundle and seeds the
@@ -140,7 +141,7 @@ listing index, `/blog/`, not a home anchor. Useful Links is its own page at
 `/links/`; the project's GitHub repository is the first entry in that page's
 list, not a separate external nav link. Photography lives at `/photographer/`
 but is not a top-bar item: it is reached from the home About grid. The home hero
-carries the wordmark, tagline, "now" line and a small spec panel. The language
+carries the wordmark, the "now" line and a small spec panel. The language
 control is a single glassy dropdown button (a globe icon plus the current
 language) whose menu lists the three locales; selecting one switches in place,
 with no URL change and no reload.
@@ -178,7 +179,7 @@ prop, is in `src/components/mdx/README.md`.
 
 | Component                   | Purpose                                                       |
 | :-------------------------- | :------------------------------------------------------------ |
-| `Hero.astro`                | Home masthead: wordmark, tagline, now line, spec panel.       |
+| `Hero.astro`                | Home masthead: wordmark, now line, spec panel.                |
 | `Section.astro`             | Section shell with heading, lead and optional `actions` slot. |
 | `InterestCard.astro`        | One About-grid card with a title and Markdown body.           |
 | `Grid.astro`                | Responsive auto-fit grid.                                     |
@@ -192,13 +193,13 @@ prop, is in `src/components/mdx/README.md`.
 | `InstagramWall.astro`       | Build-time Instagram oEmbed wall, consent gate, link-outs.    |
 
 Frontmatter `title` and `description` feed `BaseLayout` and the Open Graph tags.
-Omit them only when the `home.title` / `home.tagline` chrome fallback is the
-right document metadata.
+Omit them only when the `home.title` chrome fallback is the right document
+metadata.
 
 **Page content stays zh-hant.** The MDX bodies are authored in Traditional
 Chinese and are never translated; only the fixed chrome (nav, footer, search,
-blog listing, 404, links heading) switches with the locale. Each route wraps the
-body in `lang="zh-Hant"`, so screen readers read the Chinese content as Chinese
+blog listing, 404, links heading, music page labels) switches with the locale.
+Each route wraps the body in `lang="zh-Hant"`, so screen readers read the Chinese content as Chinese
 even when `<html lang>` follows an English chrome choice. Do not add page copy to
 `src/i18n` or `src/data`, and do not create per-locale page folders.
 
@@ -442,9 +443,10 @@ The site ships in three locales, all served from the same URLs:
 
 - **UI strings** live in `src/i18n/index.ts` (`ui.ts` is a thin re-export
   barrel) and cover fixed chrome only: nav, footer, search, blog listing, 404,
-  the links heading, and the brand/meta strings. They are authored per locale;
-  LLM-assisted translation is permitted as long as each locale reads naturally
-  and keeps the same voice (see `PRODUCT.md`), never raw machine output. Shared,
+  the links heading, the music page labels, and the brand/meta strings. They are
+  authored per locale; LLM-assisted translation is permitted as long as each
+  locale reads naturally and keeps the same voice (see `PRODUCT.md`), never raw
+  machine output. Shared,
   locale-independent values such as the public contact handles and email live
   there too.
 - **Page content is not translated.** The home and photography bodies stay
