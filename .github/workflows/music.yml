@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "17 18 * * *"
   workflow_dispatch:
+    inputs:
+      playlist:
+        description: "Test-only playlist URL override (failure testing)"
+        required: false
+        type: string
   push:
     branches: [main]
     paths:
@@ -37,7 +42,14 @@ jobs:
           export PATH="$RUNNER_TEMP:$PATH"
           yt-dlp --version
       - name: Build the payload
-        run: node scripts/music/fetch.mjs
+        env:
+          PLAYLIST_OVERRIDE: ${{ inputs.playlist }}
+        run: |
+          if [ -n "$PLAYLIST_OVERRIDE" ]; then
+            node scripts/music/fetch.mjs --playlist "$PLAYLIST_OVERRIDE"
+          else
+            node scripts/music/fetch.mjs
+          fi
       - name: Publish data branch
         env:
           GITHUB_TOKEN: ${{ github.token }}
