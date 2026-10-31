@@ -1,0 +1,47 @@
+---
+/**
+ * Music page — `/music/`.
+ *
+ * The page body is authored in `src/content/pages/music.mdx` and rendered here
+ * with Astro's `render()`. This route owns only the shell: `BaseLayout` (with
+ * the entry's frontmatter title/description for the document + OG metadata) and
+ * the `.music-page` / `lang="zh-Hant"` wrapper. The searchable list itself is
+ * the `MusicLibrary` island mounted from the MDX, so the route stays free of
+ * network I/O and client state.
+ */
+import { getEntry, render } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const entry = await getEntry("pages", "music");
+if (!entry) {
+  throw new Error("Missing pages entry: src/content/pages/music.mdx");
+}
+const { Content } = await render(entry);
+---
+
+<BaseLayout title={entry.data.title} description={entry.data.description}>
+	<div class="music-page" lang="zh-Hant">
+		<nav class="photo-rail" aria-label="回到首頁">
+			<a class="photo-back" href="/">
+				<span class="photo-back__arrow" aria-hidden="true">←</span>
+				<span>回到首頁</span>
+			</a>
+		</nav>
+		<Content />
+	</div>
+</BaseLayout>
+
+<style>
+	.music-page {
+		display: grid;
+		gap: clamp(var(--space-9), 9vw, var(--space-12));
+	}
+
+	/*
+	 * Astro scoped styles do not reach markup rendered by MDX, so the hero
+	 * authored in `music.mdx` is targeted through `:global()`.
+	 */
+	:global(.music-hero) {
+		margin: 0;
+	}
+</style>

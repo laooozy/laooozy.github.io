@@ -1,0 +1,18 @@
+---
+title: Music
+---
+
+import MusicLibrary from "../../components/MusicLibrary.tsx";
+import playlist from "../../../scripts/music/playlist.json";
+
+<h1 class="heading heading--hero music-hero">Music</h1>
+
+<MusicLibrary client:load />
+
+<noscript>
+  <p>
+    {"這個歌單需要 JavaScript 才能載入；也可以"}
+    <a href={playlist.url}>直接在 YouTube 開啟</a>
+    {"。"}
+  </p>
+</noscript>
