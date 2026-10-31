@@ -17,7 +17,7 @@ import { contactIdentity } from "../../i18n";
   title="laooozy"
   tagline="一個關於我自己的網站。"
   meta={[
-    { label: "所在地", value: "香港" },
+    { label: "所在地", value: "HK 🇭🇰" },
     {
       label: "Instagram",
       value: `@${contactIdentity.personalIg}`,
@@ -38,22 +38,36 @@ import { contactIdentity } from "../../i18n";
       Placeholder awaiting the owner's copy (was: 內容待補).
       Add real Markdown children below and the card appears on rebuild.
     */}
-    <InterestCard id="runner" title="跑步的我" hidden="empty"></InterestCard>
+    <InterestCard id="runner" title="Running">
+      有空會去跑步，起步通常會跑 6-10 公里左右
+      狀態不好的時候會跑 3-5 公里，狀態好的時候會跑 10-15 公里
 
-    <InterestCard id="photography" title="攝影">
+      主要練有氧能力
+      ~~菜鳥一名而已~~
+    </InterestCard>
+
+    <InterestCard id="photography" title="Photography">
       我現在喜歡上了拍照
 
       目前裝備:
 
       - Canon EOS R10
       - Canon RF-S18-150mm F3.5-6.3 IS STM
-      - Sigma 30mm F1.4 DC DN ▏Contemporary (未買，應該會買)
+      - Sigma 30mm F1.4 DC DN (未買，應該今個月會買)
       - Godox V1mid
       - Godox X3 Pro
+
+      <Cta href="/acg/" label="看看我的攝影子版介紹" />
     </InterestCard>
 
-    <InterestCard id="games" title="遊戲">
-      大多是能和別人一起玩、需要彼此配合的作品。
+    <InterestCard id="music" title="Music" hidden="empty">
+      喜歡聽J-Pop，下面是我的歌單，請閱！！！
+
+      <Cta href="/music/" label="看看我的歌單" />
+    </InterestCard>
+
+    <InterestCard id="games" title="Gaming">
+      大多是和朋友一起玩的多人遊戲吧
 
       <div class="interest__chips">
         <Chips
@@ -65,7 +79,7 @@ import { contactIdentity } from "../../i18n";
             { label: "L4D2" },
             { label: "RE9" },
             { label: "Ready or Not" },
-            { label: "Slay the Spire 1+2" },
+            { label: "Slay the Spire 1 and 2" },
             { label: "Sons of the Forest" },
             { label: "Stellaris" },
           ]}
@@ -73,18 +87,12 @@ import { contactIdentity } from "../../i18n";
       </div>
     </InterestCard>
 
-    <InterestCard id="vtuber" title="虛擬主播">
-      固定會追的幾個台。
+    <InterestCard id="vtuber" title="Vtuber">
+      很棒！
 
       <div class="interest__chips">
         <Chips items={[{ label: "Gura" }, { label: "Laplus" }]} />
       </div>
-    </InterestCard>
-
-    <InterestCard id="acg" title="ACG">
-      我是剛接觸攝影的純新手。
-
-      <Cta href="/acg/" label="看看我的 ACG 介紹" />
     </InterestCard>
 
   </Grid>
