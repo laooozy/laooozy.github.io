@@ -1,0 +1,5 @@
+# The generated music payload is gzip data, never text.
+*.gz binary
+
+# Git hooks are executable scripts and must keep LF endings on every platform.
+.githooks/* text eol=lf

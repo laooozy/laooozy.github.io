@@ -1,0 +1,46 @@
+#!/usr/bin/env node
+// Rewrites the committed footer update stamp and stages ONLY that file.
+// package.json sets "type": "module", so this extensionless entry runs as ESM.
+import { execFileSync } from "node:child_process";
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
+
+const STAMP_PATH = "src/data/site-updated.json";
+const STAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+
+function pad(value) {
+  return String(value).padStart(2, "0");
+}
+
+function localStamp(date = new Date()) {
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+    `T${pad(date.getHours())}:${pad(date.getMinutes())}`
+  );
+}
+
+function parseStampArg(argv) {
+  const arg = argv.find((value) => value.startsWith("--now="));
+  if (arg === undefined) return null;
+  const stamp = arg.slice("--now=".length);
+  if (!STAMP_PATTERN.test(stamp)) {
+    throw new Error(
+      `invalid --now value "${stamp}" (expected YYYY-MM-DDTHH:mm)`,
+    );
+  }
+  return stamp;
+}
+
+try {
+  const stamp = parseStampArg(process.argv.slice(2)) ?? localStamp();
+  const root = execFileSync("git", ["rev-parse", "--show-toplevel"], {
+    encoding: "utf8",
+  }).trim();
+  writeFileSync(join(root, STAMP_PATH), `{ "updatedAt": "${stamp}" }\n`, "utf8");
+  execFileSync("git", ["add", "--", STAMP_PATH], { cwd: root });
+  process.exit(0);
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`pre-commit: failed to update ${STAMP_PATH}: ${message}`);
+  process.exit(1);
+}
