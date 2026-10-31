@@ -1,5 +1,5 @@
 /**
- * InstagramGate — the click-to-load consent gate for the ACG photo wall.
+ * InstagramGate — the click-to-load consent gate for the photography photo wall.
  *
  * Nothing from Instagram is requested on page load: the wall renders the
  * server-built link cards plus this button, and `instagram.com/embed.js` is

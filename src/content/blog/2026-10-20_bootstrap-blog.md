@@ -52,7 +52,7 @@ Sigma 30 F1.4 (會買但還沒買的)
 Godox V1mid
 Godox X3 Pro
 
-如果有興趣多了解我這方面的東西，可以去看看[ACG版](https://laooozy.github.io/acg)
+如果有興趣多了解我這方面的東西，可以去看看[攝影版](https://laooozy.github.io/photographer/)
 
 #### 遊戲
 

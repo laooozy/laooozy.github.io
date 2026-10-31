@@ -37,8 +37,8 @@ import InstagramGate from "../InstagramGate.tsx";
 import Grid from "./Grid.astro";
 
 const embeds = await getInstagramEmbeds(instagramPosts);
-const igHandle = `@${contactIdentity.acgIg}`;
-const igHref = `https://instagram.com/${contactIdentity.acgIg}`;
+const igHandle = `@${contactIdentity.photoIg}`;
+const igHref = `https://instagram.com/${contactIdentity.photoIg}`;
 
 /** `/p/<shortcode>/` for a post, or the raw URL if it cannot be parsed. */
 function postPath(url: string): string {

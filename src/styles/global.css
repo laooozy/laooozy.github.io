@@ -921,7 +921,7 @@ a.now-ticker__item:focus-visible {
 
 /* Reusable pill link with a trailing arrow. Promoted from the old hero
    quick-link row when that row was removed; cards that need a "go there" link
-   (e.g. the About ACG card) opt in with `class="link-arrow"` and put the arrow
+   (e.g. the About photography card) opt in with `class="link-arrow"` and put the arrow
    in `class="link-arrow__arrow"` (aria-hidden). */
 .link-arrow {
   display: inline-flex;

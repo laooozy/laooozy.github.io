@@ -34,7 +34,7 @@ export const defaultLang = "zh-hant";
 /** Public contact handles, identical in every locale. */
 export const contactIdentity = {
   personalIg: "laooozy",
-  acgIg: "acg.laooozy",
+  photoIg: "acg.laooozy",
   email: "laooozy@outlook.com",
 } as const;
 
