@@ -98,6 +98,7 @@ export const ui = {
     music: {
       searchLabel: "搜尋歌曲",
       searchPlaceholder: "搜尋歌名或歌手…",
+      filters: "篩選",
       artistLabel: "歌手",
       organisationLabel: "所屬",
       all: "全部",
@@ -172,6 +173,7 @@ export const ui = {
     music: {
       searchLabel: "搜索歌曲",
       searchPlaceholder: "搜索歌名或歌手…",
+      filters: "筛选",
       artistLabel: "歌手",
       organisationLabel: "所属",
       all: "全部",
@@ -246,6 +248,7 @@ export const ui = {
     music: {
       searchLabel: "Search songs",
       searchPlaceholder: "Search titles or artists…",
+      filters: "Filters",
       artistLabel: "Artist",
       organisationLabel: "Organisation",
       all: "All",

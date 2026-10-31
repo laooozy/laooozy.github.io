@@ -51,11 +51,12 @@ const MUSIC_CSS = `
 .music-library {
 	display: grid;
 	gap: var(--space-5);
+	color-scheme: dark;
 }
 
 .music-toolbar {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) repeat(2, minmax(0, auto));
+	grid-template-columns: minmax(0, 1fr);
 	gap: var(--space-3);
 	align-items: end;
 }
@@ -66,14 +67,11 @@ const MUSIC_CSS = `
 	min-inline-size: 0;
 }
 
-.music-field__label {
-	font-size: var(--text-xs);
-	color: var(--text-muted);
-	font-weight: 500;
-}
-
-.music-input,
-.music-select {
+.music-filter-toggle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-2);
 	min-block-size: 44px;
 	padding: var(--space-2) var(--space-3);
 	border: 1px solid var(--control-border);
@@ -82,6 +80,94 @@ const MUSIC_CSS = `
 	color: var(--text);
 	font-family: var(--font-body);
 	font-size: var(--text-sm);
+	font-weight: 500;
+	cursor: pointer;
+	transition:
+		background-color var(--dur-fast) var(--ease-out),
+		border-color var(--dur-fast) var(--ease-out);
+}
+
+.music-filter-toggle:hover {
+	background: var(--accent-surface);
+	border-color: var(--control-border-strong);
+}
+
+.music-filter-toggle:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
+.music-filter-count {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-inline-size: 1.25rem;
+	padding-inline: var(--space-1);
+	border-radius: var(--radius-pill);
+	background: var(--accent-surface);
+	color: var(--accent-text);
+	font-size: var(--text-xs);
+	line-height: 1.5;
+}
+
+.music-filters {
+	display: none;
+	grid-template-columns: minmax(0, 1fr);
+	gap: var(--space-3);
+	min-inline-size: 0;
+}
+
+.music-filters[data-open="true"] {
+	display: grid;
+}
+
+.music-select-wrap {
+	position: relative;
+	display: block;
+	min-inline-size: 0;
+}
+
+.music-select-wrap::after {
+	content: "▾";
+	position: absolute;
+	inset-inline-end: var(--space-3);
+	inset-block-start: 50%;
+	transform: translateY(-50%);
+	pointer-events: none;
+	color: var(--text-muted);
+	font-size: var(--text-xs);
+}
+
+.music-field__label {
+	font-size: var(--text-xs);
+	color: var(--text-muted);
+	font-weight: 500;
+}
+
+.music-input,
+.music-select {
+	inline-size: 100%;
+	max-inline-size: 100%;
+	min-inline-size: 0;
+	min-block-size: 44px;
+	padding: var(--space-2) var(--space-3);
+	border: 1px solid var(--control-border);
+	border-radius: var(--radius-md);
+	background-color: var(--surface);
+	color: var(--text);
+	font-family: var(--font-body);
+	font-size: var(--text-sm);
+}
+
+.music-select {
+	appearance: none;
+	-webkit-appearance: none;
+	padding-inline-end: calc(var(--space-6) + var(--space-2));
+}
+
+.music-select option {
+	background-color: var(--surface);
+	color: var(--text);
 }
 
 .music-input::placeholder {
@@ -317,11 +403,22 @@ const MUSIC_CSS = `
 	}
 }
 
-@media (max-width: 30rem) {
+@media (min-width: 48rem) {
 	.music-toolbar {
-		grid-template-columns: minmax(0, 1fr);
+		grid-template-columns: minmax(0, 1fr) repeat(2, minmax(0, 15rem));
+		align-items: end;
 	}
 
+	.music-filter-toggle {
+		display: none;
+	}
+
+	.music-filters {
+		display: contents;
+	}
+}
+
+@media (max-width: 30rem) {
 	.music-input,
 	.music-select {
 		font-size: 16px;
@@ -348,6 +445,9 @@ export default function MusicLibrary() {
   const [query, setQuery] = useState("");
   const [artistId, setArtistId] = useState("");
   const [organisation, setOrganisation] = useState("");
+  // Mobile-first filter panel. `false` on the server AND on the first client
+  // render; CSS hides it below 48rem and shows it inline above.
+  const [filtersOpen, setFiltersOpen] = useState(false);
   // Bumping `attempt` re-runs the load effect (the retry button).
   const [attempt, setAttempt] = useState(0);
 
@@ -418,41 +518,65 @@ export default function MusicLibrary() {
             autoComplete="off"
           />
         </div>
-        <div className="music-field">
-          <label className="music-field__label" htmlFor="music-artist">
-            {tr("music.artistLabel")}
-          </label>
-          <select
-            id="music-artist"
-            className="music-select"
-            value={artistId}
-            onChange={(event) => setArtistId(event.target.value)}
-          >
-            <option value="">{tr("music.all")}</option>
-            {artists.map((artist) => (
-              <option key={artist.id} value={artist.id}>
-                {artist.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="music-field">
-          <label className="music-field__label" htmlFor="music-org">
-            {tr("music.organisationLabel")}
-          </label>
-          <select
-            id="music-org"
-            className="music-select"
-            value={organisation}
-            onChange={(event) => setOrganisation(event.target.value)}
-          >
-            <option value="">{tr("music.all")}</option>
-            {orgs.map((org) => (
-              <option key={org.id} value={org.id}>
-                {org.label}
-              </option>
-            ))}
-          </select>
+        <button
+          type="button"
+          className="music-filter-toggle"
+          aria-expanded={filtersOpen}
+          aria-controls="music-filters"
+          onClick={() => setFiltersOpen((open) => !open)}
+        >
+          {tr("music.filters")}
+          {artistId || organisation ? (
+            <span className="music-filter-count">
+              {Number(Boolean(artistId)) + Number(Boolean(organisation))}
+            </span>
+          ) : null}
+        </button>
+        <div
+          id="music-filters"
+          className="music-filters"
+          data-open={filtersOpen}
+        >
+          <div className="music-field">
+            <label className="music-field__label" htmlFor="music-artist">
+              {tr("music.artistLabel")}
+            </label>
+            <span className="music-select-wrap">
+              <select
+                id="music-artist"
+                className="music-select"
+                value={artistId}
+                onChange={(event) => setArtistId(event.target.value)}
+              >
+                <option value="">{tr("music.all")}</option>
+                {artists.map((artist) => (
+                  <option key={artist.id} value={artist.id}>
+                    {artist.name}
+                  </option>
+                ))}
+              </select>
+            </span>
+          </div>
+          <div className="music-field">
+            <label className="music-field__label" htmlFor="music-org">
+              {tr("music.organisationLabel")}
+            </label>
+            <span className="music-select-wrap">
+              <select
+                id="music-org"
+                className="music-select"
+                value={organisation}
+                onChange={(event) => setOrganisation(event.target.value)}
+              >
+                <option value="">{tr("music.all")}</option>
+                {orgs.map((org) => (
+                  <option key={org.id} value={org.id}>
+                    {org.label}
+                  </option>
+                ))}
+              </select>
+            </span>
+          </div>
         </div>
       </div>
 

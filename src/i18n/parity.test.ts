@@ -78,6 +78,7 @@ const FIXED_KEYS = [
   "search.close",
   "music.searchLabel",
   "music.searchPlaceholder",
+  "music.filters",
   "music.artistLabel",
   "music.organisationLabel",
   "music.all",
