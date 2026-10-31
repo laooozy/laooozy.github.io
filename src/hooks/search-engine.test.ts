@@ -13,12 +13,36 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { noopDomAdapter } from "@/adapters/dom";
 import { fixedLocaleSource } from "@/adapters/locale-source";
+import { fakeMusic } from "@/adapters/music";
 import { fakePagefind } from "@/adapters/pagefind";
 import type { PagefindPort, SearchResult } from "@/adapters/pagefind";
 import { memoryStorageAdapter } from "@/adapters/storage";
 import type { ClientDeps } from "@/hooks/deps";
 import { createSearchEngine } from "@/hooks/useSearch";
+import type { MusicPayload } from "@/lib/domain/music";
 import { appStore } from "@/store/app-store";
+
+const musicPayload: MusicPayload = {
+  version: 1,
+  generatedAt: "2026-10-31T00:00:00.000Z",
+  playlist: {
+    id: "PLtestFixture",
+    title: "Night loop",
+    url: "https://www.youtube.com/watch?list=PLtestFixture",
+  },
+  organisations: {},
+  songs: [
+    {
+      id: "song-1",
+      title: "Lunar drift",
+      artist: "Kaika",
+      artistId: "kaika",
+      org: null,
+      thumb: "https://i.ytimg.com/vi/song-1/hqdefault.jpg",
+      url: "https://www.youtube.com/watch?v=song-1",
+    },
+  ],
+};
 
 function makeDeps(pagefind: PagefindPort): ClientDeps {
   return {
@@ -28,6 +52,7 @@ function makeDeps(pagefind: PagefindPort): ClientDeps {
       localeSource: fixedLocaleSource("en-US"),
       dom: noopDomAdapter,
       pagefind,
+      music: fakeMusic(musicPayload),
     },
   };
 }

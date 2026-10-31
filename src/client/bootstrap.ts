@@ -27,6 +27,7 @@
 
 import { domAdapter } from "@/adapters/dom";
 import { navigatorLocaleSource } from "@/adapters/locale-source";
+import { musicAdapter } from "@/adapters/music";
 import { pagefindAdapter } from "@/adapters/pagefind";
 import { localStorageAdapter } from "@/adapters/storage";
 import type { ClientDeps } from "@/hooks/deps";
@@ -70,6 +71,7 @@ export function createClientDeps(): ClientDeps {
       localeSource: navigatorLocaleSource,
       dom: domAdapter,
       pagefind: pagefindAdapter,
+      music: musicAdapter,
     },
   };
 

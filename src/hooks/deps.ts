@@ -19,6 +19,7 @@ import type { StoreApi } from "zustand/vanilla";
 
 import type { DomPort } from "@/adapters/dom";
 import type { LocaleSourcePort } from "@/adapters/locale-source";
+import type { MusicPort } from "@/adapters/music";
 import type { PagefindPort } from "@/adapters/pagefind";
 import type { StoragePort } from "@/adapters/storage";
 import type { AppStore } from "@/store/types";
@@ -31,5 +32,6 @@ export interface ClientDeps {
     localeSource: LocaleSourcePort;
     dom: DomPort;
     pagefind: PagefindPort;
+    music: MusicPort;
   };
 }
