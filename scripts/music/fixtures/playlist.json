@@ -4,7 +4,7 @@
   "playlist": {
     "id": "PLtestFixture",
     "title": "歌",
-    "url": "https://www.youtube.com/watch?list=PLtestFixture"
+    "url": "https://www.youtube.com/playlist?list=PLtestFixture"
   },
   "organisations": {
     "kamitsubaki": "Kamitsubaki 神椿"
@@ -17,7 +17,7 @@
       "artistId": "UCkaf00000000000000000",
       "org": "kamitsubaki",
       "thumb": "https://i.ytimg.com/vi/fixture0001/mqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=fixture0001&list=PLtestFixture"
+      "url": "https://www.youtube.com/watch?v=fixture0001"
     },
     {
       "id": "fixture0002",
@@ -26,7 +26,7 @@
       "artistId": "UCrim00000000000000000",
       "org": "kamitsubaki",
       "thumb": "https://i.ytimg.com/vi/fixture0002/mqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=fixture0002&list=PLtestFixture"
+      "url": "https://www.youtube.com/watch?v=fixture0002"
     },
     {
       "id": "fixture0003",
@@ -35,7 +35,7 @@
       "artistId": "UCother0000000000000000",
       "org": null,
       "thumb": "https://i.ytimg.com/vi/fixture0003/mqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=fixture0003&list=PLtestFixture"
+      "url": "https://www.youtube.com/watch?v=fixture0003"
     },
     {
       "id": "fixture0004",
@@ -44,7 +44,7 @@
       "artistId": "UCfixture0000000000000000",
       "org": null,
       "thumb": "https://i.ytimg.com/vi/fixture0004/mqdefault.jpg",
-      "url": "https://www.youtube.com/watch?v=fixture0004&list=PLtestFixture"
+      "url": "https://www.youtube.com/watch?v=fixture0004"
     }
   ]
 }

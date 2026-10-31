@@ -99,7 +99,7 @@ describe("normalizePlaylist", () => {
     expect(first.thumb).toBe("https://i.ytimg.com/vi/aaaaaaaaa01/mqdefault.jpg");
     expect(first.thumb).not.toContain("sqp=");
     expect(first.url).toBe(
-      "https://www.youtube.com/watch?v=aaaaaaaaa01&list=PLtestFixture",
+      "https://www.youtube.com/watch?v=aaaaaaaaa01",
     );
   });
 
@@ -111,7 +111,7 @@ describe("normalizePlaylist", () => {
     expect(p.playlist).toEqual({
       id: "PLtestFixture",
       title: "歌",
-      url: "https://www.youtube.com/watch?list=PLtestFixture",
+      url: "https://www.youtube.com/playlist?list=PLtestFixture",
     });
     expect(p.organisations).toEqual({ kamitsubaki: "Kamitsubaki 神椿" });
   });

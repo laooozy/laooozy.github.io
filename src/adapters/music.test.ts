@@ -24,7 +24,7 @@ const payload: MusicPayload = {
   playlist: {
     id: "PLtestFixture",
     title: "Night loop",
-    url: "https://www.youtube.com/watch?list=PLtestFixture",
+    url: "https://www.youtube.com/playlist?list=PLtestFixture",
   },
   organisations: { kamitsubaki: "Kamitsubaki 神椿" },
   songs: [

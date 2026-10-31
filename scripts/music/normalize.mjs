@@ -117,7 +117,7 @@ export function normalizePlaylist(raw, organizations, { now } = {}) {
         channelId || uploaderId || (rawArtist ? `name:${rawArtist}` : ""),
       org,
       thumb: `https://i.ytimg.com/vi/${id}/mqdefault.jpg`,
-      url: `https://www.youtube.com/watch?v=${id}&list=${playlistId}`,
+      url: `https://www.youtube.com/watch?v=${id}`,
     });
   }
 
@@ -139,7 +139,7 @@ export function normalizePlaylist(raw, organizations, { now } = {}) {
         typeof source.title === "string" && source.title.trim().length > 0
           ? source.title.trim()
           : "歌",
-      url: `https://www.youtube.com/watch?list=${playlistId}`,
+      url: `https://www.youtube.com/playlist?list=${playlistId}`,
     },
     organisations: Object.fromEntries(
       Object.entries(organizations ?? {}).map(([id, org]) => [id, org.label]),

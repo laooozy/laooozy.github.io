@@ -23,7 +23,7 @@ const songs: Song[] = [
     artistId: "flower",
     org: "kamitsubaki",
     thumb: "https://i.ytimg.com/vi/aaaaaaaaaaa/mqdefault.jpg",
-    url: "https://www.youtube.com/watch?v=aaaaaaaaaaa&list=PLtest",
+    url: "https://www.youtube.com/watch?v=aaaaaaaaaaa",
   },
   {
     id: "bbbbbbbbbbb",
@@ -32,7 +32,7 @@ const songs: Song[] = [
     artistId: "flower",
     org: "kamitsubaki",
     thumb: "https://i.ytimg.com/vi/bbbbbbbbbbb/mqdefault.jpg",
-    url: "https://www.youtube.com/watch?v=bbbbbbbbbbb&list=PLtest",
+    url: "https://www.youtube.com/watch?v=bbbbbbbbbbb",
   },
   {
     id: "ccccccccccc",
@@ -41,7 +41,7 @@ const songs: Song[] = [
     artistId: "rim",
     org: "kamitsubaki",
     thumb: "https://i.ytimg.com/vi/ccccccccccc/mqdefault.jpg",
-    url: "https://www.youtube.com/watch?v=ccccccccccc&list=PLtest",
+    url: "https://www.youtube.com/watch?v=ccccccccccc",
   },
   {
     id: "ddddddddddd",
@@ -50,7 +50,7 @@ const songs: Song[] = [
     artistId: "some-artist",
     org: null,
     thumb: "https://i.ytimg.com/vi/ddddddddddd/mqdefault.jpg",
-    url: "https://www.youtube.com/watch?v=ddddddddddd&list=PLtest",
+    url: "https://www.youtube.com/watch?v=ddddddddddd",
   },
 ];
 
@@ -90,7 +90,7 @@ describe("SongSchema", () => {
     expect(
       SongSchema.safeParse({
         ...songs[0],
-        url: "https://youtube.com/watch?v=aaaaaaaaaaa&list=PLtest",
+        url: "https://youtube.com/watch?v=aaaaaaaaaaa",
       }).success,
     ).toBe(true);
   });
@@ -101,7 +101,11 @@ describe("parseMusicPayload", () => {
     const payload = parseMusicPayload({
       version: 1,
       generatedAt: "2026-10-31T14:05",
-      playlist: { id: "PLtest", title: "歌", url: "https://www.youtube.com/playlist?list=PLtest" },
+      playlist: {
+        id: "PLtest",
+        title: "歌",
+        url: "https://www.youtube.com/playlist?list=PLtest",
+      },
       organisations: labels,
       songs: [],
     });
@@ -114,7 +118,11 @@ describe("parseMusicPayload", () => {
       parseMusicPayload({
         version: 2,
         generatedAt: "2026-10-31T14:05",
-        playlist: { id: "PLtest", title: "歌", url: "https://www.youtube.com/playlist?list=PLtest" },
+        playlist: {
+          id: "PLtest",
+          title: "歌",
+          url: "https://www.youtube.com/playlist?list=PLtest",
+        },
         organisations: {},
         songs: [],
       }),
@@ -126,7 +134,11 @@ describe("parseMusicPayload", () => {
       MusicPayloadSchema.parse({
         version: 1,
         generatedAt: "2026-10-31T14:05",
-        playlist: { id: "PLtest", title: "歌", url: "https://www.youtube.com/playlist?list=PLtest" },
+        playlist: {
+          id: "PLtest",
+          title: "歌",
+          url: "https://www.youtube.com/playlist?list=PLtest",
+        },
         organisations: {},
         songs: [{ ...songs[0], title: "" }],
       }),
