@@ -11,6 +11,7 @@
 
 import { ArrowDownToLine, ArrowUpToLine } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useStore } from "zustand";
 
 import { clientDeps } from "@/client/bootstrap";
 import { useT, type Translate } from "@/hooks/useT";
@@ -22,16 +23,9 @@ const defaultTranslate: Translate = (key, vars) =>
 
 const SCROLL_CONTROLS_CSS = `
 .scroll-controls {
-	position: fixed;
-	inset-inline: 0;
-	bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
-	margin-inline: auto;
-	inline-size: fit-content;
-	display: flex;
-	flex-direction: column;
-	gap: var(--space-2);
-	z-index: calc(var(--z-sticky) - 1);
-	pointer-events: none;
+	/* A plain wrapper: each button is independently \`position: fixed\`, so the
+	   container itself carries no layout and never groups the pair. */
+	display: contents;
 }
 
 .scroll-controls__button {
@@ -61,6 +55,23 @@ const SCROLL_CONTROLS_CSS = `
 		border-color 150ms var(--ease-out);
 }
 
+/* Back to top: top-right, just below the sticky header. */
+.scroll-controls__button--top {
+	position: fixed;
+	top: 5.5rem;
+	inset-inline-end: calc(var(--space-4) + env(safe-area-inset-right, 0px));
+	z-index: calc(var(--z-sticky) - 1);
+}
+
+/* Jump to bottom: bottom-centre, as the owner asked. */
+.scroll-controls__button--bottom {
+	position: fixed;
+	bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+	inset-inline: 0;
+	margin-inline: auto;
+	z-index: calc(var(--z-sticky) - 1);
+}
+
 .scroll-controls__button[data-visible="true"] {
 	opacity: 1;
 	visibility: visible;
@@ -78,6 +89,12 @@ const SCROLL_CONTROLS_CSS = `
 	outline-offset: 2px;
 }
 
+@media (min-width: 39rem) {
+	.scroll-controls__button--top {
+		inset-inline-end: calc(var(--space-5) + env(safe-area-inset-right, 0px));
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.scroll-controls__button {
 		transition: none;
@@ -87,6 +104,7 @@ const SCROLL_CONTROLS_CSS = `
 
 export default function ScrollControls() {
   const t = useT(clientDeps);
+  const menuOpen = useStore(clientDeps.store, (state) => state.headerMenuOpen);
   const [mounted, setMounted] = useState(false);
   const [showTop, setShowTop] = useState(false);
   const [showBottom, setShowBottom] = useState(false);
@@ -109,36 +127,40 @@ export default function ScrollControls() {
 
   const tr = mounted ? t : defaultTranslate;
   const dom = clientDeps.adapters.dom;
+  // The mobile disclosure panel overlays the controls, so hide them (and take
+  // them out of the Tab order) while it is open.
+  const upVisible = showTop && !menuOpen;
+  const downVisible = showBottom && !menuOpen;
 
   return (
     <div className="scroll-controls">
       <style dangerouslySetInnerHTML={{ __html: SCROLL_CONTROLS_CSS }} />
       <button
         type="button"
-        className="scroll-controls__button"
+        className="scroll-controls__button scroll-controls__button--top"
         aria-label={tr("a11y.scrollToTop")}
         onClick={(event) => {
           // Hiding the focused button mid-scroll cancels Chrome's smooth scroll.
           event.currentTarget.blur();
           dom.scrollToTop();
         }}
-        data-visible={showTop}
-        tabIndex={showTop ? 0 : -1}
-        aria-hidden={!showTop}
+        data-visible={upVisible}
+        tabIndex={upVisible ? 0 : -1}
+        aria-hidden={!upVisible}
       >
         <ArrowUpToLine size={20} aria-hidden />
       </button>
       <button
         type="button"
-        className="scroll-controls__button"
+        className="scroll-controls__button scroll-controls__button--bottom"
         aria-label={tr("a11y.scrollToBottom")}
         onClick={(event) => {
           event.currentTarget.blur();
           dom.scrollToBottom();
         }}
-        data-visible={showBottom}
-        tabIndex={showBottom ? 0 : -1}
-        aria-hidden={!showBottom}
+        data-visible={downVisible}
+        tabIndex={downVisible ? 0 : -1}
+        aria-hidden={!downVisible}
       >
         <ArrowDownToLine size={20} aria-hidden />
       </button>
