@@ -3,6 +3,7 @@ import "../styles/tokens.css";
 import "../styles/global.css";
 import "../styles/pages.css";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import ScrollControls from "../components/ScrollControls";
 import SiteFooter from "../components/SiteFooter";
 import SiteHeader from "../components/SiteHeader";
 import Container from "../components/layout/Container";
@@ -140,6 +141,7 @@ if (!themeColor) {
 		</main>
 
 		<SiteFooter client:load />
+		<ScrollControls client:load />
 
 		<script>
 			/*

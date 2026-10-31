@@ -57,6 +57,13 @@ describe("noopDomAdapter", () => {
       stopScroll();
     }).not.toThrow();
 
+    expect(noopDomAdapter.scrollY()).toBe(0);
+    expect(noopDomAdapter.distanceFromBottom()).toBe(0);
+    expect(() => {
+      noopDomAdapter.scrollToTop();
+      noopDomAdapter.scrollToBottom();
+    }).not.toThrow();
+
     expect(noopDomAdapter.createIntersectionObserver(() => {})).toBeNull();
     expect(() => noopDomAdapter.setHeaderHidden(true)).not.toThrow();
     expect(noopDomAdapter.isHeaderFocusWithin()).toBe(false);
@@ -87,6 +94,12 @@ describe("domAdapter without a DOM", () => {
       stopVisibility();
     }).not.toThrow();
     expect(domAdapter.createIntersectionObserver(() => {})).toBeNull();
+    expect(domAdapter.scrollY()).toBe(0);
+    expect(domAdapter.distanceFromBottom()).toBe(0);
+    expect(() => {
+      domAdapter.scrollToTop();
+      domAdapter.scrollToBottom();
+    }).not.toThrow();
     expect(() => domAdapter.setHidden("[data-ig-embeds]", false)).not.toThrow();
     await expect(
       domAdapter.loadScript("https://example.com/x.js"),
@@ -111,6 +124,56 @@ describe("domAdapter prefersReducedMotion", () => {
     });
 
     expect(domAdapter.prefersReducedMotion()).toBe(false);
+  });
+});
+
+describe("domAdapter scroll controls", () => {
+  it("reads the offset and the distance left below the fold", () => {
+    defineGlobal("window", { scrollY: 300, innerHeight: 700 });
+    defineGlobal("document", { documentElement: { scrollHeight: 2000 } });
+
+    expect(domAdapter.scrollY()).toBe(300);
+    expect(domAdapter.distanceFromBottom()).toBe(1000);
+  });
+
+  it("never reports a negative distance from the bottom", () => {
+    defineGlobal("window", { scrollY: 1500, innerHeight: 700 });
+    defineGlobal("document", { documentElement: { scrollHeight: 2000 } });
+
+    expect(domAdapter.distanceFromBottom()).toBe(0);
+  });
+
+  it("smooth-scrolls to both ends and jumps under reduced motion", () => {
+    const scrollTo = vi.fn();
+    defineGlobal("window", {
+      scrollTo,
+      matchMedia: () => ({ matches: false }),
+    });
+    defineGlobal("document", { documentElement: { scrollHeight: 2000 } });
+
+    domAdapter.scrollToTop();
+    domAdapter.scrollToBottom();
+
+    expect(scrollTo).toHaveBeenNthCalledWith(1, {
+      top: 0,
+      behavior: "smooth",
+    });
+    expect(scrollTo).toHaveBeenNthCalledWith(2, {
+      top: 2000,
+      behavior: "smooth",
+    });
+
+    defineGlobal("window", {
+      scrollTo,
+      matchMedia: () => ({ matches: true }),
+    });
+
+    domAdapter.scrollToBottom();
+
+    expect(scrollTo).toHaveBeenNthCalledWith(3, {
+      top: 2000,
+      behavior: "auto",
+    });
   });
 });
 
@@ -180,9 +243,15 @@ describe("domAdapter header semantics", () => {
       closest: () =>
         anchorHref === null
           ? null
-          : { getAttribute: (name: string) => (name === "href" ? anchorHref : null) },
+          : {
+              getAttribute: (name: string) =>
+                name === "href" ? anchorHref : null,
+            },
     };
-    const listeners = new Map<string, (event: { target?: unknown; type?: string; key?: string }) => void>();
+    const listeners = new Map<
+      string,
+      (event: { target?: unknown; type?: string; key?: string }) => void
+    >();
     const frames = new Map<number, (time: number) => void>();
     let nextId = 0;
     const scrollTo = vi.fn();
@@ -226,13 +295,24 @@ describe("domAdapter header semantics", () => {
       frames.delete(entry[0]);
       entry[1](16);
     };
-    return { inside, listeners, frames, scrollTo, cancelAnimationFrame, runFrame };
+    return {
+      inside,
+      listeners,
+      frames,
+      scrollTo,
+      cancelAnimationFrame,
+      runFrame,
+    };
   }
 
   it("restores the scroll offset when focus lands in the shown header", () => {
     const h = installHeaderHarness(null);
     const stop = domAdapter.keepHeaderFocusStable();
-    expect([...h.listeners.keys()].sort()).toEqual(["click", "focusin", "keydown"]);
+    expect([...h.listeners.keys()].sort()).toEqual([
+      "click",
+      "focusin",
+      "keydown",
+    ]);
 
     h.listeners.get("focusin")!({ target: h.inside });
     h.runFrame();
@@ -247,7 +327,8 @@ describe("domAdapter header semantics", () => {
     domAdapter.keepHeaderFocusStable();
 
     h.listeners.get("focusin")!({ target: h.inside });
-    const win = (globalThis as { window: { location: { hash: string } } }).window;
+    const win = (globalThis as { window: { location: { hash: string } } })
+      .window;
     win.location.hash = "#about";
     h.runFrame();
     expect(h.scrollTo).not.toHaveBeenCalled();

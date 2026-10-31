@@ -63,6 +63,25 @@ export interface DomPort {
    */
   onScroll(callback: (scrollY: number) => void): () => void;
   /**
+   * Current vertical scroll offset in CSS pixels. `0` without a DOM.
+   */
+  scrollY(): number;
+  /**
+   * Pixels of scroll remaining below the fold:
+   * `max(0, scrollHeight - scrollY - innerHeight)`. `0` without a DOM.
+   */
+  distanceFromBottom(): number;
+  /**
+   * Scroll to the very top. Smooth unless the user prefers reduced motion,
+   * in which case it jumps instantly. Never throws.
+   */
+  scrollToTop(): void;
+  /**
+   * Scroll to the very bottom. Smooth unless the user prefers reduced motion,
+   * in which case it jumps instantly. Never throws.
+   */
+  scrollToBottom(): void;
+  /**
    * Observe same-document hash changes (`hashchange`). The callback receives
    * the new `location.hash`, including the leading `#`, or `""` when cleared.
    * The disclosure uses it to close on an anchor jump that does not change the
@@ -140,6 +159,18 @@ export interface DomPort {
   ): DomIntersectionObserver | null;
 }
 
+function prefersReducedMotion(): boolean {
+  try {
+    return (
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    );
+  } catch {
+    return false;
+  }
+}
+
 function createDomAdapter(): DomPort {
   return {
     onScroll(callback) {
@@ -165,6 +196,60 @@ function createDomAdapter(): DomPort {
       };
     },
 
+    scrollY() {
+      try {
+        if (typeof window === "undefined") return 0;
+        return window.scrollY;
+      } catch {
+        return 0;
+      }
+    },
+
+    distanceFromBottom() {
+      try {
+        if (typeof window === "undefined" || typeof document === "undefined") {
+          return 0;
+        }
+        const scrollHeight =
+          document.documentElement?.scrollHeight ??
+          document.body?.scrollHeight ??
+          0;
+        return Math.max(0, scrollHeight - window.scrollY - window.innerHeight);
+      } catch {
+        return 0;
+      }
+    },
+
+    scrollToTop() {
+      try {
+        if (typeof window === "undefined") return;
+        window.scrollTo({
+          top: 0,
+          behavior: prefersReducedMotion() ? "auto" : "smooth",
+        });
+      } catch {
+        // Best-effort: scrolling must never break the caller.
+      }
+    },
+
+    scrollToBottom() {
+      try {
+        if (typeof window === "undefined" || typeof document === "undefined") {
+          return;
+        }
+        const scrollHeight =
+          document.documentElement?.scrollHeight ??
+          document.body?.scrollHeight ??
+          0;
+        window.scrollTo({
+          top: scrollHeight,
+          behavior: prefersReducedMotion() ? "auto" : "smooth",
+        });
+      } catch {
+        // Best-effort: scrolling must never break the caller.
+      }
+    },
+
     onHashChange(callback) {
       if (typeof window === "undefined") return () => {};
 
@@ -177,17 +262,7 @@ function createDomAdapter(): DomPort {
     },
 
     prefersReducedMotion() {
-      try {
-        if (
-          typeof window === "undefined" ||
-          typeof window.matchMedia !== "function"
-        ) {
-          return false;
-        }
-        return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      } catch {
-        return false;
-      }
+      return prefersReducedMotion();
     },
 
     setHeaderHidden(hidden) {
@@ -462,6 +537,10 @@ export const domAdapter: DomPort = createDomAdapter();
 /** Deterministic no-op test double: observes nothing, mutates nothing. */
 export const noopDomAdapter: DomPort = {
   onScroll: () => () => {},
+  scrollY: () => 0,
+  distanceFromBottom: () => 0,
+  scrollToTop: () => {},
+  scrollToBottom: () => {},
   onHashChange: () => () => {},
   prefersReducedMotion: () => false,
   setHeaderHidden: () => {},

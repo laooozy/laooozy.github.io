@@ -109,11 +109,19 @@ React is used only for interactive or locale-reactive chrome. Everything a page
 is made of, including its prose and layout, is Astro/MDX rendered at build time.
 Hydration is split by chrome surface:
 
-- `client:load` for the header and footer (`SiteHeader`, `SiteFooter`), the 404
-  (`NotFound`), the article chrome (`PostArticle`), the blog listing
-  (`BlogList`) and the `/music/` playlist (`MusicLibrary`).
+- `client:load` for the header, footer and scroll controls (`SiteHeader`,
+  `SiteFooter`, `ScrollControls`), the 404 (`NotFound`), the article chrome
+  (`PostArticle`), the blog listing (`BlogList`) and the `/music/` playlist
+  (`MusicLibrary`).
 - `client:idle` for the language switcher (`LanguageSwitcher`), the search
   modal (`SearchModal`) and the Instagram consent gate (`InstagramGate`).
+
+`ScrollControls` is the fixed bottom-centre pair of icon buttons: a down arrow
+after the page has scrolled and an up arrow back to the top. It reads scroll
+state from the injected `DomPort` (`onScroll`, `scrollY`, `distanceFromBottom`)
+and calls `scrollToTop` / `scrollToBottom`, so it owns no listener and no
+browser global; both buttons start hidden to keep the first client render equal
+to the SSR HTML.
 
 The home and photography pages are not islands. Their bodies live in
 `src/content/pages/home.mdx` and `src/content/pages/photographer.mdx`, and the
