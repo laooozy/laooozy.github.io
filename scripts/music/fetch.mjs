@@ -23,8 +23,13 @@ import {
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, "..", "..");
-const OUT_DIR = resolve(REPO_ROOT, ".music-out");
+const OUT_DIR = process.env.MUSIC_OUT_DIR
+  ? resolve(process.env.MUSIC_OUT_DIR)
+  : resolve(REPO_ROOT, ".music-out");
 const OUT_FILE = resolve(OUT_DIR, "music.json.gz");
+
+/** Hard stop: a hung extractor must not hold the runner forever. */
+const YT_DLP_TIMEOUT_MS = 10 * 60 * 1000;
 
 const YT_DLP_ARGS = [
   "--flat-playlist",
@@ -78,28 +83,61 @@ function runYtDlp(url) {
   const result = spawnSync("yt-dlp", [...YT_DLP_ARGS, url], {
     encoding: "utf8",
     maxBuffer: 200 * 1024 * 1024,
+    timeout: YT_DLP_TIMEOUT_MS,
   });
 
   if (result.error) {
-    fail(`could not run yt-dlp: ${result.error.message}`);
+    const code = result.error.code ? ` (${result.error.code})` : "";
+    fail(`could not run yt-dlp${code}: ${result.error.message}`);
   }
 
-  if (typeof result.status === "number" && result.status !== 0) {
+  // A signal kill leaves `status` null: that is a failure, not a success.
+  if (result.status !== 0) {
     process.stderr.write(result.stderr ?? "");
-    fail(`yt-dlp exited with status ${result.status}`);
+    fail(`yt-dlp exited with status ${String(result.status)}`);
   }
 
+  const stderr = result.stderr ?? "";
   const stdout = result.stdout ?? "";
+
+  // `--ignore-errors` can exit 0 after individual entries failed; the extractor
+  // still reports them as `ERROR:` lines, which means the dump is partial.
+  if (/^\s*ERROR:/m.test(stderr)) {
+    process.stderr.write(stderr);
+    fail("yt-dlp reported errors; refusing to publish a partial playlist");
+  }
+
   if (stdout.trim().length === 0) {
-    process.stderr.write(result.stderr ?? "");
+    process.stderr.write(stderr);
     fail("yt-dlp produced no output");
   }
 
+  let raw;
   try {
-    return JSON.parse(stdout);
+    raw = JSON.parse(stdout);
   } catch (error) {
     fail(`could not parse yt-dlp JSON: ${error.message}`);
   }
+
+  if (!raw || typeof raw !== "object") {
+    fail("yt-dlp output is not an object");
+  }
+
+  if (typeof raw.id !== "string" || raw.id.length === 0) {
+    fail("yt-dlp output has no playlist id");
+  }
+
+  if (
+    typeof raw.playlist_count === "number" &&
+    Array.isArray(raw.entries) &&
+    raw.entries.length < raw.playlist_count
+  ) {
+    fail(
+      `yt-dlp returned ${raw.entries.length}/${raw.playlist_count} entries; refusing a partial playlist`,
+    );
+  }
+
+  return raw;
 }
 
 function main() {

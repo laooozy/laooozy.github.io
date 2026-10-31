@@ -148,3 +148,45 @@ describe("listChannels", () => {
     ]);
   });
 });
+
+describe("normalizePlaylist org matching", () => {
+  const normalizeChannel = (channel) =>
+    normalizePlaylist(
+      {
+        id: "PLtestFixture",
+        entries: [{ id: "aaaaaaaaa09", title: "Song", channel }],
+      },
+      ORGANIZATIONS,
+      { now: NOW },
+    ).songs[0];
+
+  it("does not match an ASCII needle inside a longer token", () => {
+    expect(normalizeChannel("KAFKA").org).toBeNull();
+  });
+
+  it("matches an ASCII needle as a whole token", () => {
+    expect(normalizeChannel("KAF - Topic").org).toBe("kamitsubaki");
+  });
+});
+
+describe("normalizePlaylist artistId fallback", () => {
+  it("gives a channel id-less entry a non-empty name-prefixed artistId", () => {
+    const [song] = normalizePlaylist(
+      {
+        id: "PLtestFixture",
+        entries: [
+          {
+            id: "aaaaaaaaa10",
+            title: "Live",
+            channel: "【Re:AcT /リアクト】公式チャンネル",
+          },
+        ],
+      },
+      ORGANIZATIONS,
+      { now: NOW },
+    ).songs;
+
+    expect(song.artistId).not.toBe("");
+    expect(song.artistId).toBe("name:【Re:AcT /リアクト】公式チャンネル");
+  });
+});

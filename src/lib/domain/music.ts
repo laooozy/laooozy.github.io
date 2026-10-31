@@ -10,17 +10,27 @@
 
 import { z } from "zod";
 
-/** An absolute `https:` URL, matched without touching the network. */
-const httpsUrl = z.string().refine(
-  (value) => {
-    try {
-      return new URL(value).protocol === "https:";
-    } catch {
-      return false;
-    }
-  },
-  { message: "must be an absolute https URL" },
-);
+/**
+ * An absolute `https:` URL on one of the allowed hosts, matched without
+ * touching the network. The payload only ever links to YouTube, so anything
+ * else is treated as a malformed payload rather than followed.
+ */
+function httpsUrl(...hosts: string[]) {
+  return z.string().refine(
+    (value) => {
+      try {
+        const url = new URL(value);
+        return url.protocol === "https:" && hosts.includes(url.hostname);
+      } catch {
+        return false;
+      }
+    },
+    { message: `must be an absolute https URL on ${hosts.join(" or ")}` },
+  );
+}
+
+const THUMB_HOSTS = ["i.ytimg.com"] as const;
+const YOUTUBE_HOSTS = ["www.youtube.com", "youtube.com"] as const;
 
 /** One song in the playlist. */
 export const SongSchema = z.object({
@@ -29,8 +39,8 @@ export const SongSchema = z.object({
   artist: z.string(),
   artistId: z.string(),
   org: z.string().nullable(),
-  thumb: httpsUrl,
-  url: httpsUrl,
+  thumb: httpsUrl(...THUMB_HOSTS),
+  url: httpsUrl(...YOUTUBE_HOSTS),
 });
 
 /** The generated payload consumed by the music page. */
@@ -40,12 +50,12 @@ export const MusicPayloadSchema = z.object({
   playlist: z.object({
     id: z.string(),
     title: z.string(),
-    url: httpsUrl,
+    url: httpsUrl(...YOUTUBE_HOSTS),
   }),
   /** Organisation id -> display label, so the UI never invents text. */
   organisations: z.record(z.string(), z.string()),
   /** Empty is valid: the UI renders its empty state. */
-  songs: z.array(SongSchema),
+  songs: z.array(SongSchema).max(5000),
 });
 
 export type Song = z.infer<typeof SongSchema>;
@@ -66,6 +76,7 @@ export function stripTopicSuffix(artist: string): string {
 export function collectArtists(songs: Song[]): { id: string; name: string }[] {
   const byId = new Map<string, string>();
   for (const song of songs) {
+    if (song.artistId === "") continue;
     if (!byId.has(song.artistId)) byId.set(song.artistId, song.artist);
   }
   return [...byId.entries()]
@@ -82,7 +93,9 @@ export function collectOrgs(
   for (const song of songs) {
     if (song.org !== null) ids.add(song.org);
   }
-  return [...ids].sort().map((id) => ({ id, label: labels[id] ?? id }));
+  return [...ids]
+    .sort()
+    .map((id) => ({ id, label: Object.hasOwn(labels, id) ? labels[id] : id }));
 }
 
 /** The client filter criteria; every field is optional. */

@@ -69,6 +69,31 @@ describe("SongSchema", () => {
         .success,
     ).toBe(false);
   });
+
+  it("rejects an https URL on a host outside the allowlist", () => {
+    expect(
+      SongSchema.safeParse({
+        ...songs[0],
+        url: "https://example.com/watch?v=aaaaaaaaaaa",
+      }).success,
+    ).toBe(false);
+    expect(
+      SongSchema.safeParse({
+        ...songs[0],
+        thumb: "https://example.com/vi/aaaaaaaaaaa/mqdefault.jpg",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("accepts a youtube.com URL and an i.ytimg.com thumbnail", () => {
+    expect(SongSchema.safeParse(songs[0]).success).toBe(true);
+    expect(
+      SongSchema.safeParse({
+        ...songs[0],
+        url: "https://youtube.com/watch?v=aaaaaaaaaaa&list=PLtest",
+      }).success,
+    ).toBe(true);
+  });
 });
 
 describe("parseMusicPayload", () => {
@@ -76,7 +101,7 @@ describe("parseMusicPayload", () => {
     const payload = parseMusicPayload({
       version: 1,
       generatedAt: "2026-10-31T14:05",
-      playlist: { id: "PLtest", title: "歌", url: "https://example.com/p" },
+      playlist: { id: "PLtest", title: "歌", url: "https://www.youtube.com/playlist?list=PLtest" },
       organisations: labels,
       songs: [],
     });
@@ -89,7 +114,7 @@ describe("parseMusicPayload", () => {
       parseMusicPayload({
         version: 2,
         generatedAt: "2026-10-31T14:05",
-        playlist: { id: "PLtest", title: "歌", url: "https://example.com/p" },
+        playlist: { id: "PLtest", title: "歌", url: "https://www.youtube.com/playlist?list=PLtest" },
         organisations: {},
         songs: [],
       }),
@@ -101,9 +126,25 @@ describe("parseMusicPayload", () => {
       MusicPayloadSchema.parse({
         version: 1,
         generatedAt: "2026-10-31T14:05",
-        playlist: { id: "PLtest", title: "歌", url: "https://example.com/p" },
+        playlist: { id: "PLtest", title: "歌", url: "https://www.youtube.com/playlist?list=PLtest" },
         organisations: {},
         songs: [{ ...songs[0], title: "" }],
+      }),
+    ).toThrow();
+  });
+
+  it("rejects more than 5000 songs", () => {
+    expect(() =>
+      MusicPayloadSchema.parse({
+        version: 1,
+        generatedAt: "2026-10-31T14:05",
+        playlist: {
+          id: "PLtest",
+          title: "歌",
+          url: "https://www.youtube.com/playlist?list=PLtest",
+        },
+        organisations: {},
+        songs: Array.from({ length: 5001 }, () => songs[0]),
       }),
     ).toThrow();
   });
@@ -127,6 +168,19 @@ describe("collectArtists", () => {
       { id: "flower", name: "花譜" },
     ]);
   });
+
+  it("skips songs with an empty artistId", () => {
+    const withEmpty = [
+      ...songs,
+      { ...songs[0], id: "eeeeeeeeeee", artistId: "" },
+    ];
+
+    expect(collectArtists(withEmpty).map((artist) => artist.id)).toEqual([
+      "rim",
+      "some-artist",
+      "flower",
+    ]);
+  });
 });
 
 describe("collectOrgs", () => {
@@ -139,6 +193,15 @@ describe("collectOrgs", () => {
   it("falls back to the id when the label map is missing it", () => {
     expect(collectOrgs(songs, {})).toEqual([
       { id: "kamitsubaki", label: "kamitsubaki" },
+    ]);
+  });
+
+  it("does not resolve an org id through the prototype chain", () => {
+    const protoSong: Song = { ...songs[0], org: "__proto__" };
+
+    expect(() => collectOrgs([protoSong], labels)).not.toThrow();
+    expect(collectOrgs([protoSong], labels)).toEqual([
+      { id: "__proto__", label: "__proto__" },
     ]);
   });
 });

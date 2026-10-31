@@ -288,9 +288,11 @@ Payload shape (`music.json.gz`):
   installs the latest unpinned `yt-dlp` release, runs
   `node scripts/music/fetch.mjs`, and force-pushes the payload to
   `music_asset`.
-- **Failure.** A failed fetch, an empty payload or a blank title makes the
-  script exit 1. The branch is left untouched, so the last good data stays
-  published.
+- **Failure.** The pipeline fails closed: a failed fetch (a `yt-dlp` timeout or
+  a non-zero/null exit), a partial or incomplete extractor run (no playlist id,
+  fewer entries than `playlist_count`, or any `ERROR:` line on stderr even with
+  exit 0), an empty payload or a blank title makes the script exit 1. The branch
+  is left untouched, so the last good data stays published.
 - **Locally.** Run `node scripts/music/fetch.mjs` with `yt-dlp` on your `PATH`.
   `--list-channels` prints the channels and writes nothing; `--playlist <url>`
   exercises a different playlist.

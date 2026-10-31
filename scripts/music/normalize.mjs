@@ -23,16 +23,42 @@ function stripTopicSuffixLocal(artist) {
     : artist;
 }
 
+const ASCII_ALNUM = /[A-Za-z0-9]/;
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * ASCII needles are short artist abbreviations (`KAF`, `RIM`, `KOKO`), so they
+ * must match a whole token: `KAF` matches `KAF` and `KAF - Topic` but not
+ * `KAFKA`. Non-ASCII needles (`花譜`, `神椿`) are unambiguous and stay substring
+ * matches.
+ */
+function nameIncludesNeedle(name, needle) {
+  if (ASCII_ALNUM.test(needle)) {
+    const pattern = new RegExp(
+      `(^|[^A-Za-z0-9])${escapeRegExp(needle)}([^A-Za-z0-9]|$)`,
+    );
+    return pattern.test(name);
+  }
+  return name.includes(needle);
+}
+
 /**
  * `kamitsubaki` when the channel id is allowlisted or the channel/uploader name
- * contains one of the configured substrings, else `null`.
+ * contains one of the configured needles, else `null`.
  */
 function resolveOrg(orgs, channelId, names) {
   for (const [orgId, org] of Object.entries(orgs)) {
     const ids = org.channelIds ?? [];
     if (channelId && ids.includes(channelId)) return orgId;
     const needles = org.channelTitleIncludes ?? [];
-    if (names.some((name) => needles.some((needle) => name.includes(needle)))) {
+    if (
+      names.some((name) =>
+        needles.some((needle) => nameIncludesNeedle(name, needle)),
+      )
+    ) {
       return orgId;
     }
   }
@@ -85,7 +111,10 @@ export function normalizePlaylist(raw, organizations, { now } = {}) {
       id,
       title,
       artist: stripTopicSuffixLocal(rawArtist),
-      artistId: channelId || uploaderId,
+      // `name:` keeps a channel-less artist from colliding with the UI's empty
+      // "all" filter value while staying a string, not a new payload shape.
+      artistId:
+        channelId || uploaderId || (rawArtist ? `name:${rawArtist}` : ""),
       org,
       thumb: `https://i.ytimg.com/vi/${id}/mqdefault.jpg`,
       url: `https://www.youtube.com/watch?v=${id}&list=${playlistId}`,
