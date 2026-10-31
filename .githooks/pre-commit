@@ -2,7 +2,7 @@
 // Rewrites the committed footer update stamp and stages ONLY that file.
 // package.json sets "type": "module", so this extensionless entry runs as ESM.
 import { execFileSync } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { lstatSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const STAMP_PATH = "src/data/site-updated.json";
@@ -28,6 +28,19 @@ function parseStampArg(argv) {
       `invalid --now value "${stamp}" (expected YYYY-MM-DDTHH:mm)`,
     );
   }
+  const [year, month, day, hour, minute] = stamp.split(/[-T:]/).map(Number);
+  const parsed = new Date(year, month - 1, day, hour, minute);
+  if (
+    parsed.getFullYear() !== year ||
+    parsed.getMonth() !== month - 1 ||
+    parsed.getDate() !== day ||
+    parsed.getHours() !== hour ||
+    parsed.getMinutes() !== minute
+  ) {
+    throw new Error(
+      `invalid --now value "${stamp}" (not a real calendar date/time)`,
+    );
+  }
   return stamp;
 }
 
@@ -36,7 +49,18 @@ try {
   const root = execFileSync("git", ["rev-parse", "--show-toplevel"], {
     encoding: "utf8",
   }).trim();
-  writeFileSync(join(root, STAMP_PATH), `{ "updatedAt": "${stamp}" }\n`, "utf8");
+  const fullPath = join(root, STAMP_PATH);
+  let isSymlink = false;
+  try {
+    // lstat does not follow the link, so a dangling symlink is caught too.
+    isSymlink = lstatSync(fullPath).isSymbolicLink();
+  } catch (error) {
+    if (!(error instanceof Error && error.code === "ENOENT")) throw error;
+  }
+  if (isSymlink) {
+    throw new Error(`refusing to write through a symlink: ${STAMP_PATH}`);
+  }
+  writeFileSync(fullPath, `{ "updatedAt": "${stamp}" }\n`, "utf8");
   execFileSync("git", ["add", "--", STAMP_PATH], { cwd: root });
   process.exit(0);
 } catch (error) {
