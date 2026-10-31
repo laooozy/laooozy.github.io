@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "generatedAt": "2026-10-31T12:00:00.000Z",
+  "playlist": {
+    "id": "PLtestFixture",
+    "title": "歌",
+    "url": "https://www.youtube.com/watch?list=PLtestFixture"
+  },
+  "organisations": {
+    "kamitsubaki": "Kamitsubaki 神椿"
+  },
+  "songs": [
+    {
+      "id": "fixture0001",
+      "title": "花譜 - 春を発つ",
+      "artist": "花譜",
+      "artistId": "UCkaf00000000000000000",
+      "org": "kamitsubaki",
+      "thumb": "https://i.ytimg.com/vi/fixture0001/mqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=fixture0001&list=PLtestFixture"
+    },
+    {
+      "id": "fixture0002",
+      "title": "理芽 - ディアマイフレンド",
+      "artist": "理芽",
+      "artistId": "UCrim00000000000000000",
+      "org": "kamitsubaki",
+      "thumb": "https://i.ytimg.com/vi/fixture0002/mqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=fixture0002&list=PLtestFixture"
+    },
+    {
+      "id": "fixture0003",
+      "title": "夜に駆ける",
+      "artist": "YOASOBI",
+      "artistId": "UCother0000000000000000",
+      "org": null,
+      "thumb": "https://i.ytimg.com/vi/fixture0003/mqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=fixture0003&list=PLtestFixture"
+    },
+    {
+      "id": "fixture0004",
+      "title": "Another Fixture Track",
+      "artist": "Fixture Artist",
+      "artistId": "UCfixture0000000000000000",
+      "org": null,
+      "thumb": "https://i.ytimg.com/vi/fixture0004/mqdefault.jpg",
+      "url": "https://www.youtube.com/watch?v=fixture0004&list=PLtestFixture"
+    }
+  ]
+}
