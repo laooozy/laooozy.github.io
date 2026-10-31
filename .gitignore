@@ -30,3 +30,6 @@ pnpm-debug.log*
 # playwright mcp artifacts
 .playwright-mcp/
 .playwright-cli/
+
+# generated music payload (published to the music_asset branch, never main)
+.music-out/

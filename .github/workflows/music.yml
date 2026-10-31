@@ -1,0 +1,47 @@
+name: Music data
+
+on:
+  schedule:
+    - cron: "17 18 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/music/**"
+      - ".github/workflows/music.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: music-data
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install the latest yt-dlp
+        run: |
+          set -euo pipefail
+          curl -fL -o "$RUNNER_TEMP/yt-dlp" https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux
+          chmod +x "$RUNNER_TEMP/yt-dlp"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+          export PATH="$RUNNER_TEMP:$PATH"
+          yt-dlp --version
+      - name: Build the payload
+        run: node scripts/music/fetch.mjs
+      - name: Publish data branch
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd .music-out
+          git init -q -b music_asset
+          git add music.json.gz
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "chore(music): refresh $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" music_asset
