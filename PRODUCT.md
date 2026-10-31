@@ -1,8 +1,7 @@
 # PRODUCT
 
 **laooozy** — the personal site of a coser-cum-amateur-photographer who also
-writes, plus an ACG (anime / comic / games) persona. Fully static Astro on
-GitHub Pages; no CMS, no server, no backend.
+writes. Fully static Astro on GitHub Pages; no CMS, no server, no backend.
 
 ## Register
 
@@ -20,8 +19,9 @@ loud, never busy.
 
 1. **A visitor who just met the handle** — wants to know who this is and what
    they do in one screen. Job: understand the person fast.
-2. **A potential shoot partner (coser or friend)** — wants to see the ACG side
-   and how to reach out. Job: get to `/acg/` and Instagram.
+2. **A potential shoot partner (coser or friend)** — wants to see the
+   photography side and how to reach out. Job: get to `/photographer/` and
+   Instagram.
 3. **A reader** — wants the latest writing. Job: get to a post in one click.
 
 ## Principles
@@ -36,7 +36,8 @@ loud, never busy.
   lightning, and the entrance reveal is instant.
 - **Static-first.** Content and layout are HTML+CSS. JS is reserved for what is
   genuinely interactive or alive: the scroll-hiding bar, Pagefind search, the
-  atmospheric canvas, and the entrance reveal.
+  atmospheric canvas, the entrance reveal, and the `/music/` playlist and its
+  filters.
 - **The kit is the product.** Pages are assembled from a small set of composable
   parts (layout primitives + UI + content) so any layout can be arranged freely.
 

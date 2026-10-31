@@ -1,7 +1,7 @@
 # MDX page components
 
 Presentational `.astro` components for the Markdown/MDX page layer. They are
-thin ports of the React layout primitives and the two page compositions, so an
+thin ports of the React layout primitives and the page compositions, so an
 MDX page can be written as Markdown without changing a single class name,
 spacing token, or grid rule. Interactive chrome (header, footer, search,
 language switcher) stays a React island and is **not** part of this kit.
@@ -55,8 +55,10 @@ language switcher) stays a React island and is **not** part of this kit.
      The "now" status line is rendered by `NowTicker.astro` from
      `src/data/now.json`; there are no `nowLabel`/`nowText` props. The default
      slot is optional extra masthead Markdown.
-   - `AcgMasthead`: `handle`, `title`, `label`, `intro` (the larger muted
-     lead). The default slot is the remaining intro Markdown.
+   - `PhotographyMasthead`: `title` (renders the hero `<h1>`), `intro` (the
+     larger muted lead), `className`. There are no `handle` or `label` props.
+     It renders `header.photo-masthead` with `photo-masthead__title` and
+     `photo-masthead__intro`; the rest of the intro is the default slot.
    - `ContactRow`: `label` and `href`; pass the one-line visible text as
      `value` (or use the default slot). It renders the `<li>`, so wrap rows in
      `<Stack as="ul" gap={3}>`.
@@ -66,7 +68,7 @@ language switcher) stays a React island and is **not** part of this kit.
    - `Chips`: `items` (`{ label, href?, active? }[]`), `variant` (`"tag"` or
      `"filter"`), `ariaLabel`, `gap`, `className`.
    - `Cta`: `href`, `label` (or a Markdown child), `variant` (`"link"` for the
-     quiet `link-arrow` pill, `"acg"` for the accent `acg-cta` pill),
+     quiet `link-arrow` pill, `"photo"` for the accent `photo-cta` pill),
      `external`. Prefer `label` for a one-line control; a Markdown child works
      too and is flattened back to inline.
    - `Grid` / `Stack` / `Cluster`: `gap` (1–12), `as` (any HTML tag),
@@ -80,31 +82,31 @@ language switcher) stays a React island and is **not** part of this kit.
 
    ```mdx
    ---
-   title: ACG
-   description: Cosplay photography and the ACG side of the site.
+   title: 攝影
+   description: 一個突然喜歡拍照的純興趣驅動的新手。
    ---
    ```
 
 5. **Page shell stays in the route.** The route (`src/pages/*.astro`) owns
-   `BaseLayout`, the localized `<div class="home">` / `<div class="acg">`
-   wrapper, and build-time data such as the Instagram embeds. The MDX entry
-   only composes the page body.
+   `BaseLayout`, the page wrapper (`.home` / `.photography` / `.music-page`)
+   and build-time data such as the Instagram embeds. The MDX entry only
+   composes the page body.
 
 ## Components
 
-| Component            | Renders                                                                           | Notes                          |
-| -------------------- | --------------------------------------------------------------------------------- | ------------------------------ |
-| `Hero.astro`         | `<header class="hero">` + `hero__main` / `hero__meta`                             | home masthead                  |
-| `Section.astro`      | `<section class="section">` + `section__head` / `section__lead` / `section__body` | body + `actions` slots         |
-| `InterestCard.astro` | `card interest interest--<id>` + `h3.interest__label` + `Stack`                   | About-grid card                |
-| `Grid.astro`         | `.grid` with `--grid-gap` / `--grid-template`                                     | same auto-fit formula as React |
-| `Stack.astro`        | `.stack` with `--stack-gap` / `--stack-align`                                     | 1D vertical flow               |
-| `Cluster.astro`      | `.cluster` with gap/align/justify custom properties                               | wrapping row                   |
-| `Chips.astro`        | `ul.chip-row` + `chip chip--<variant>`                                            | tag or filter chips            |
-| `Cta.astro`          | `a.link-arrow` or `a.acg-cta`                                                     | arrow glyph included           |
-| `ContactRow.astro`   | `li.contact__item` + `contact__label` / `contact__link`                           | wrap in `Stack as="ul"`        |
-| `LatestPosts.astro`  | `.grid` of build-time `post-card` entries, or the empty copy                      | build-time, no hydration       |
-| `AcgMasthead.astro`  | `header.acg-masthead` + hero `<h1>` + intro stack                                 | ACG intro                      |
+| Component                   | Renders                                                                           | Notes                          |
+| --------------------------- | --------------------------------------------------------------------------------- | ------------------------------ |
+| `Hero.astro`                | `<header class="hero">` + `hero__main` / `hero__meta`                             | home masthead                  |
+| `Section.astro`             | `<section class="section">` + `section__head` / `section__lead` / `section__body` | body + `actions` slots         |
+| `InterestCard.astro`        | `card interest interest--<id>` + `h3.interest__label` + `Stack`                   | About-grid card                |
+| `Grid.astro`                | `.grid` with `--grid-gap` / `--grid-template`                                     | same auto-fit formula as React |
+| `Stack.astro`               | `.stack` with `--stack-gap` / `--stack-align`                                     | 1D vertical flow               |
+| `Cluster.astro`             | `.cluster` with gap/align/justify custom properties                               | wrapping row                   |
+| `Chips.astro`               | `ul.chip-row` + `chip chip--<variant>`                                            | tag or filter chips            |
+| `Cta.astro`                 | `a.link-arrow` or `a.photo-cta`                                                   | arrow glyph included           |
+| `ContactRow.astro`          | `li.contact__item` + `contact__label` / `contact__link`                           | wrap in `Stack as="ul"`        |
+| `LatestPosts.astro`         | `.grid` of build-time `post-card` entries, or the empty copy                      | build-time, no hydration       |
+| `PhotographyMasthead.astro` | `header.photo-masthead` + hero `<h1>` + `photo-masthead__intro` stack             | photography intro              |
 
 ## Hiding unfinished content
 

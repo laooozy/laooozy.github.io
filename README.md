@@ -2,8 +2,8 @@
 
 > Photography, games, and a few things I write down.
 
-This is the personal site of **laooozy**, a coser-cum-amateur-photographer with
-an ACG (anime / comic / games) persona. It is a fully static
+This is the personal site of **laooozy**, a coser-cum-amateur-photographer who
+also writes. It is a fully static
 [Astro](https://astro.build) build published to GitHub Pages at
 <https://laooozy.github.io>.
 
@@ -14,30 +14,31 @@ site is rendered at build time, and the deployed output is plain HTML/CSS/JS.
 
 ```
 src/
-├── adapters/          Ports for storage, locale detection, DOM and search, each with a real adapter and a test double
+├── adapters/          Ports for storage, locale detection, DOM, search and music, each with a real adapter and a test double
 ├── client/            Client-only entry points (bootstrap composition root, locale-boot, scroll-header, atmosphere)
 ├── components/        Astro and React UI (chrome, MDX page kit, layout primitives, feature components)
 ├── content/blog/      Blog posts, one Markdown file per post
 ├── content/links/     The useful-links list, one Markdown file for the whole page
-├── content/pages/     Page bodies authored in MDX (home.mdx, acg.mdx)
+├── content/pages/     Page bodies authored in MDX (home.mdx, photographer.mdx, music.mdx)
 ├── content.config.ts  Zod schemas for the blog, links and pages collections
-├── data/              Locale-independent data (Instagram permalinks, the now ticker JSON)
+├── data/              Locale-independent data (Instagram permalinks, the now ticker, the footer stamp)
 ├── hooks/             Client hooks over the store and its injected adapters
 ├── i18n/              Fixed-chrome dictionaries and t() (index.ts, ui.ts re-export, types.ts)
 ├── layouts/           BaseLayout.astro (SEO, nav, footer, pre-paint boot)
 ├── lib/
 │   ├── domain/        Pure post domain: sort, tags, periods, paths, formatting
-│   ├── io/            I/O edge: getAllPosts() over astro:content, Instagram oEmbed
+│   ├── io/            I/O edge: getAllPosts() over astro:content, Instagram oEmbed, the footer stamp
 │   └── seo.ts         The SITE_INDEXABLE switch
-├── pages/             Thin route shells (one URL space: /, /acg/, /links/, /blog/…)
+├── pages/             Thin route shells (one URL space: /, /photographer/, /music/, /links/, /blog/…)
 ├── store/             The single client store (app-store.ts, types.ts)
 └── styles/            Design tokens and global styles
 public/                Static assets copied verbatim into the build
-scripts/               Build-time helpers (Open Graph image generation)
+scripts/               Build-time helpers (Open Graph image generation, the music fetcher)
 ```
 
-Routes are file-based: `src/pages/**` maps to URLs. Every locale is served from
-this one set of routes.
+Routes are file-based: `src/pages/**` maps to URLs. The site serves `/`,
+`/blog/` (and `/blog/<slug>/`), `/photographer/`, `/links/`, `/music/` and the
+404 page. Every locale is served from this one set of routes.
 
 ## One URL space, client-side locale
 
@@ -74,12 +75,12 @@ Selecting a language writes the new locale to the store, to `<html lang>`, to
 Every browser, network and storage effect sits behind a port under
 `src/adapters/`. Each port ships a real adapter and a deterministic test double:
 
-| Port               | Real adapter                                                                    | Test double            |
-| :----------------- | :------------------------------------------------------------------------------ | :--------------------- |
-| `StoragePort`      | `localStorageAdapter` (degrades to memory when storage is blocked)              | `memoryStorageAdapter` |
-| `LocaleSourcePort` | `navigatorLocaleSource`                                                         | `fixedLocaleSource`    |
+| Port               | Real adapter                                                                                      | Test double            |
+| :----------------- | :------------------------------------------------------------------------------------------------ | :--------------------- |
+| `StoragePort`      | `localStorageAdapter` (degrades to memory when storage is blocked)                                | `memoryStorageAdapter` |
+| `LocaleSourcePort` | `navigatorLocaleSource`                                                                           | `fixedLocaleSource`    |
 | `DomPort`          | `domAdapter` (scroll, reduced motion, header visibility, the shared frame loop, script injection) | `noopDomAdapter`       |
-| `PagefindPort`     | `pagefindAdapter` (lazy dynamic import)                                         | `fakePagefind`         |
+| `PagefindPort`     | `pagefindAdapter` (lazy dynamic import)                                                           | `fakePagefind`         |
 
 Adapters are wired in exactly one place: the composition root
 `src/client/bootstrap.ts`, which assembles a `ClientDeps` bundle and seeds the
@@ -108,16 +109,21 @@ is made of, including its prose and layout, is Astro/MDX rendered at build time.
 Hydration is split by chrome surface:
 
 - `client:load` for the header and footer (`SiteHeader`, `SiteFooter`), the 404
-  (`NotFound`), the article chrome (`PostArticle`) and the blog listing
-  (`BlogList`).
+  (`NotFound`), the article chrome (`PostArticle`), the blog listing
+  (`BlogList`) and the `/music/` playlist (`MusicLibrary`).
 - `client:idle` for the language switcher (`LanguageSwitcher`), the search
   modal (`SearchModal`) and the Instagram consent gate (`InstagramGate`).
 
-The home and ACG pages are not islands. Their bodies live in
-`src/content/pages/home.mdx` and `src/content/pages/acg.mdx`, and the route
-shells (`src/pages/index.astro`, `src/pages/acg.astro`) only load the entry,
-render it with `<Content/>` and supply `BaseLayout` plus the `lang="zh-Hant"`
-content wrapper. The page kit is described under [Authoring a page](#authoring-a-page).
+The home and photography pages are not islands. Their bodies live in
+`src/content/pages/home.mdx` and `src/content/pages/photographer.mdx`, and the
+route shells (`src/pages/index.astro`, `src/pages/photographer.astro`) only load
+the entry, render it with `<Content/>` and supply `BaseLayout` plus the
+`lang="zh-Hant"` content wrapper. The one page-level island is `/music/`: its
+body in `src/content/pages/music.mdx` is a heading, `<MusicLibrary client:load />`
+and a `<noscript>` link-out, while `src/pages/music.astro` stays a thin shell.
+The list section is marked `data-pagefind-ignore`, because its song rows are
+client-rendered from the remote payload. The page kit is described under
+[Authoring a page](#authoring-a-page).
 
 `PostArticle` (`src/components/PostArticle.tsx`) renders the article chrome
 only: the back link, title, date / reading time and tags. The Markdown body
@@ -129,23 +135,23 @@ The links page (`src/pages/links.astro`) follows the same split: its Markdown
 list is Astro-rendered, and its heading is emitted in all three locales with the
 static `[data-l]` toggle, so it needs no React island and no client state.
 
-The header nav is `About · Blog · ACG · Contact · Useful Links`. Blog points at
-the listing index, `/blog/`, not a home anchor, and ACG has its own entry at
-`/acg/` rather than being reachable only from the home About grid. Useful Links
-is its own page at `/links/`; the project's GitHub repository is the first entry
-in that page's list, not a separate external nav link. The home hero carries the
-wordmark, tagline, "now" line and a small spec panel. The language control is a
-single glassy dropdown button (a globe icon plus the current language) whose
-menu lists the three locales; selecting one switches in place, with no URL
-change and no reload.
+The header nav is `About · Blog · Contact · Useful Links`. Blog points at the
+listing index, `/blog/`, not a home anchor. Useful Links is its own page at
+`/links/`; the project's GitHub repository is the first entry in that page's
+list, not a separate external nav link. Photography lives at `/photographer/`
+but is not a top-bar item: it is reached from the home About grid. The home hero
+carries the wordmark, tagline, "now" line and a small spec panel. The language
+control is a single glassy dropdown button (a globe icon plus the current
+language) whose menu lists the three locales; selecting one switches in place,
+with no URL change and no reload.
 
 ## Authoring a page
 
-Home and ACG are MDX entries, not React pages. To change copy, reorder a
-section or add a card, edit `src/content/pages/home.mdx` or
-`src/content/pages/acg.mdx`; no React component, route or i18n file changes.
-The route shells in `src/pages/` only load the entry, call `render()` and wrap
-`<Content/>` in `BaseLayout`.
+Home and Photography are MDX entries, not React pages. To change copy, reorder
+a section or add a card, edit `src/content/pages/home.mdx` or
+`src/content/pages/photographer.mdx`; no React component, route or i18n file
+changes. The route shells in `src/pages/` only load the entry, call `render()`
+and wrap `<Content/>` in `BaseLayout`.
 
 The presentational kit lives in `src/components/mdx/**`. Each page imports every
 component it uses in its own MDX body, then composes it:
@@ -170,20 +176,20 @@ default slot carries authored Markdown. Do not pass an HTML string through
 `set:html`; write Markdown children instead. The full contract, including every
 prop, is in `src/components/mdx/README.md`.
 
-| Component             | Purpose                                                       |
-| :-------------------- | :------------------------------------------------------------ |
-| `Hero.astro`          | Home masthead: wordmark, tagline, now line, spec panel.       |
-| `Section.astro`       | Section shell with heading, lead and optional `actions` slot. |
-| `InterestCard.astro`  | One About-grid card with a title and Markdown body.           |
-| `Grid.astro`          | Responsive auto-fit grid.                                     |
-| `Stack.astro`         | Vertical flow.                                                |
-| `Cluster.astro`       | Wrapping row.                                                 |
-| `Chips.astro`         | Tag or filter chips.                                          |
-| `Cta.astro`           | Link-arrow or ACG accent call to action.                      |
-| `ContactRow.astro`    | One contact list row; wrap rows in `Stack as="ul"`.           |
-| `LatestPosts.astro`   | Build-time latest-posts grid, or its empty copy.              |
-| `AcgMasthead.astro`   | ACG page masthead and intro.                                  |
-| `InstagramWall.astro` | Build-time Instagram oEmbed wall, consent gate, link-outs.    |
+| Component                   | Purpose                                                       |
+| :-------------------------- | :------------------------------------------------------------ |
+| `Hero.astro`                | Home masthead: wordmark, tagline, now line, spec panel.       |
+| `Section.astro`             | Section shell with heading, lead and optional `actions` slot. |
+| `InterestCard.astro`        | One About-grid card with a title and Markdown body.           |
+| `Grid.astro`                | Responsive auto-fit grid.                                     |
+| `Stack.astro`               | Vertical flow.                                                |
+| `Cluster.astro`             | Wrapping row.                                                 |
+| `Chips.astro`               | Tag or filter chips.                                          |
+| `Cta.astro`                 | Link-arrow or photography accent call to action.              |
+| `ContactRow.astro`          | One contact list row; wrap rows in `Stack as="ul"`.           |
+| `LatestPosts.astro`         | Build-time latest-posts grid, or its empty copy.              |
+| `PhotographyMasthead.astro` | Photography page masthead and intro.                          |
+| `InstagramWall.astro`       | Build-time Instagram oEmbed wall, consent gate, link-outs.    |
 
 Frontmatter `title` and `description` feed `BaseLayout` and the Open Graph tags.
 Omit them only when the `home.title` / `home.tagline` chrome fallback is the
@@ -239,7 +245,72 @@ canvas is `pointer-events:none`, clicks pass straight through to the page.
 The Pagefind index is built once against `dist/` with
 `--force-language zh-hant`. Search is language-agnostic: the single index answers
 queries in every UI locale, so the index language is decoupled from the locale
-toggle.
+toggle. The `/music/` rows are client-rendered and their section carries
+`data-pagefind-ignore`, so song titles and artist names are not indexed.
+
+## Music
+
+The `/music/` page is the one page-level island. Its data is generated, not
+authored: `scripts/music/fetch.mjs` runs `yt-dlp` over the playlist in
+`scripts/music/playlist.json`, normalises the dump and writes one gzipped
+payload. The adapter (`src/adapters/music.ts`) fetches that payload from the
+orphan `music_asset` branch and validates it with `parseMusicPayload`
+(`src/lib/domain/music.ts`) before `MusicLibrary` filters it.
+
+Payload shape (`music.json.gz`):
+
+```json
+{
+  "version": 1,
+  "generatedAt": "<ISO timestamp>",
+  "playlist": { "id": "<id>", "title": "<title>", "url": "https://…" },
+  "organisations": { "<org id>": "<display label>" },
+  "songs": [
+    {
+      "id": "<id>",
+      "title": "<title>",
+      "artist": "<artist>",
+      "artistId": "<artist id>",
+      "org": null,
+      "thumb": "https://…",
+      "url": "https://…"
+    }
+  ]
+}
+```
+
+- **Branch.** `music_asset` is an orphan data branch and the only source of the
+  list; it holds exactly one file, `music.json.gz`. Generated playlist data is
+  never committed to `main`.
+- **Workflow.** `.github/workflows/music.yml` runs on a daily cron
+  (`17 18 * * *`), on `workflow_dispatch`, and on pushes to `main` that touch
+  `scripts/music/**` or the workflow itself. It requests `contents: write`,
+  installs the latest unpinned `yt-dlp` release, runs
+  `node scripts/music/fetch.mjs`, and force-pushes the payload to
+  `music_asset`.
+- **Failure.** A failed fetch, an empty payload or a blank title makes the
+  script exit 1. The branch is left untouched, so the last good data stays
+  published.
+- **Locally.** Run `node scripts/music/fetch.mjs` with `yt-dlp` on your `PATH`.
+  `--list-channels` prints the channels and writes nothing; `--playlist <url>`
+  exercises a different playlist.
+
+## The footer stamp
+
+The footer's "last updated" line is build-time data, not a runtime clock.
+`src/data/site-updated.json` holds `{ "updatedAt": "YYYY-MM-DDTHH:mm" }` in the
+owner's local time, and `src/lib/io/site-updated.ts` validates it at import, so
+a malformed stamp fails the build with the bad value in the message.
+
+The file is committed and rewritten by `.githooks/pre-commit`, which stages
+ONLY that file. Enable it once per clone:
+
+```sh
+bun run hooks:install
+```
+
+That sets `core.hooksPath` to `.githooks`. Do not use `git commit --only` or a
+pathspec commit: both bypass the hook, so the stamp goes stale.
 
 ## Requirements
 
@@ -253,6 +324,12 @@ bun install
 ```
 
 ## Local development
+
+Enable the commit-time footer stamp once per clone:
+
+```sh
+bun run hooks:install   # points core.hooksPath at .githooks
+```
 
 Start the dev server in the background (recommended, it keeps your shell free):
 
@@ -368,9 +445,9 @@ The site ships in three locales, all served from the same URLs:
   and keeps the same voice (see `PRODUCT.md`), never raw machine output. Shared,
   locale-independent values such as the public contact handles and email live
   there too.
-- **Page content is not translated.** The home and ACG bodies stay zh-hant in
-  `src/content/pages/*.mdx`. There are no content keys in `src/i18n` and no
-  per-locale page folders. Only the chrome follows the locale.
+- **Page content is not translated.** The home and photography bodies stay
+  zh-hant in `src/content/pages/*.mdx`. There are no content keys in `src/i18n`
+  and no per-locale page folders. Only the chrome follows the locale.
 - **Locale-independent assets** live in `src/data/**` (for example the Instagram
   permalinks in `src/data/instagram.ts`). Do not put translated strings there.
 - **`<html lang>`** uses BCP-47 casing via `langAttr` (`zh-Hant`, `zh-Hans`,
@@ -441,5 +518,5 @@ was retired.
 ## Contact
 
 - Instagram (personal): [laooozy](https://instagram.com/laooozy)
-- Instagram (ACG): [acg.laooozy](https://instagram.com/acg.laooozy)
+- Instagram (photography): [acg.laooozy](https://instagram.com/acg.laooozy)
 - Email: laooozy@outlook.com
