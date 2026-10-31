@@ -82,6 +82,7 @@ const FIXED_KEYS = [
   "notFound.body",
   "notFound.backHome",
   "footer.rights",
+  "footer.updated",
   "home.title",
   "home.tagline",
   "home.nowLabel",
@@ -235,7 +236,6 @@ describe("i18n ui key parity", () => {
   });
 });
 
-
 describe("search result count copy", () => {
   it("is grammatical for 0/1/2+ results in English", () => {
     expect(t("en", "search.resultCount", { count: 0 })).toBe("Results: 0");
@@ -245,7 +245,11 @@ describe("search result count copy", () => {
   });
 
   it("leaves the Chinese result counts unchanged", () => {
-    expect(t("zh-hant", "search.resultCount", { count: 1 })).toBe("找到 1 筆結果");
-    expect(t("zh-hans", "search.resultCount", { count: 2 })).toBe("找到 2 条结果");
+    expect(t("zh-hant", "search.resultCount", { count: 1 })).toBe(
+      "找到 1 筆結果",
+    );
+    expect(t("zh-hans", "search.resultCount", { count: 2 })).toBe(
+      "找到 2 条结果",
+    );
   });
 });

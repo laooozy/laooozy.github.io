@@ -408,6 +408,18 @@ if (!themeColor) {
 	}
 
 	/*
+	 * The committed update stamp. Position and stacking come from
+	 * `.site-footer__inner` (space-between on one row, a left column below
+	 * 29.99rem); this rule only sets colour and type.
+	 */
+	.site-footer__updated {
+		margin: 0;
+		font-size: var(--text-sm);
+		color: var(--text-muted);
+		font-variant-numeric: tabular-nums;
+	}
+
+	/*
 	 * Reduced motion: the bar never hides and never animates — it simply stays
 	 * put. The rule also matches the hidden state so it always wins over
 	 * `.site-header[data-hidden]` regardless of script timing.

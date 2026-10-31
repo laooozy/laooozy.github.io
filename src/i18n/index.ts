@@ -112,7 +112,7 @@ export const ui = {
       language: "語言",
       menu: "選單",
     },
-    footer: { rights: "版權所有" },
+    footer: { rights: "版權所有", updated: "更新於" },
   },
   "zh-hans": {
     nav: {
@@ -173,7 +173,7 @@ export const ui = {
       language: "语言",
       menu: "菜单",
     },
-    footer: { rights: "版权所有" },
+    footer: { rights: "版权所有", updated: "更新于" },
   },
   en: {
     nav: {
@@ -234,7 +234,7 @@ export const ui = {
       language: "Language",
       menu: "Menu",
     },
-    footer: { rights: "All rights reserved" },
+    footer: { rights: "All rights reserved", updated: "Updated" },
   },
 } as const;
 

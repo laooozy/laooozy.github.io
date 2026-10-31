@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import { clientDeps } from "@/client/bootstrap";
 import { useT, type Translate } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
+import { siteUpdated } from "@/lib/io/site-updated";
 
 /** The build-time locale every SSR render is emitted in. Stable, no deps. */
 const defaultTranslate: Translate = (key, vars) =>
@@ -40,6 +41,10 @@ export default function SiteFooter() {
       <div className="site-footer__inner container">
         <p className="site-footer__copy">
           © {year} {tr("home.title")} · {tr("footer.rights")}
+        </p>
+        <p className="site-footer__updated">
+          <span>{tr("footer.updated")}</span>{" "}
+          <time dateTime={siteUpdated.iso}>{siteUpdated.display}</time>
         </p>
       </div>
     </footer>
