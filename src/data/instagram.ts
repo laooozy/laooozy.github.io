@@ -3,7 +3,8 @@
  *
  * Each entry is a public post permalink (a `/p/<shortcode>/` or `/reel/<…>/`
  * URL). At BUILD time each URL is resolved through Meta's Instagram oEmbed
- * endpoint and the returned blockquote is rendered into the ACG page, so the
+ * endpoint and the returned blockquote is rendered into the photography page,
+ * so the
  * photo wall is real HTML with no client-side fetch and no API secret.
  *
  * ── How to add / change photos ─────────────────────────────────────────────

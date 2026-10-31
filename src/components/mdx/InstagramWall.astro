@@ -1,11 +1,12 @@
 ---
 /**
- * InstagramWall — the ACG photo wall shell.
+ * InstagramWall — the photography photo wall shell.
  *
  * This component OWNS the build-time network I/O: it resolves the permalinks in
  * `src/data/instagram.ts` through Meta's oEmbed endpoint with
  * `await getInstagramEmbeds(...)` and renders the already-resolved result. The
- * route (`src/pages/acg.astro`) stays a thin MDX renderer and never fetches.
+ * route (`src/pages/photographer.astro`) stays a thin MDX renderer and never
+ * fetches.
  *
  * Two layers, deliberately separated:
  *
@@ -124,7 +125,7 @@ function postPath(url: string): string {
         until the gate reveals them. `data-ig-embeds` is the hook the gate uses.
       */}
       <div class="ig-embeds" data-ig-embeds hidden>
-        <Grid min="19rem" gap={6} className="acg-wall">
+        <Grid min="19rem" gap={6} className="photo-wall">
           {embeds.map((embed) =>
             embed.html ? (
               <figure
@@ -155,10 +156,10 @@ function postPath(url: string): string {
       </div>
     </div>
   ) : (
-    <a class="acg-empty" href={igHref} target="_blank" rel="noopener">
-      <span class="acg-empty__label">在 Instagram 看更多</span>
-      <span class="acg-empty__handle">{igHandle}</span>
-      <span class="acg-empty__arrow" aria-hidden="true">
+    <a class="photo-empty" href={igHref} target="_blank" rel="noopener">
+      <span class="photo-empty__label">在 Instagram 看更多</span>
+      <span class="photo-empty__handle">{igHandle}</span>
+      <span class="photo-empty__arrow" aria-hidden="true">
         ↗
       </span>
     </a>

@@ -11,7 +11,7 @@
  *
  * `omitscript=true` returns the official blockquote WITHOUT a <script> tag, so
  * the page controls when/how the Instagram library loads (once per page — see
- * `pages/acg.astro`). A private / deleted / embed-disabled post returns HTTP 400
+ * `pages/photographer.astro`). A private / deleted / embed-disabled post returns HTTP 400
  * with `code 24`; that URL degrades to an empty `html` + `failed: true` so an
  * offline build or a bad permalink renders a plain link-out instead of a hole.
  *

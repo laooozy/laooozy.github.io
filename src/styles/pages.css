@@ -10,7 +10,7 @@
  * loads on every route. It is kept as its own file (rather than appended to
  * `global.css`) so page-island styling stays a self-contained unit.
  *
- * Sections: Section primitive → Home page → ACG page → Instagram wall → 404.
+ * Sections: Section primitive → Home page → Photography page → Instagram wall → 404.
  */
 
 /* ---------------------------------------------------------------- *
@@ -56,11 +56,6 @@
   margin-top: var(--space-4);
 }
 
-.acg-card__cta {
-  font-weight: 600;
-  color: var(--accent-text);
-}
-
 .section__more {
   font-size: var(--text-sm);
   font-weight: 500;
@@ -91,19 +86,19 @@
 }
 
 /* ---------------------------------------------------------------- *
- * ACG page
+ * Photography page
  * ---------------------------------------------------------------- */
-.acg {
+.photography {
   display: grid;
   gap: clamp(var(--space-9), 9vw, var(--space-12));
 }
 
 /* Back rail — a full-size pill target, not a bare text link. */
-.acg-rail {
+.photo-rail {
   margin-top: calc(-1 * var(--space-2));
 }
 
-.acg-back {
+.photo-back {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -121,23 +116,23 @@
     color var(--dur-fast) var(--ease-out);
 }
 
-.acg-back:hover {
+.photo-back:hover {
   background: var(--accent-surface);
   border-color: var(--control-border-strong);
   color: var(--text);
 }
 
-.acg-back__arrow {
+.photo-back__arrow {
   color: var(--accent);
   transition: transform var(--dur-base) var(--ease-out);
 }
 
-.acg-back:hover .acg-back__arrow {
+.photo-back:hover .photo-back__arrow {
   transform: translateX(-3px);
 }
 
 /* Masthead */
-.acg-masthead {
+.photo-masthead {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -147,58 +142,29 @@
 }
 
 /* The masthead's local aurora glow is gone — the single fixed ambient layer
-   (`body::before`) now paints it, so the ACG page reads as the same one
+   (`body::before`) now paints it, so the Photography page reads as the same one
    background, not a doubled glow. The children stay above that wash. */
-.acg-masthead > * {
+.photo-masthead > * {
   position: relative;
   z-index: 1;
 }
 
-.acg-masthead__status {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  margin: 0;
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-}
-
-.acg-masthead__dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: var(--radius-pill);
-  background: var(--accent);
-  box-shadow: 0 0 12px -2px var(--accent);
-}
-
-.acg-masthead__handle {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  letter-spacing: var(--tracking-wide);
-  color: var(--text);
-}
-
-.acg-masthead__sep {
-  color: var(--glass-border-strong);
-}
-
-.acg-masthead__title {
+.photo-masthead__title {
   margin: 0;
   max-width: 20ch;
 }
 
-.acg-masthead__intro {
+.photo-masthead__intro {
   max-width: var(--measure);
 }
 
 /* Photo wall */
-.acg-wall {
+.photo-wall {
   align-items: start;
 }
 
 /* Empty / no-posts state: one honest link-out panel. */
-.acg-empty {
+.photo-empty {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -216,28 +182,28 @@
     background-color var(--dur-base) var(--ease-out);
 }
 
-.acg-empty:hover {
+.photo-empty:hover {
   border-color: var(--glass-border-strong);
   background-color: var(--surface-hover);
 }
 
-.acg-empty__label {
+.photo-empty__label {
   font-weight: 600;
 }
 
-.acg-empty__handle {
+.photo-empty__handle {
   font-family: var(--font-mono);
   font-size: var(--text-sm);
   color: var(--text-muted);
 }
 
-.acg-empty__arrow {
+.photo-empty__arrow {
   margin-inline-start: auto;
   color: var(--accent);
 }
 
 /* Shared CTA pill */
-.acg-cta {
+.photo-cta {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -254,55 +220,55 @@
     box-shadow var(--dur-base) var(--ease-out);
 }
 
-.acg-cta:hover,
-.acg-cta:focus-visible {
+.photo-cta:hover,
+.photo-cta:focus-visible {
   color: var(--text-on-accent);
   transform: translateY(-2px);
   box-shadow: var(--shadow-lift);
 }
 
-.acg-cta__arrow {
+.photo-cta__arrow {
   transition: transform var(--dur-base) var(--ease-out);
 }
 
-.acg-cta:hover .acg-cta__arrow {
+.photo-cta:hover .photo-cta__arrow {
   transform: translateX(3px);
 }
 
 /* Approach — ruled spec columns (no card chrome). */
-.acg-approach {
+.photo-approach {
   align-items: start;
 }
 
-.acg-approach__item {
+.photo-approach__item {
   padding-top: var(--space-4);
   border-top: 1px solid
     color-mix(in oklab, var(--glass-border) 45%, transparent);
 }
 
-.acg-approach__title {
+.photo-approach__title {
   margin: 0 0 var(--space-2);
   font-size: var(--text-lg);
 }
 
 /* Commission panel */
-.acg-commission {
+.photo-commission {
   max-width: var(--container-narrow);
 }
 
-.acg-commission__list {
+.photo-commission__list {
   display: grid;
   gap: var(--space-3);
   list-style: none;
 }
 
-.acg-commission__item {
+.photo-commission__item {
   position: relative;
   padding-inline-start: var(--space-5);
   color: var(--text);
 }
 
-.acg-commission__item::before {
+.photo-commission__item::before {
   content: "";
   position: absolute;
   inset-inline-start: 0;
@@ -315,24 +281,20 @@
 
 /* Motion — one orchestrated masthead entrance, opt-in only. */
 @media (prefers-reduced-motion: no-preference) {
-  .acg-masthead > * {
-    animation: acg-rise var(--dur-slow) var(--ease-out) both;
+  .photo-masthead > * {
+    animation: photo-rise var(--dur-slow) var(--ease-out) both;
   }
 
-  .acg-masthead > *:nth-child(2) {
+  .photo-masthead > *:nth-child(2) {
     animation-delay: 60ms;
   }
 
-  .acg-masthead > *:nth-child(3) {
+  .photo-masthead > *:nth-child(3) {
     animation-delay: 120ms;
-  }
-
-  .acg-masthead__dot {
-    animation: acg-pulse 2.4s var(--ease-out) infinite;
   }
 }
 
-@keyframes acg-rise {
+@keyframes photo-rise {
   from {
     opacity: 0;
     transform: translateY(10px);
@@ -343,41 +305,31 @@
   }
 }
 
-@keyframes acg-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 var(--accent-surface);
-  }
-  50% {
-    box-shadow: 0 0 0 6px transparent;
-  }
-}
-
 /*
- * Entrance reveal for the ACG page's major blocks. Same contract as the home
+ * Entrance reveal for the Photography page's major blocks. Same contract as the home
  * reveal in global.css — base visible, animated only under
  * `prefers-reduced-motion: no-preference`, scoped to the `.reveal` blocks
- * (applied in `acg.mdx`) rather than every section. The shared
+ * (applied in `photographer.mdx`) rather than every section. The shared
  * `reveal-rise` keyframe is defined in global.css and reuses the existing
- * `acg-rise` motion shape, so no second motion language is introduced.
+ * `photo-rise` motion shape, so no second motion language is introduced.
  */
 @media (prefers-reduced-motion: no-preference) {
-  .acg .reveal {
+  .photography .reveal {
     animation: reveal-rise var(--dur-slow) var(--ease-out) both;
   }
 
-  .acg .reveal:nth-of-type(2) {
+  .photography .reveal:nth-of-type(2) {
     animation-delay: 60ms;
   }
 
-  .acg .reveal:nth-of-type(3) {
+  .photography .reveal:nth-of-type(3) {
     animation-delay: 120ms;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .acg-cta:hover,
-  .acg-cta:focus-visible {
+  .photo-cta:hover,
+  .photo-cta:focus-visible {
     transform: none;
   }
 }
@@ -388,7 +340,7 @@
 /*
  * At rest the wall is a compact dark link-card grid, not Instagram's light
  * oEmbed card. Each card names the handle and the post path and offers the
- * localized "view on Instagram" action, so the ACG page is useful before any
+ * localized "view on Instagram" action, so the Photography page is useful before any
  * third-party asset is allowed to load. The build-time blockquotes stay in the
  * DOM inside `.ig-embeds[hidden]` for the consent gate to reveal.
  */
@@ -828,7 +780,7 @@
   }
 
   .contact__link,
-  .acg-back,
+  .photo-back,
   .not-found__link {
     display: inline-flex;
     align-items: center;

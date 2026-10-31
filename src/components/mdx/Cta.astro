@@ -6,10 +6,10 @@
  *  - href: string
  *  - label?: string      one-line visible text (preferred); omit it and pass
  *                        Markdown children instead
- *  - variant?: "link" | "acg"   default: "link"
- *      link → `.link-arrow` (quiet pill, used in the ACG About card)
- *      acg  → `.acg-cta` (accent pill, used on the ACG page)
- *  - external?: boolean  adds target="_blank" rel="noopener" (ACG links)
+ *  - variant?: "link" | "photo"   default: "link"
+ *      link  → `.link-arrow` (quiet pill, used in the About card)
+ *      photo → `.photo-cta` (accent pill, used on the Photography page)
+ *  - external?: boolean  adds target="_blank" rel="noopener" (photography links)
  *  - className?: string
  *
  * The arrow glyph and its wrapper class match the current markup exactly, so
@@ -20,7 +20,7 @@
 interface Props {
   href: string;
   label?: string;
-  variant?: "link" | "acg";
+  variant?: "link" | "photo";
   external?: boolean;
   className?: string;
 }
@@ -33,19 +33,19 @@ const {
   className,
 } = Astro.props;
 
-const isAcg = variant === "acg";
+const isPhoto = variant === "photo";
 const target = external ? "_blank" : undefined;
 const rel = external ? "noopener" : undefined;
 ---
 
 <a
-  class:list={[isAcg ? "acg-cta" : "link-arrow", className]}
+  class:list={[isPhoto ? "photo-cta" : "link-arrow", className]}
   href={href}
   target={target}
   rel={rel}
 >
   {
-    isAcg ? (
+    isPhoto ? (
       label ? (
         <span>{label}</span>
       ) : (
@@ -58,7 +58,7 @@ const rel = external ? "noopener" : undefined;
     )
   }
   <span
-    class={isAcg ? "acg-cta__arrow" : "link-arrow__arrow"}
+    class={isPhoto ? "photo-cta__arrow" : "link-arrow__arrow"}
     aria-hidden="true">→</span
   >
 </a>
@@ -66,7 +66,7 @@ const rel = external ? "noopener" : undefined;
 <style is:global>
   /* Markdown children are parsed as a paragraph; the pill is an inline row. */
   .link-arrow p,
-  .acg-cta p {
+  .photo-cta p {
     display: inline;
     margin: 0;
   }

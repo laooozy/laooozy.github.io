@@ -26,7 +26,7 @@ const links = defineCollection({
 });
 
 /**
- * Page bodies authored in MDX. Each entry is a whole page (`home`, `acg`) whose
+ * Page bodies authored in MDX. Each entry is a whole page (`home`, `photographer`) whose
  * prose and layout components live in `src/content/pages/*.mdx`; the route
  * files stay in `src/pages/` and decide when an entry is rendered.
  */

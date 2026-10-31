@@ -1,9 +1,9 @@
 ---
-title: ACG 攝影
+title: 攝影
 description: 一個突然喜歡拍照的純興趣驅動的新手。
 ---
 
-import AcgMasthead from "../../components/mdx/AcgMasthead.astro";
+import PhotographyMasthead from "../../components/mdx/PhotographyMasthead.astro";
 import Section from "../../components/mdx/Section.astro";
 import Stack from "../../components/mdx/Stack.astro";
 import Cluster from "../../components/mdx/Cluster.astro";
@@ -11,15 +11,10 @@ import Cta from "../../components/mdx/Cta.astro";
 import InstagramWall from "../../components/mdx/InstagramWall.astro";
 import { contactIdentity } from "../../i18n";
 
-<AcgMasthead
-  handle={`@${contactIdentity.acgIg}`}
-  title="攝影師（？）"
-  label="ACG"
-  intro="因興趣驅動的業餘攝影新手"
->
+<PhotographyMasthead title="攝影師（？）" intro="因興趣驅動的業餘攝影新手">
   2026 年我第一次參加
   ACGHK。用手機拍的照片怎麼看都不滿意，於是我買了第一台相機。
-</AcgMasthead>
+</PhotographyMasthead>
 
 <Section
   id="work"
@@ -32,7 +27,7 @@ import { contactIdentity } from "../../i18n";
 
     <Cluster gap={4}>
       <Cta
-        variant="acg"
+        variant="photo"
         external
         href={`https://instagram.com/${contactIdentity.acgIg}`}
         label="在 Instagram 看更多"
@@ -46,9 +41,9 @@ import { contactIdentity } from "../../i18n";
 Placeholder awaiting the owner's copy. The section stays hidden while its
 body is empty; add real Markdown children below and it appears on rebuild.
 
-  <Grid min="16rem" gap={6} className="acg-approach">
-    <div class="acg-approach__item">
-      <h3 class="acg-approach__title">傾向保留原始構圖</h3>
+  <Grid min="16rem" gap={6} className="photo-approach">
+    <div class="photo-approach__item">
+      <h3 class="photo-approach__title">傾向保留原始構圖</h3>
       <p class="text text--muted">
         「我的拍攝方式」這段內容還沒決定，之後會補上。
       </p>
@@ -66,17 +61,17 @@ body is empty; add real Markdown children below and it appears on rebuild.
 Placeholder awaiting the owner's copy. The section stays hidden while its
 body is empty; add real Markdown children below and it appears on rebuild.
 
-  <div class="card acg-commission">
+  <div class="card photo-commission">
     <Stack gap={5}>
       <p class="text text--muted">內容待補</p>
-      <ul class="acg-commission__list">
-        <li class="acg-commission__item">
+      <ul class="photo-commission__list">
+        <li class="photo-commission__item">
           「委託與合作」這段內容還沒決定，之後會補上。
         </li>
       </ul>
       <Cluster gap={4}>
         <Cta
-          variant="acg"
+          variant="photo"
           external
           href={`https://instagram.com/${contactIdentity.acgIg}`}
           label="在 Instagram 看更多"

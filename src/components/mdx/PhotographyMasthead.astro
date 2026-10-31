@@ -1,0 +1,45 @@
+---
+/**
+ * PhotographyMasthead — the photography page intro.
+ *
+ * The hero-scale `<h1>` followed by the intro stack. The lead line stays a
+ * prop because it carries the `text-xl` / `text-muted` / `text-measure`
+ * classes; the rest of the intro is authored Markdown through the default slot.
+ *
+ * Props
+ *  - title: string      the hero heading (rendered as <h1>)
+ *  - intro?: string     the larger muted lead paragraph
+ *  - className?: string
+ */
+import Stack from "./Stack.astro";
+
+interface Props {
+  title: string;
+  intro?: string;
+  className?: string;
+}
+
+const { title, intro, className } = Astro.props;
+---
+
+<header class:list={["photo-masthead", className]}>
+  <h1 class="heading heading--hero photo-masthead__title">{title}</h1>
+
+  <Stack gap={4} className="photo-masthead__intro">
+    {
+      intro && (
+        <p class="text text--xl text--muted text--measure">{intro}</p>
+      )
+    }
+    <slot />
+  </Stack>
+</header>
+
+<style is:global>
+  /* Parity with the React masthead's `<Text measure>` body: no extra margins. */
+  .photo-masthead__intro > p,
+  .photo-masthead__intro > ul,
+  .photo-masthead__intro > ol {
+    margin: 0;
+  }
+</style>

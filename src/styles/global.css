@@ -1047,9 +1047,9 @@ a.now-ticker__item:focus-visible {
  * users and is deliberately avoided.
  *
  * Scope: the `.reveal` class is applied only to the home page's major blocks
- * (see `src/content/pages/home.mdx`) — never to every `.section` on the site. The ACG page's
+ * (see `src/content/pages/home.mdx`) — never to every `.section` on the site. The Photography page's
  * counterpart lives in `pages.css`. Reuses the existing timing tokens and the
- * existing `hero-rise`/`acg-rise` motion shape, so there is no second motion
+ * existing `hero-rise`/`photo-rise` motion shape, so there is no second motion
  * language. `both` holds the start frame through each block's delay and the end
  * frame once the animation settles.
  */
@@ -1704,7 +1704,7 @@ a.now-ticker__item:focus-visible {
   .hero__main > *,
   .hero__meta,
   .home .reveal,
-  .acg-masthead > *,
+  .photo-masthead > *,
   .now-ticker__track,
   .now-ticker__group {
     animation: none !important;
