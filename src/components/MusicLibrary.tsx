@@ -20,11 +20,12 @@
  * must never leak into the search index.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";
+import { useLocale } from "@/hooks/useLocale";
 import { useT, type Translate } from "@/hooks/useT";
-import { defaultLang, t as translate } from "@/i18n";
+import { defaultLang, langAttr, t as translate } from "@/i18n";
 import {
   collectArtists,
   collectOrgs,
@@ -65,6 +66,12 @@ const MUSIC_CSS = `
 	min-inline-size: 0;
 }
 
+.music-field__label {
+	font-size: var(--text-xs);
+	color: var(--text-muted);
+	font-weight: 500;
+}
+
 .music-input,
 .music-select {
 	min-block-size: 44px;
@@ -92,6 +99,11 @@ const MUSIC_CSS = `
 	min-block-size: 1.5em;
 	color: var(--text-muted);
 	font-size: var(--text-sm);
+}
+
+/* Programmatic, non-interactive focus target: never draw a focus ring. */
+.music-status:focus {
+	outline: none;
 }
 
 .music-error-actions {
@@ -204,6 +216,31 @@ const MUSIC_CSS = `
 	outline-offset: 2px;
 }
 
+@keyframes song-scroll-fade {
+	0% {
+		opacity: 0;
+	}
+	16% {
+		opacity: 1;
+	}
+	84% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	@supports (animation-timeline: view()) {
+		.song-row {
+			animation: song-scroll-fade linear both;
+			animation-timeline: view();
+			animation-range: cover 0% cover 100%;
+		}
+	}
+}
+
 .song-row__logo {
 	inline-size: 40px;
 	block-size: 40px;
@@ -272,6 +309,7 @@ const MUSIC_CSS = `
 @media (prefers-reduced-motion: reduce) {
 	.song-row {
 		transition: none;
+		animation: none;
 	}
 
 	.song-skeleton {
@@ -284,6 +322,11 @@ const MUSIC_CSS = `
 		grid-template-columns: minmax(0, 1fr);
 	}
 
+	.music-input,
+	.music-select {
+		font-size: 16px;
+	}
+
 	.song-row__title,
 	.song-row__artist {
 		overflow: visible;
@@ -294,6 +337,8 @@ const MUSIC_CSS = `
 
 export default function MusicLibrary() {
   const t = useT(clientDeps);
+  const { locale } = useLocale(clientDeps);
+  const statusRef = useRef<HTMLParagraphElement>(null);
   // `false` on the server AND on the first client render, so the SSR HTML and
   // the hydration render are byte-identical.
   const [mounted, setMounted] = useState(false);
@@ -332,6 +377,7 @@ export default function MusicLibrary() {
   }, [attempt]);
 
   const tr = mounted ? t : defaultTranslate;
+  const lang = mounted ? langAttr[locale] : langAttr[defaultLang];
 
   const songs = payload?.songs ?? EMPTY_SONGS;
   const artists = collectArtists([...songs]);
@@ -354,12 +400,12 @@ export default function MusicLibrary() {
       : "";
 
   return (
-    <section className="music-library" data-pagefind-ignore>
+    <section className="music-library" data-pagefind-ignore lang={lang}>
       <style dangerouslySetInnerHTML={{ __html: MUSIC_CSS }} />
 
       <div className="music-toolbar">
         <div className="music-field">
-          <label className="music-sr" htmlFor="music-search">
+          <label className="music-field__label" htmlFor="music-search">
             {tr("music.searchLabel")}
           </label>
           <input
@@ -373,7 +419,7 @@ export default function MusicLibrary() {
           />
         </div>
         <div className="music-field">
-          <label className="music-sr" htmlFor="music-artist">
+          <label className="music-field__label" htmlFor="music-artist">
             {tr("music.artistLabel")}
           </label>
           <select
@@ -391,7 +437,7 @@ export default function MusicLibrary() {
           </select>
         </div>
         <div className="music-field">
-          <label className="music-sr" htmlFor="music-org">
+          <label className="music-field__label" htmlFor="music-org">
             {tr("music.organisationLabel")}
           </label>
           <select
@@ -410,16 +456,42 @@ export default function MusicLibrary() {
         </div>
       </div>
 
-      <p className="music-status" role="status" aria-live="polite">
-        {statusText}
+      <p
+        className="music-status"
+        role="status"
+        aria-live="polite"
+        ref={statusRef}
+        tabIndex={-1}
+      >
+        {status === "idle" || status === "loading" ? (
+          <span className="music-sr">{tr("music.loading")}</span>
+        ) : (
+          statusText
+        )}
       </p>
+
+      {isReady && songs.length === 0 && (
+        <p>
+          <a
+            className="music-playlist"
+            href={playlist.url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {tr("music.playlistLink")}
+          </a>
+        </p>
+      )}
 
       {status === "error" && (
         <div className="music-error-actions">
           <button
             type="button"
             className="music-retry"
-            onClick={() => setAttempt((value) => value + 1)}
+            onClick={() => {
+              setAttempt((value) => value + 1);
+              statusRef.current?.focus();
+            }}
           >
             {tr("music.retry")}
           </button>
@@ -463,14 +535,11 @@ export default function MusicLibrary() {
           ))}
         </ul>
       ) : status === "error" ? null : (
-        <>
-          <p className="music-sr">{tr("music.loading")}</p>
-          <ul className="song-list" aria-hidden="true">
-            {SKELETON_ROWS.map((row) => (
-              <li key={row} className="song-skeleton" />
-            ))}
-          </ul>
-        </>
+        <ul className="song-list" aria-hidden="true">
+          {SKELETON_ROWS.map((row) => (
+            <li key={row} className="song-skeleton" />
+          ))}
+        </ul>
       )}
     </section>
   );

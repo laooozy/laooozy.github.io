@@ -484,6 +484,12 @@ html:not([data-locale]) [data-l="zh-hant"] {
     justify-self: center;
     inline-size: calc(50% - var(--grid-gap) / 2);
   }
+
+  .grid--cards[data-count="5"] > :last-child {
+    grid-column: 1 / -1;
+    justify-self: center;
+    inline-size: calc(50% - var(--grid-gap) / 2);
+  }
 }
 
 @media (max-width: 39.99rem) {
