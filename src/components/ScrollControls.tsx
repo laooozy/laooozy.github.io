@@ -63,12 +63,11 @@ const SCROLL_CONTROLS_CSS = `
 	z-index: calc(var(--z-sticky) - 1);
 }
 
-/* Jump to bottom: bottom-centre, as the owner asked. */
+/* Jump to bottom: bottom-right, aligned with the top button. */
 .scroll-controls__button--bottom {
 	position: fixed;
 	bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
-	inset-inline: 0;
-	margin-inline: auto;
+	inset-inline-end: calc(var(--space-4) + env(safe-area-inset-right, 0px));
 	z-index: calc(var(--z-sticky) - 1);
 }
 
@@ -91,6 +90,11 @@ const SCROLL_CONTROLS_CSS = `
 
 @media (min-width: 39rem) {
 	.scroll-controls__button--top {
+		inset-inline-end: calc(var(--space-5) + env(safe-area-inset-right, 0px));
+	}
+
+	.scroll-controls__button--bottom {
+		bottom: calc(var(--space-5) + env(safe-area-inset-bottom, 0px));
 		inset-inline-end: calc(var(--space-5) + env(safe-area-inset-right, 0px));
 	}
 }
