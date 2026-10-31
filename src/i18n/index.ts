@@ -57,13 +57,12 @@ export const ui = {
     nav: {
       about: "關於",
       blog: "文章",
-      acg: "ACG",
+      photography: "攝影",
       contact: "聯絡",
       usefulLink: "連結",
     },
     home: {
       title: "laooozy",
-      tagline: "一個關於我自己的網站。",
       nowLabel: "最近",
     },
     now: {
@@ -118,13 +117,12 @@ export const ui = {
     nav: {
       about: "关于",
       blog: "文章",
-      acg: "ACG",
+      photography: "摄影",
       contact: "联系",
       usefulLink: "实用链接",
     },
     home: {
       title: "laooozy",
-      tagline: "摄影、游戏，以及我写下的一些东西。",
       nowLabel: "最近",
     },
     now: {
@@ -179,13 +177,12 @@ export const ui = {
     nav: {
       about: "About",
       blog: "Blog",
-      acg: "ACG",
+      photography: "Photography",
       contact: "Contact",
       usefulLink: "Useful Links",
     },
     home: {
       title: "laooozy",
-      tagline: "Photography, games, and a few things I write down.",
       nowLabel: "Now",
     },
     now: {

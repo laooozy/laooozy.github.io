@@ -437,6 +437,11 @@ html:not([data-locale]) [data-l="zh-hant"] {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+/* Five cards on a two-column grid while the desktop recipe below cannot fit. */
+.grid--cards[data-count="5"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 @media (min-width: 75rem) {
   .grid--cards[data-count="2"] {
     grid-template-columns: repeat(2, minmax(0, 26rem));
@@ -448,6 +453,26 @@ html:not([data-locale]) [data-l="zh-hant"] {
 
   .grid--cards[data-count="4"] {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  /*
+   * Five cards read 3+2 centred: a six-track row of three spans plus the
+   * fourth and fifth offset inward, so the short row has no edge orphan.
+   */
+  .grid--cards[data-count="5"] {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .grid--cards[data-count="5"] > * {
+    grid-column: span 2;
+  }
+
+  .grid--cards[data-count="5"] > :nth-child(4) {
+    grid-column: 2 / span 2;
+  }
+
+  .grid--cards[data-count="5"] > :nth-child(5) {
+    grid-column: 4 / span 2;
   }
 }
 
@@ -892,15 +917,6 @@ a.now-ticker__item:focus-visible {
 
 .hero__period {
   color: var(--accent);
-}
-
-.hero__tagline {
-  max-width: 34ch;
-  margin: 0;
-  font-size: clamp(var(--text-lg), 2.2vw, var(--text-2xl));
-  line-height: var(--leading-snug);
-  color: var(--text-muted);
-  text-wrap: balance;
 }
 
 /* Reusable pill link with a trailing arrow. Promoted from the old hero

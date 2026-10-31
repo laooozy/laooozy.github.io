@@ -8,9 +8,9 @@
  *
  * Responsive header
  * -----------------
- * Below 622px the five-item desktop nav is replaced by a `<details>`
+ * Below 622px the four-item desktop nav is replaced by a `<details>`
  * disclosure: one compact row (brand + language trigger + menu button) with
- * the same five links in a panel below it. `<details>` is native,
+ * the same four links in a panel below it. `<details>` is native,
  * so the links stay reachable without JavaScript; React only adds the
  * `aria-expanded` mirror, Escape/outside close, the route-change close and the
  * focus return to the summary.
@@ -46,12 +46,12 @@ import { defaultLang, t as translate } from "@/i18n";
 
 // Nav always targets the HOME page's sections, so from `/blog/` or any sub-page
 // an anchor still resolves to the home hero sections. Blog is the listing index
-// at `/blog/`, ACG is its own page at `/acg/`, and Useful Links is `/links/`.
+// at `/blog/`, and Useful Links is `/links/`. Photography still exists at
+// `/photographer/` but is not a top-bar item; it is reached from the home grid.
 // Single-URL model: home is always `/` (locale is client-side).
 const NAV_ITEMS = [
   { href: "/#about", key: "nav.about" },
   { href: "/blog/", key: "nav.blog" },
-  { href: "/acg/", key: "nav.acg" },
   { href: "/#contact", key: "nav.contact" },
   { href: "/links/", key: "nav.usefulLink" },
 ] as const;
@@ -71,15 +71,13 @@ function normalisePath(path: string): string {
 /**
  * Which nav entry is the current page, if any. The home anchors (About,
  * Contact) never mark themselves current; Blog covers the listing and every
- * `/blog/*` tag/archive/post path; ACG and Useful Links are exact pages.
+ * `/blog/*` tag/archive/post path; Useful Links is an exact page.
  */
 function isCurrent(item: NavItem, currentPath: string): boolean {
   const path = normalisePath(currentPath);
   switch (item.key) {
     case "nav.blog":
       return path === "/blog" || path.startsWith("/blog/");
-    case "nav.acg":
-      return path === "/acg";
     case "nav.usefulLink":
       return path === "/links";
     default:

@@ -7,7 +7,8 @@
  *
  * Props
  *  - title: string                     the wordmark (rendered as <h1>)
- *  - tagline: string                   one-line description
+ *  - tagline?: string                  one-line description; the tagline
+ *                                      paragraph is omitted when absent
  *  - meta?: { label; value; href? }[]  right-column spec rows (Base / Now / …);
  *                                      a row with `href` renders its value as a link
  *  - className?: string
@@ -29,7 +30,7 @@ interface HeroMeta {
 
 interface Props {
   title: string;
-  tagline: string;
+  tagline?: string;
   meta?: HeroMeta[];
   className?: string;
 }
@@ -45,7 +46,7 @@ const { title, tagline, meta = [], className } = Astro.props;
       {title}<span class="hero__period" aria-hidden="true">.</span>
     </h1>
 
-    <p class="hero__tagline">{tagline}</p>
+    {tagline && <p class="hero__tagline">{tagline}</p>}
 
     <slot />
   </div>

@@ -23,8 +23,8 @@ export interface BlogEmptyViewProps {
   message: string;
   /** Home action label. */
   homeLabel: string;
-  /** ACG action label. */
-  acgLabel: string;
+  /** Photography action label. */
+  secondaryLabel: string;
   className?: string;
 }
 
@@ -32,7 +32,7 @@ export default function BlogEmptyView({
   heading,
   message,
   homeLabel,
-  acgLabel,
+  secondaryLabel,
   className,
 }: BlogEmptyViewProps) {
   return (
@@ -51,8 +51,8 @@ export default function BlogEmptyView({
               →
             </span>
           </a>
-          <a className="link-arrow blog-empty__action" href="/acg/">
-            {acgLabel}
+          <a className="link-arrow blog-empty__action" href="/photographer/">
+            {secondaryLabel}
             <span className="link-arrow__arrow" aria-hidden="true">
               →
             </span>

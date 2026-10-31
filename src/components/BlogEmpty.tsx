@@ -34,7 +34,7 @@ export default function BlogEmpty() {
       heading={tr("nav.blog")}
       message={tr("blog.empty")}
       homeLabel={tr("notFound.backHome")}
-      acgLabel={tr("nav.acg")}
+      secondaryLabel={tr("nav.photography")}
     />
   );
 }

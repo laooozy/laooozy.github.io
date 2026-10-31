@@ -32,7 +32,7 @@ const t = useTranslations(locale);
 
 const site = Astro.site ?? new URL("https://laooozy.github.io");
 const pageTitle = title ? `${title} · ${t.home.title}` : t.home.title;
-const metaDescription = description ?? t.home.tagline;
+const metaDescription = description;
 const canonical = new URL(Astro.url.pathname, site).href;
 const ogImage = new URL("/og.png", site).href;
 
@@ -65,7 +65,7 @@ if (!themeColor) {
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
 		<meta name="theme-color" content={themeColor} />
-		<meta name="description" content={metaDescription} />
+		{metaDescription && <meta name="description" content={metaDescription} />}
 		{/*
 		 * While SITE_INDEXABLE is false the whole site is kept out of search
 		 * engines. Flip it to true in src/lib/seo.ts to emit nothing here.
@@ -85,7 +85,9 @@ if (!themeColor) {
 		<meta property="og:type" content={ogType} />
 		<meta property="og:site_name" content={t.home.title} />
 		<meta property="og:title" content={pageTitle} />
-		<meta property="og:description" content={metaDescription} />
+		{metaDescription && (
+			<meta property="og:description" content={metaDescription} />
+		)}
 		<meta property="og:url" content={canonical} />
 		<meta property="og:locale" content={ogLocale[locale]} />
 		<meta property="og:image" content={ogImage} />
@@ -95,7 +97,9 @@ if (!themeColor) {
 		<meta property="og:image:alt" content={t.home.title} />
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:title" content={pageTitle} />
-		<meta name="twitter:description" content={metaDescription} />
+		{metaDescription && (
+			<meta name="twitter:description" content={metaDescription} />
+		)}
 		<meta name="twitter:image" content={ogImage} />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
