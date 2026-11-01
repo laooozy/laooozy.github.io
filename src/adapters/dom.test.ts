@@ -4,25 +4,22 @@
  * `domAdapter` is a module-scope singleton whose methods read the environment
  * lazily, so each scenario installs exactly the globals it needs and the
  * `afterEach` restores them. The contract pinned here: every method is total
- * (never throws) and degrades to a no-op / `null` when the platform lacks the
+ * (never throws) and degrades to a no-op / `false` when the platform lacks the
  * API; `startLoop` is the ONE animation loop (schedules a follow-up frame and
  * cancels on stop); `onVisibilityChange` reports the current state then changes;
- * and `createIntersectionObserver` wraps the native observer behind a small
- * surface.
+ * the global event seams subscribe and unsubscribe cleanly; and the body scroll
+ * lock is reversible without clobbering a pre-existing inline value.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { domAdapter, noopDomAdapter } from "@/adapters/dom";
 
-type StubbedGlobal = "window" | "document" | "IntersectionObserver";
+type StubbedGlobal = "window" | "document" | "navigator";
 
 const originals = new Map<StubbedGlobal, PropertyDescriptor | undefined>([
   ["window", Object.getOwnPropertyDescriptor(globalThis, "window")],
   ["document", Object.getOwnPropertyDescriptor(globalThis, "document")],
-  [
-    "IntersectionObserver",
-    Object.getOwnPropertyDescriptor(globalThis, "IntersectionObserver"),
-  ],
+  ["navigator", Object.getOwnPropertyDescriptor(globalThis, "navigator")],
 ]);
 
 function defineGlobal(key: StubbedGlobal, value: unknown): void {
@@ -64,7 +61,17 @@ describe("noopDomAdapter", () => {
       noopDomAdapter.scrollToBottom();
     }).not.toThrow();
 
-    expect(noopDomAdapter.createIntersectionObserver(() => {})).toBeNull();
+    const stopKeyDown = noopDomAdapter.onKeyDown(() => {});
+    const stopPointerDown = noopDomAdapter.onPointerDown(() => {});
+    expect(typeof stopKeyDown).toBe("function");
+    expect(typeof stopPointerDown).toBe("function");
+    expect(() => {
+      stopKeyDown();
+      stopPointerDown();
+    }).not.toThrow();
+    expect(() => noopDomAdapter.setBodyScrollLocked(true)).not.toThrow();
+    expect(() => noopDomAdapter.setBodyScrollLocked(false)).not.toThrow();
+    expect(noopDomAdapter.isApplePlatform()).toBe(false);
     expect(() => noopDomAdapter.setHeaderHidden(true)).not.toThrow();
     expect(noopDomAdapter.isHeaderFocusWithin()).toBe(false);
     expect(typeof noopDomAdapter.keepHeaderFocusStable()).toBe("function");
@@ -93,7 +100,6 @@ describe("domAdapter without a DOM", () => {
       stopLoop();
       stopVisibility();
     }).not.toThrow();
-    expect(domAdapter.createIntersectionObserver(() => {})).toBeNull();
     expect(domAdapter.scrollY()).toBe(0);
     expect(domAdapter.distanceFromBottom()).toBe(0);
     expect(() => {
@@ -101,6 +107,17 @@ describe("domAdapter without a DOM", () => {
       domAdapter.scrollToBottom();
     }).not.toThrow();
     expect(() => domAdapter.setHidden("[data-ig-embeds]", false)).not.toThrow();
+    const stopKeyDown = domAdapter.onKeyDown(() => {});
+    const stopPointerDown = domAdapter.onPointerDown(() => {});
+    expect(typeof stopKeyDown).toBe("function");
+    expect(typeof stopPointerDown).toBe("function");
+    expect(() => {
+      stopKeyDown();
+      stopPointerDown();
+    }).not.toThrow();
+    expect(() => domAdapter.setBodyScrollLocked(true)).not.toThrow();
+    expect(() => domAdapter.setBodyScrollLocked(false)).not.toThrow();
+    expect(domAdapter.isApplePlatform()).toBe(false);
     await expect(
       domAdapter.loadScript("https://example.com/x.js"),
     ).resolves.toBe(false);
@@ -435,59 +452,147 @@ describe("domAdapter onVisibilityChange", () => {
   });
 });
 
-describe("domAdapter createIntersectionObserver", () => {
-  it("returns null when the platform lacks IntersectionObserver", () => {
-    defineGlobal("IntersectionObserver", undefined);
+describe("domAdapter event seams", () => {
+  it("subscribes to document keydown and unsubscribes", () => {
+    const listeners = new Map<string, (event: KeyboardEvent) => void>();
+    defineGlobal("document", {
+      addEventListener: (type: string, cb: (event: KeyboardEvent) => void) =>
+        listeners.set(type, cb),
+      removeEventListener: (type: string) => listeners.delete(type),
+    });
 
-    expect(domAdapter.createIntersectionObserver(() => {})).toBeNull();
+    const callback = vi.fn();
+    const stop = domAdapter.onKeyDown(callback);
+
+    expect([...listeners.keys()]).toEqual(["keydown"]);
+    const event = { key: "k" } as KeyboardEvent;
+    listeners.get("keydown")!(event);
+    expect(callback).toHaveBeenCalledWith(event);
+
+    stop();
+    expect(listeners.size).toBe(0);
   });
 
-  it("wraps the native observer behind the small surface", () => {
-    const observed: Element[] = [];
-    const unobserved: Element[] = [];
-    let disconnectCount = 0;
-    const captured: Array<(entries: DomEntry[]) => void> = [];
+  it("subscribes to document pointerdown and unsubscribes", () => {
+    const listeners = new Map<string, (event: PointerEvent) => void>();
+    defineGlobal("document", {
+      addEventListener: (type: string, cb: (event: PointerEvent) => void) =>
+        listeners.set(type, cb),
+      removeEventListener: (type: string) => listeners.delete(type),
+    });
 
-    interface DomEntry {
-      target: Element;
-      isIntersecting: boolean;
-    }
+    const callback = vi.fn();
+    const stop = domAdapter.onPointerDown(callback);
 
-    class FakeIntersectionObserver {
-      constructor(cb: (entries: DomEntry[]) => void, _options?: unknown) {
-        captured.push(cb);
-      }
-      observe(target: Element): void {
-        observed.push(target);
-      }
-      unobserve(target: Element): void {
-        unobserved.push(target);
-      }
-      disconnect(): void {
-        disconnectCount += 1;
-      }
-    }
-    defineGlobal("IntersectionObserver", FakeIntersectionObserver);
+    expect([...listeners.keys()]).toEqual(["pointerdown"]);
+    const event = { clientX: 1 } as PointerEvent;
+    listeners.get("pointerdown")!(event);
+    expect(callback).toHaveBeenCalledWith(event);
 
-    const element = {} as Element;
-    const seen: DomEntry[] = [];
-    const observer = domAdapter.createIntersectionObserver(
-      (entries) => seen.push(...entries),
-      { threshold: 0.1 },
-    );
+    stop();
+    expect(listeners.size).toBe(0);
+  });
 
-    expect(observer).not.toBeNull();
-    observer?.observe(element);
-    expect(observed).toEqual([element]);
+  it("is a no-op without a document", () => {
+    expect(() => domAdapter.onKeyDown(() => {})()).not.toThrow();
+    expect(() => domAdapter.onPointerDown(() => {})()).not.toThrow();
+  });
+});
 
-    captured[0]([{ target: element, isIntersecting: true }]);
-    expect(seen).toEqual([{ target: element, isIntersecting: true }]);
+describe("domAdapter setBodyScrollLocked", () => {
+  function installBody(overflow = "") {
+    const body = { style: { overflow } };
+    defineGlobal("document", { body });
+    return body;
+  }
 
-    observer?.unobserve(element);
-    expect(unobserved).toEqual([element]);
+  it("hides overflow and restores the prior inline value", () => {
+    const body = installBody("scroll");
 
-    observer?.disconnect();
-    expect(disconnectCount).toBe(1);
+    domAdapter.setBodyScrollLocked(true);
+    expect(body.style.overflow).toBe("hidden");
+
+    domAdapter.setBodyScrollLocked(false);
+    expect(body.style.overflow).toBe("scroll");
+  });
+
+  it("restores an absent inline override to absent", () => {
+    const body = installBody("");
+
+    domAdapter.setBodyScrollLocked(true);
+    expect(body.style.overflow).toBe("hidden");
+
+    domAdapter.setBodyScrollLocked(false);
+    expect(body.style.overflow).toBe("");
+  });
+
+  it("keeps the first saved value across a repeated lock", () => {
+    const body = installBody("");
+
+    domAdapter.setBodyScrollLocked(true);
+    body.style.overflow = "auto";
+    domAdapter.setBodyScrollLocked(true);
+    expect(body.style.overflow).toBe("hidden");
+
+    domAdapter.setBodyScrollLocked(false);
+    expect(body.style.overflow).toBe("");
+  });
+
+  it("ignores an unlock it did not issue", () => {
+    const body = installBody("visible");
+
+    domAdapter.setBodyScrollLocked(false);
+    expect(body.style.overflow).toBe("visible");
+  });
+
+  it("stays silent without a body", () => {
+    defineGlobal("document", {});
+
+    expect(() => domAdapter.setBodyScrollLocked(true)).not.toThrow();
+    expect(() => domAdapter.setBodyScrollLocked(false)).not.toThrow();
+  });
+});
+
+describe("domAdapter isApplePlatform", () => {
+  it("detects macOS and iOS from the platform string", () => {
+    defineGlobal("navigator", { platform: "MacIntel", userAgent: "" });
+    expect(domAdapter.isApplePlatform()).toBe(true);
+
+    defineGlobal("navigator", { platform: "iPhone", userAgent: "" });
+    expect(domAdapter.isApplePlatform()).toBe(true);
+  });
+
+  it("falls back to the user agent when the platform is absent", () => {
+    defineGlobal("navigator", {
+      platform: "",
+      userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0)",
+    });
+    expect(domAdapter.isApplePlatform()).toBe(true);
+  });
+
+  it("reports false on other platforms and without a navigator", () => {
+    defineGlobal("navigator", {
+      platform: "Win32",
+      userAgent: "Mozilla/5.0 (Windows NT 10.0)",
+    });
+    expect(domAdapter.isApplePlatform()).toBe(false);
+
+    defineGlobal("navigator", {});
+    expect(domAdapter.isApplePlatform()).toBe(false);
+
+    defineGlobal("navigator", undefined);
+    expect(domAdapter.isApplePlatform()).toBe(false);
+  });
+
+  it("returns false when reading the platform throws", () => {
+    defineGlobal("navigator", {
+      get platform(): string {
+        throw new Error("boom");
+      },
+      userAgent: "",
+    });
+
+    expect(domAdapter.isApplePlatform()).toBe(false);
   });
 });
 

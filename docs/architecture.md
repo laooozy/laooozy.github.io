@@ -161,13 +161,13 @@ Every browser, network and storage effect sits behind a port. Each port module
 exports an interface, one real adapter and at least one deterministic double.
 Adapters are bound only in [bootstrap.ts](../src/client/bootstrap.ts).
 
-| Port                                                                      | Real adapter            | Test double                    | What it hides                                                                                                                  |
-| :------------------------------------------------------------------------ | :---------------------- | :----------------------------- | :----------------------------------------------------------------------------------------------------------------------------- |
-| `StoragePort` ([storage.ts](../src/adapters/storage.ts))                  | `localStorageAdapter`   | `memoryStorageAdapter`         | `localStorage`, with an in-memory fallback when storage is blocked                                                             |
-| `LocaleSourcePort` ([locale-source.ts](../src/adapters/locale-source.ts)) | `navigatorLocaleSource` | `fixedLocaleSource`            | `navigator.language`                                                                                                           |
-| `DomPort` ([dom.ts](../src/adapters/dom.ts))                              | `domAdapter`            | `noopDomAdapter`               | Scroll, reduced motion, header visibility, locale application, the shared frame loop, document visibility and script injection |
-| `PagefindPort` ([pagefind.ts](../src/adapters/pagefind.ts))               | `pagefindAdapter`       | `fakePagefind`                 | The lazy Pagefind import and result mapping                                                                                    |
-| `MusicPort` ([music.ts](../src/adapters/music.ts))                        | `musicAdapter`          | `fakeMusic` / `fakeMusicError` | The remote gzip payload, the 10 second abort and typed fetch errors                                                            |
+| Port                                                                      | Real adapter            | Test double                    | What it hides                                                                                                              |
+| :------------------------------------------------------------------------ | :---------------------- | :----------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
+| `StoragePort` ([storage.ts](../src/adapters/storage.ts))                  | `localStorageAdapter`   | `memoryStorageAdapter`         | `localStorage`, with an in-memory fallback when storage is blocked                                                         |
+| `LocaleSourcePort` ([locale-source.ts](../src/adapters/locale-source.ts)) | `navigatorLocaleSource` | `fixedLocaleSource`            | `navigator.language`                                                                                                       |
+| `DomPort` ([dom/](../src/adapters/dom/))                                  | `domAdapter`            | `noopDomAdapter`               | Scroll, motion and the shared frame loop, header focus stability, locale application, script injection, global event seams |
+| `PagefindPort` ([pagefind.ts](../src/adapters/pagefind.ts))               | `pagefindAdapter`       | `fakePagefind`                 | The lazy Pagefind import and result mapping                                                                                |
+| `MusicPort` ([music.ts](../src/adapters/music.ts))                        | `musicAdapter`          | `fakeMusic` / `fakeMusicError` | The remote gzip payload, the 10 second abort and typed fetch errors                                                        |
 
 `ClientDeps` is the bundle every client consumer accepts:
 
@@ -191,10 +191,14 @@ remaining leaks, Task 44 adds a TypeScript AST boundary test, and Task 50 flips
 the rules to errors with `--max-warnings 0`. Until then, treat the warnings as
 real debt, not noise.
 
-`DomPort` also carries one currently unused factory,
-`createIntersectionObserver`, kept as port API for a possible scripted reveal.
-The shipped entrance reveal is pure CSS and draws nothing, so do not build a
-new observer just because the method exists.
+`DomPort` is implemented as cohesive slices under
+[`src/adapters/dom/`](../src/adapters/dom/): `scroll`, `motion`, `focus`,
+`locale`, `scripts` and `events`, assembled by `createDomAdapter`. The
+`events` slice owns the only document-level keydown/pointerdown subscriptions,
+the reversible body scroll lock (`DomPort.setBodyScrollLocked`, which restores
+the prior inline `overflow`) and the lazy `isApplePlatform` probe. Components
+receive the aggregate port through `ClientDeps`; none subscribes to a browser
+global itself. Do not add a second animation loop or a second event system.
 
 ## Hydration policy today
 
@@ -226,12 +230,11 @@ The rest is Astro-rendered at build time:
   ([links.astro](../src/pages/links.astro)). Its heading uses the static
   `[data-l]` toggle, so the page is not an island.
 
-**Migration in progress.** Task 18 replaces `SearchModal` with a global
-`SearchCommand` command palette mounted as a sibling island in `BaseLayout`,
-using the generated `CommandDialog`. Task 38 then moves the search, header and
-language switcher off direct globals onto the split DOM port. Do not describe
-or build `src/components/site/SearchCommand.tsx` as if it exists today; it does
-not.
+**Migration in progress.** Task 18 replaced `SearchModal` with the global
+`SearchCommand` command palette mounted as a sibling island in `BaseLayout`.
+Task 38 moved its `⌘K` listener onto `DomPort.onKeyDown`, so no component
+subscribes to `document`/`window`/`navigator` directly; the header and
+language switcher use the port and hydrated primitives.
 
 ## Content model
 

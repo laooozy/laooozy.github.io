@@ -12,9 +12,9 @@
  * child of it, so the header keeps its own hydration island and the dialog can
  * be deferred independently.
  *
- * The global shortcut listener touches `document` directly for now. Task 38
- * moves it behind `DomPort.onKeyDown`; it is isolated in this effect so the
- * migration is a one-line swap.
+ * The global shortcut goes through the injected `DomPort.onKeyDown` seam, so
+ * this component never touches `document`; the subscription is torn down on
+ * unmount.
  */
 
 import { lazy, Suspense, useEffect, useState } from "react";
@@ -36,9 +36,8 @@ export default function SearchCommand() {
   }, [open]);
 
   // ⌘K (macOS) / Ctrl+K (elsewhere) opens the palette from anywhere.
-  // Task 38 replaces this with the injected DomPort keyboard seam.
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
+    return deps.adapters.dom.onKeyDown((event) => {
       if (
         (event.metaKey || event.ctrlKey) &&
         !event.altKey &&
@@ -48,9 +47,7 @@ export default function SearchCommand() {
         event.preventDefault();
         deps.store.getState().openSearch();
       }
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    });
   }, [deps]);
 
   if (!activated) return null;
