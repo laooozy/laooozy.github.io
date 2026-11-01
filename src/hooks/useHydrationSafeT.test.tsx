@@ -11,76 +11,15 @@
 import { act, render, screen } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it } from "vitest";
-import type { StoreApi } from "zustand/vanilla";
-import { createStore } from "zustand/vanilla";
 
-import { noopDomAdapter } from "@/adapters/dom";
-import { fixedLocaleSource } from "@/adapters/locale-source";
-import { fakeMusic } from "@/adapters/music";
-import { fakePagefind } from "@/adapters/pagefind";
-import { memoryStorageAdapter } from "@/adapters/storage";
 import { ClientDepsProvider } from "@/components/shared/ClientDepsContext";
-import type { ClientDeps } from "@/hooks/deps";
 import type { Locale } from "@/i18n";
-import type { MusicPayload } from "@/lib/domain/music";
-import { appStore } from "@/store/app-store";
-import type { AppStore } from "@/store/types";
+import { createFakeDeps } from "@/test/client-deps";
 
 import {
   type HydrationSafeTranslation,
   useHydrationSafeT,
 } from "./useHydrationSafeT";
-
-const musicPayload: MusicPayload = {
-  version: 1,
-  generatedAt: "2026-10-31T00:00:00.000Z",
-  playlist: {
-    id: "PLtestFixture",
-    title: "Night loop",
-    url: "https://www.youtube.com/playlist?list=PLtestFixture",
-  },
-  organisations: {},
-  songs: [],
-};
-
-function makeStore(locale: Locale): StoreApi<AppStore> {
-  return createStore<AppStore>()((set) => ({
-    ...appStore.getInitialState(),
-    locale,
-    search: {
-      open: false,
-      query: "",
-      status: "idle",
-      results: [],
-      recent: [],
-      epoch: 0,
-    },
-    setLocale: (next) => set({ locale: next }),
-    setHeaderHidden: () => {},
-    setHeaderMenuOpen: () => {},
-    openSearch: () => {},
-    closeSearch: () => {},
-    setSearchQuery: () => {},
-    setSearchStatus: () => {},
-    setSearchResults: () => {},
-    setRecentSearches: () => {},
-    addRecentSearch: () => {},
-    clearRecentSearches: () => {},
-  }));
-}
-
-function makeDeps(locale: Locale): ClientDeps {
-  return {
-    store: makeStore(locale),
-    adapters: {
-      storage: memoryStorageAdapter(),
-      localeSource: fixedLocaleSource("en-US"),
-      dom: noopDomAdapter,
-      pagefind: fakePagefind([]),
-      music: fakeMusic(musicPayload),
-    },
-  };
-}
 
 interface RenderRecord {
   locale: HydrationSafeTranslation["locale"];
@@ -101,15 +40,20 @@ function Probe() {
   );
 }
 
+function renderDeps(locale: Locale) {
+  return createFakeDeps({ locale });
+}
+
 beforeEach(() => {
   records.length = 0;
-  appStore.setState({ locale: "zh-hant" });
 });
 
 describe("useHydrationSafeT", () => {
   it("renders the build locale on the server even when the store holds another", () => {
+    const { deps } = renderDeps("en");
+
     const html = renderToStaticMarkup(
-      <ClientDepsProvider deps={makeDeps("en")}>
+      <ClientDepsProvider deps={deps}>
         <Probe />
       </ClientDepsProvider>,
     );
@@ -121,7 +65,7 @@ describe("useHydrationSafeT", () => {
   });
 
   it("adopts a non-default injected store locale after mount", () => {
-    const deps = makeDeps("en");
+    const { deps } = renderDeps("en");
 
     const { container } = render(
       <ClientDepsProvider deps={deps}>
@@ -153,8 +97,10 @@ describe("useHydrationSafeT", () => {
   });
 
   it("flips isHydrated from false to true exactly once", () => {
+    const { deps } = renderDeps("zh-hant");
+
     render(
-      <ClientDepsProvider deps={makeDeps("zh-hant")}>
+      <ClientDepsProvider deps={deps}>
         <Probe />
       </ClientDepsProvider>,
     );
