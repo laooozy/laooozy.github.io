@@ -2,10 +2,18 @@
  * Global base styles. Consumes tokens from tokens.css; every value here is a
  * token reference, never a magic number.
  *
- * Tailwind v4 is pulled in first, then shadcn/ui's design tokens are mapped
- * onto the brand palette further down. The brand tokens in tokens.css remain
- * the single source of truth for colour, type, space and motion.
+ * This is the ONE CSS entry: brand primitives first, then Tailwind v4, the
+ * animation helpers and shadcn/ui's state variants/utilities. shadcn's design
+ * tokens are mapped onto the brand palette further down.
+ *
+ * Token ownership:
+ * - `tokens.css` owns every brand primitive, including the raw `--radius-*`
+ *   and `--text-*` scale. Its unlayered `:root` beats Tailwind's `@layer theme`
+ *   defaults, so `var(--radius-md)` (and therefore `rounded-md`) resolves to
+ *   the brand value. `@theme` below must NOT redeclare those scales.
+ * - the single semantic `:root` below maps shadcn's names to brand tokens.
  */
+@import "./tokens.css";
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -292,28 +300,29 @@ html:not([data-locale]) [data-l="zh-hant"] {
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /*
+   * Radius is deliberately NOT redeclared here. tokens.css owns the raw
+   * `--radius-*` scale (6/10/14/16/999px); a derived `@theme` scale used to
+   * shadow it with different values, so `rounded-md` and `var(--radius-md)`
+   * disagreed. Tailwind utilities reference `var(--radius-md)`, which the
+   * unlayered tokens.css `:root` resolves to the brand value.
+   */
 }
 /*---break---
  */
 /*
  * Brand mapping. shadcn/ui's token names, re-pointed at the laooozy palette
- * defined in tokens.css. This site is dark-only, so :root and .dark carry the
- * SAME colours — there is no light theme to fall back to.
+ * defined in tokens.css. This site is dark-only, so ONE semantic `:root`
+ * carries every shadcn token; there is no light/dark split to maintain and no
+ * `.dark` duplicate. The `<html class="dark">` hook stays for `dark:`
+ * variants, which resolve through the `@custom-variant dark` above.
  *
  * Accent split (bug fix): shadcn's `--accent` means "hover surface", but the
  * brand also names its purple `--accent`. Mapping shadcn's accent to the
  * brand purple made `hover:bg-accent` paint solid purple. shadcn's accent now
- * resolves to
- * the tinted surface `--accent-surface` via the @theme block above; the brand
- * purple is NOT re-declared here so tokens.css stays the single source for
- * `var(--accent)`. Brand purple remains the shadcn `--primary`.
+ * resolves to the tinted surface `--accent-surface` via the @theme block above;
+ * the brand purple is NOT re-declared here so tokens.css stays the single
+ * source for `var(--accent)`. Brand purple remains the shadcn `--primary`.
  */
 :root {
   --background: var(--bg-base);
@@ -338,42 +347,6 @@ html:not([data-locale]) [data-l="zh-hant"] {
   --chart-3: var(--text);
   --chart-4: var(--muted);
   --chart-5: var(--secondary);
-  --radius: 0.625rem;
-  --sidebar: var(--bg-base);
-  --sidebar-foreground: var(--text);
-  --sidebar-primary: var(--accent);
-  --sidebar-primary-foreground: var(--text-on-accent);
-  --sidebar-accent: var(--accent-surface);
-  --sidebar-accent-foreground: var(--text);
-  --sidebar-border: var(--glass-border);
-  --sidebar-ring: var(--accent);
-}
-/*---break---
- */
-.dark {
-  --background: var(--bg-base);
-  --foreground: var(--text);
-  --card: var(--bg-elevated);
-  --card-foreground: var(--text);
-  --popover: var(--bg-elevated);
-  --popover-foreground: var(--text);
-  --primary: var(--accent);
-  --primary-foreground: var(--text-on-accent);
-  --secondary: oklch(0.2273 0.0212 284.5871);
-  --secondary-foreground: var(--text);
-  --muted: oklch(0.2045 0.0178 284.7156);
-  --muted-foreground: var(--text-muted);
-  --accent-foreground: var(--text);
-  --destructive: oklch(0.7106 0.1661 22.2162);
-  --border: var(--glass-border);
-  --input: oklch(1 0 0 / 0.08);
-  --ring: var(--accent);
-  --chart-1: var(--accent);
-  --chart-2: var(--text-muted);
-  --chart-3: var(--text);
-  --chart-4: var(--muted);
-  --chart-5: var(--secondary);
-  --radius: 0.625rem;
   --sidebar: var(--bg-base);
   --sidebar-foreground: var(--text);
   --sidebar-primary: var(--accent);

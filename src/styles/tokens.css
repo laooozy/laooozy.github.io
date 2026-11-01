@@ -154,6 +154,10 @@
 
   /* ------------------------------------------------------------------ *
    * Radius — cards top out at 16px
+   *
+   * OWNER: these raw values are the ONE radius scale. Tailwind utilities
+   * resolve `var(--radius-*)` against this unlayered `:root`; `global.css`
+   * must not redeclare a derived `@theme` radius scale beside it.
    * ------------------------------------------------------------------ */
   --radius-sm: 6px;
   --radius-md: 10px;

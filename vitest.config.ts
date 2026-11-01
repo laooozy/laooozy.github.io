@@ -2,5 +2,8 @@
 import { getViteConfig } from "astro/config";
 
 export default getViteConfig({
-  test: { passWithNoTests: true },
+  test: {
+    passWithNoTests: true,
+    exclude: ["**/node_modules/**", "**/dist/**", "tests/e2e/**"],
+  },
 });

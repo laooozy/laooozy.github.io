@@ -33,3 +33,7 @@ pnpm-debug.log*
 
 # generated music payload (published to the music_asset branch, never main)
 .music-out/
+
+# playwright run artifacts
+playwright-report/
+test-results/
