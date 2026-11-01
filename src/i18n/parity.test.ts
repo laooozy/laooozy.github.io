@@ -283,6 +283,13 @@ describe("search result count copy", () => {
   });
 });
 
+describe("translation key contract", () => {
+  it("rejects a typo at compile time, not just at runtime", () => {
+    // @ts-expect-error — `t` accepts only TranslationKey, so "typo" cannot compile.
+    expect(t(DEFAULT_LOCALE, "typo")).toBe("typo");
+  });
+});
+
 /**
  * The inline pre-paint boot is plain JS emitted into `<head>`, so it cannot
  * import `resolveClientLocale`. These tests EXECUTE the shipped string with

@@ -11,7 +11,7 @@
  * The site is single-URL: path builders are LOCALE-FREE. `formatPostDate` /
  * `formatPeriodLabel` still take a `lang`, because they format *text*, not URLs.
  */
-import { type Locale, LOCALE_CODES } from "../../i18n/locales";
+import type { Locale } from "../../i18n/locales";
 import { parsePostId } from "./filename";
 
 /** Frontmatter shape of a blog post (mirrors the collection schema). */
@@ -64,9 +64,6 @@ export function sortPosts(posts: Post[]): Post[] {
     return a.data.title.localeCompare(b.data.title);
   });
 }
-
-/** The three locale codes, in i18n declaration order. */
-export const LOCALES: readonly Locale[] = LOCALE_CODES;
 
 /** Unique tags across a post set, sorted for stable output. */
 export function collectTags(posts: Post[]): string[] {
@@ -162,9 +159,14 @@ export function blogArchivePath(period: string): string {
   return `/blog/archive/${period}/`;
 }
 
-/** A single post. */
-export function blogPostPath(slug: string): string {
-  return `/blog/${slug}/`;
+/**
+ * A single post, from its full content id (`post.id`: the filename without
+ * `.md`). The id IS the URL segment — `2026-02-14_midnight-notes.md` becomes
+ * `/blog/2026-02-14_midnight-notes/`. Do not pass only the filename's trailing
+ * slug.
+ */
+export function blogPostPath(postId: string): string {
+  return `/blog/${postId}/`;
 }
 
 /**

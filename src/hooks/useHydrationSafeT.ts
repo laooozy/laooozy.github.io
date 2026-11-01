@@ -57,7 +57,7 @@ export function useHydrationSafeT(): HydrationSafeTranslation {
   const locale: Locale = isHydrated ? storeLocale : DEFAULT_LOCALE;
 
   const t = useCallback(
-    (key: TranslationKey | (string & {}), vars?: TranslationVars) =>
+    (key: TranslationKey, vars?: TranslationVars) =>
       translate(locale, key, vars),
     [locale],
   );

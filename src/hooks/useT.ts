@@ -16,16 +16,13 @@ import {
 } from "@/i18n";
 
 /** A translation function already bound to one locale. */
-export type Translate = (
-  key: TranslationKey | (string & {}),
-  vars?: TranslationVars,
-) => string;
+export type Translate = (key: TranslationKey, vars?: TranslationVars) => string;
 
 export function useT(): Translate {
   const deps = useClientDeps();
   const locale = useStore(deps.store, (state) => state.locale);
   return useCallback(
-    (key: TranslationKey | (string & {}), vars?: TranslationVars) =>
+    (key: TranslationKey, vars?: TranslationVars) =>
       translate(locale, key, vars),
     [locale],
   );

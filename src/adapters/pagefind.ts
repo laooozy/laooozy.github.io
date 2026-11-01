@@ -13,12 +13,7 @@
  * — Pagefind's JS `options()` has no documented `language` key.
  */
 
-/** One search hit. Structurally identical to the store's `SearchResult`. */
-export interface SearchResult {
-  url: string;
-  title: string;
-  excerpt?: string;
-}
+import type { SearchResult } from "@/lib/domain/search";
 
 /** Raw per-result shape returned by the Pagefind runtime. */
 export interface PagefindResultData {

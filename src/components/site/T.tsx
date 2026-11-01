@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 
+import type { TranslationKey } from "@/i18n";
 import { langAttr, LOCALE_CODES, t } from "@/i18n";
 
 /**
@@ -25,7 +26,7 @@ import { langAttr, LOCALE_CODES, t } from "@/i18n";
  */
 interface TProps {
   /** Dotted dictionary key, e.g. `"nav.blog"`. */
-  k: string;
+  k: TranslationKey;
   /** Element to render each locale into. Defaults to `"span"`. */
   as?: keyof JSX.IntrinsicElements;
 }

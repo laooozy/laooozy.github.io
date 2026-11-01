@@ -7,21 +7,15 @@
  * sniffs the gzip magic bytes instead of trusting a header, and it never lets a
  * malformed or empty body escape as a raw `SyntaxError`.
  *
- * This module owns the ONLY network constant in `src/` outside tests, and
- * `fetch` lives here alone: components and hooks receive `MusicPort` through
- * the injected `ClientDeps`, so the network seam stays swappable.
+ * The published payload URL is single-sourced in `src/lib/site.ts` with the
+ * rest of the site identity. `fetch` lives here alone: components and hooks
+ * receive `MusicPort` through the injected `ClientDeps`, so the network seam
+ * stays swappable.
  */
 
 import type { MusicPayload } from "@/lib/domain/music";
 import { parseMusicPayload } from "@/lib/domain/music";
-
-/**
- * Published payload URL. Owner/repo are the GitHub repository identifiers copied
- * verbatim from the remote URL in `.git/config`; the third path segment is the
- * published data branch.
- */
-export const MUSIC_URL =
-  "https://raw.githubusercontent.com/laooozy/laooozy.github.io/music_asset/music.json.gz";
+import { MUSIC_URL } from "@/lib/site";
 
 /** How long a load may take before it is aborted. */
 const TIMEOUT_MS = 10_000;

@@ -36,14 +36,14 @@
  * React `Card` component: each card is one external anchor, so it needs
  * `target`/`rel` on that anchor, which the hook-free `Card` does not forward.
  */
-import { contactIdentity } from "../../i18n";
+import { CONTACT } from "../../lib/site";
 import { instagramPosts } from "../../data/instagram";
 import { getInstagramEmbeds } from "../../lib/io/instagram";
 import InstagramGate from "./InstagramGate.tsx";
 
 const embeds = await getInstagramEmbeds(instagramPosts);
-const igHandle = `@${contactIdentity.photoIg}`;
-const igHref = `https://instagram.com/${contactIdentity.photoIg}`;
+const igHandle = `@${CONTACT.photoIg}`;
+const igHref = `https://instagram.com/${CONTACT.photoIg}`;
 
 /** `/p/<shortcode>/` for a post, or the raw URL if it cannot be parsed. */
 function postPath(url: string): string {

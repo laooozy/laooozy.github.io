@@ -8,7 +8,7 @@ import InterestCard from "../../components/shared/InterestCard";
 import Stack from "../../components/shared/layout/Stack";
 import Section from "../../components/shared/Section";
 import Hero from "../../components/site/Hero.astro";
-import { contactIdentity } from "../../i18n";
+import { CONTACT } from "../../lib/site";
 
 <Hero
   title="laooozy"
@@ -16,8 +16,8 @@ import { contactIdentity } from "../../i18n";
     { label: "所在地", value: "HK 🇭🇰" },
     {
       label: "Instagram",
-      value: `@${contactIdentity.personalIg}`,
-      href: `https://instagram.com/${contactIdentity.personalIg}`,
+      value: `@${CONTACT.personalIg}`,
+      href: `https://instagram.com/${CONTACT.personalIg}`,
     },
   ]}
 />
@@ -129,19 +129,19 @@ import { contactIdentity } from "../../i18n";
     <ContactRow
       label="Instagram（個人）"
       ariaLabel="Instagram 個人帳號"
-      href="https://instagram.com/laooozy"
-      value="@laooozy"
+      href={`https://instagram.com/${CONTACT.personalIg}`}
+      value={`@${CONTACT.personalIg}`}
     />
     <ContactRow
       label="Instagram（攝影）"
       ariaLabel="Instagram 攝影帳號"
-      href="https://instagram.com/acg.laoozy"
-      value="@acg.laoozy"
+      href={`https://instagram.com/${CONTACT.photoIg}`}
+      value={`@${CONTACT.photoIg}`}
     />
     <ContactRow
       label="Email"
-      href="mailto:laoozy@outlook.com"
-      value="laoozy@outlook.com"
+      href={`mailto:${CONTACT.email}`}
+      value={CONTACT.email}
     />
   </Stack>
 </Section>

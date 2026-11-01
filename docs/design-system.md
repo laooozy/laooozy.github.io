@@ -440,21 +440,19 @@ locale; the list itself is language-agnostic. Rebuild with
 
 A locale is client state, not a route. Adding one touches these files:
 
-1. [i18n/types.ts](../src/i18n/types.ts): add the code to the `Locale` union.
-2. [i18n/index.ts](../src/i18n/index.ts): add the code to `languages`,
-   `langAttr` (BCP-47 casing), `ogLocale`, the `ui` dictionaries, and the
-   supported list in `resolveClientLocale`.
-3. [locale-boot.ts](../src/client/locale-boot.ts): update the inlined BCP-47
-   map, the stored-locale check and the navigator prefix matching. This script
-   cannot import, so it must be edited by hand and kept in sync with
-   `resolveClientLocale`.
-4. [T.tsx](../src/components/site/T.tsx): add the code to its `LOCALES` array, which
-   renders the static `[data-l]` variants.
-5. [parity.test.ts](../src/i18n/parity.test.ts): add the code to `LOCALES` and
-   make sure `FIXED_KEYS` matches the new dictionary.
-6. [domain/posts.ts](../src/lib/domain/posts.ts): update its current `LOCALES`
-   constant if date formatting needs the new code.
-7. Run `bun run test`, `bun run typecheck`, `bun run build`. No route, folder or
+1. [locales.ts](../src/i18n/locales.ts): add the code to `LOCALE_CODES` and the
+   `localeNames` / `langAttr` / `ogLocale` maps, and extend the navigator
+   matching in `resolveClientLocale`.
+2. [dictionaries/](../src/i18n/dictionaries): add the locale's chrome
+   dictionary and wire it into `ui` in [index.ts](../src/i18n/index.ts).
+3. [locale-boot.ts](../src/client/locale-boot.ts): its inlined BCP-47 map and
+   accepted codes are generated from `LOCALE_CODES`, so only the navigator
+   prefix matching needs a hand edit to stay in sync with `resolveClientLocale`.
+4. [T.tsx](../src/components/site/T.tsx): it maps `LOCALE_CODES`, so the static
+   `[data-l]` variants appear automatically.
+5. [parity.test.ts](../src/i18n/parity.test.ts): extend `FIXED_KEYS` and make
+   sure every dictionary has the new key set.
+6. Run `bun run test`, `bun run typecheck`, `bun run build`. No route, folder or
    URL changes are allowed.
 
 Page content stays zh-hant. A new locale only changes fixed chrome, and the

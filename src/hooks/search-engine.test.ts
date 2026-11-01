@@ -14,7 +14,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { noopDomAdapter } from "@/adapters/dom";
 import { fixedLocaleSource } from "@/adapters/locale-source";
 import { fakeMusic } from "@/adapters/music";
-import type { PagefindPort, SearchResult } from "@/adapters/pagefind";
+import type { PagefindPort } from "@/adapters/pagefind";
 import { fakePagefind } from "@/adapters/pagefind";
 import { memoryStorageAdapter } from "@/adapters/storage";
 import type { ClientDeps } from "@/hooks/deps";
@@ -25,6 +25,7 @@ import {
   writeRecentSearches,
 } from "@/hooks/useSearch";
 import type { MusicPayload } from "@/lib/domain/music";
+import type { SearchResult } from "@/lib/domain/search";
 import { appStore } from "@/store/app-store";
 
 const musicPayload: MusicPayload = {

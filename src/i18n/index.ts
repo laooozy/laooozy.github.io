@@ -37,13 +37,6 @@ export {
 export type { Locale } from "./locales";
 export type { DotPaths, TranslationVars } from "./types";
 
-/** Public contact handles, identical in every locale. */
-export const contactIdentity = {
-  personalIg: "laooozy",
-  photoIg: "acg.laooozy",
-  email: "laooozy@outlook.com",
-} as const;
-
 /** Every locale's chrome dictionary, keyed by locale code. */
 export const ui = {
   "zh-hant": zhHant,
@@ -89,7 +82,7 @@ function readPath(source: unknown, path: readonly string[]): unknown {
  */
 export function t(
   locale: Locale,
-  key: TranslationKey | (string & {}),
+  key: TranslationKey,
   vars?: TranslationVars,
 ): string {
   const value = readPath(

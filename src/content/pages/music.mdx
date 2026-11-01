@@ -3,7 +3,7 @@ title: Music
 ---
 
 import MusicLibrary from "../../components/music/MusicLibrary.tsx";
-import playlist from "../../../scripts/music/playlist.json";
+import { MUSIC_PLAYLIST_URL } from "../../lib/site";
 
 <h1
   class="m-0 font-heading font-bold leading-tight tracking-[var(--tracking-display)] text-balance text-[length:var(--text-hero)] music-hero"
@@ -17,7 +17,7 @@ import playlist from "../../../scripts/music/playlist.json";
 <noscript>
   <p>
     {"這個歌單需要 JavaScript 才能載入；也可以"}
-    <a href={playlist.url}>直接在 YouTube 開啟</a>
+    <a href={MUSIC_PLAYLIST_URL}>直接在 YouTube 開啟</a>
     {"。"}
   </p>
 </noscript>

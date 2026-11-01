@@ -19,7 +19,6 @@ import {
   estimateReadingTime,
   formatPeriodLabel,
   formatPostDate,
-  LOCALES,
   matchesPeriod,
   PAGE_SIZE,
   postDateString,
@@ -48,10 +47,6 @@ function makePost(
 describe("constants", () => {
   it("paginates 4 posts per page", () => {
     expect(PAGE_SIZE).toBe(4);
-  });
-
-  it("lists the three locales in declaration order", () => {
-    expect(LOCALES).toEqual(["zh-hant", "zh-hans", "en"]);
   });
 });
 
@@ -287,8 +282,10 @@ describe("path builders", () => {
     expect(blogArchivePath("2026-02")).toBe("/blog/archive/2026-02/");
   });
 
-  it("builds a post path", () => {
-    expect(blogPostPath("s")).toBe("/blog/s/");
-    expect(blogPostPath("my-post")).toBe("/blog/my-post/");
+  it("builds a post path from the full content id", () => {
+    expect(blogPostPath("2026-02-14_midnight-notes")).toBe(
+      "/blog/2026-02-14_midnight-notes/",
+    );
+    expect(blogPostPath("2026-01-01_post")).toBe("/blog/2026-01-01_post/");
   });
 });

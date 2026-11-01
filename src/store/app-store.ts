@@ -21,14 +21,7 @@ import {
 
 import type { AppStore, SearchState } from "./types";
 
-export type {
-  AppActions,
-  AppState,
-  AppStore,
-  SearchResult,
-  SearchState,
-  SearchStatus,
-} from "./types";
+export type { AppActions, AppState, AppStore, SearchState } from "./types";
 
 /** Reactive store singleton shared by every island and vanilla consumer. */
 export const appStore = createStore<AppStore>()((set) => ({

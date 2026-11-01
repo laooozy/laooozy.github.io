@@ -12,7 +12,7 @@
  * time, so it may import the metadata). Only the generated STRING ships, which
  * keeps the inline script self-contained while leaving one source of truth.
  * The resolution rules mirror `resolveClientLocale` in the same metadata module
- * — `locale-boot.test.ts` executes the string and asserts that parity.
+ * — `src/i18n/parity.test.ts` executes the string and asserts that parity.
  */
 
 import {

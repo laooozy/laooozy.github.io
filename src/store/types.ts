@@ -8,16 +8,7 @@
  */
 
 import type { Locale } from "@/i18n";
-
-/** A single search hit, minimal on purpose so it stays serialisable. */
-export interface SearchResult {
-  url: string;
-  title: string;
-  excerpt?: string;
-}
-
-/** Lifecycle of the search overlay. */
-export type SearchStatus = "idle" | "searching" | "results" | "empty" | "error";
+import type { SearchResult, SearchStatus } from "@/lib/domain/search";
 
 /** Search slice of the store. */
 export interface SearchState {

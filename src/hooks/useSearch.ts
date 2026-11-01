@@ -20,12 +20,12 @@ import { useStore } from "zustand";
 
 import type { StoragePort } from "@/adapters/storage";
 import { useClientDeps } from "@/components/shared/ClientDepsContext";
+import type { SearchResult, SearchStatus } from "@/lib/domain/search";
 import {
   parseRecentSearches,
   RECENT_SEARCH_STORAGE_KEY,
   serializeRecentSearches,
 } from "@/lib/domain/search-recents";
-import type { SearchResult, SearchStatus } from "@/store/types";
 
 import type { ClientDeps } from "./deps";
 

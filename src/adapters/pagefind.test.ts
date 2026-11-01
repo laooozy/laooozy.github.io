@@ -9,8 +9,8 @@
  */
 import { describe, expect, it } from "vitest";
 
-import type { SearchResult } from "@/adapters/pagefind";
 import { fakePagefind } from "@/adapters/pagefind";
+import type { SearchResult } from "@/lib/domain/search";
 
 const canned: SearchResult[] = [
   { url: "/blog/alpha/", title: "Alpha", excerpt: "the alpha post" },

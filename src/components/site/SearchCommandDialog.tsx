@@ -49,13 +49,14 @@ import {
   type SearchEngine,
   useSearch,
 } from "@/hooks/useSearch";
-import type { SearchResult } from "@/store/types";
+import type { TranslationKey } from "@/i18n";
+import type { SearchResult } from "@/lib/domain/search";
 
 type ResultGroup = "blog" | "music" | "pages";
 
 const GROUP_ORDER: readonly ResultGroup[] = ["blog", "music", "pages"];
 
-const GROUP_HEADING_KEY: Record<ResultGroup, string> = {
+const GROUP_HEADING_KEY: Record<ResultGroup, TranslationKey> = {
   blog: "search.group.blog",
   music: "search.group.music",
   pages: "search.group.pages",
