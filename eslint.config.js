@@ -70,6 +70,21 @@ export default defineConfig(
   },
 
   {
+    // Generated shadcn primitives (Base UI wrappers). These three rules flag
+    // patterns that are correct for the upstream wrappers but not resolvable
+    // statically: a `<label>` whose control comes from the caller, a pagination
+    // anchor that receives its children through props, and the click-to-focus
+    // input group. Keep the generated source unmodified.
+    files: ["src/components/ui/**/*.{ts,tsx}"],
+    rules: {
+      "jsx-a11y/label-has-associated-control": "off",
+      "jsx-a11y/anchor-has-content": "off",
+      "jsx-a11y/click-events-have-key-events": "off",
+      "jsx-a11y/no-noninteractive-element-interactions": "off",
+    },
+  },
+
+  {
     files: ["**/*.{ts,tsx,jsx}"],
     plugins: {
       "react-hooks": reactHooks,

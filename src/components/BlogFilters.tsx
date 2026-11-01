@@ -22,7 +22,7 @@ import { useEffect, useState } from "react";
 import { clientDeps } from "@/client/bootstrap";
 import ChipRow from "@/components/ChipRow";
 import type { FilterLink } from "@/components/types";
-import Separator from "@/components/ui/Separator";
+import { Separator } from "@/components/ui/separator";
 import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
 import { blogIndexPath } from "@/lib/domain/posts";
