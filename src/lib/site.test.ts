@@ -6,6 +6,9 @@
  * manifest, the Astro config and `.git/config` — and fail if the derived values
  * drift, so a rename cannot silently publish links to the wrong host or
  * repository.
+ *
+ * The build-only playlist contract is tested separately in `playlist.test.ts`;
+ * this module must not import `playlist.json` or the browser bundle pays for it.
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -15,7 +18,6 @@ import { describe, expect, it } from "vitest";
 import {
   assertSiteUrl,
   CONTACT,
-  MUSIC_PLAYLIST_URL,
   MUSIC_URL,
   REPOSITORY,
   SITE_NAME,
@@ -29,9 +31,6 @@ function readProjectFile(path: string): string {
 const pkg = JSON.parse(readProjectFile("package.json")) as { name: string };
 const astroConfig = readProjectFile("astro.config.mjs");
 const gitConfig = readProjectFile(".git/config");
-const playlist = JSON.parse(readProjectFile("scripts/music/playlist.json")) as {
-  url: string;
-};
 
 function configuredSite(): string {
   const match = astroConfig.match(/\bsite:\s*["']([^"']+)["']/);
@@ -77,12 +76,5 @@ describe("site identity", () => {
     expect(CONTACT.personalIg).toBe(pkg.name);
     expect(CONTACT.photoIg).toBe(`acg.${pkg.name}`);
     expect(CONTACT.email).toBe(`${pkg.name}@outlook.com`);
-  });
-
-  it("takes the public playlist URL from the pipeline source", () => {
-    expect(MUSIC_PLAYLIST_URL).toBe(playlist.url);
-    expect(MUSIC_PLAYLIST_URL).toMatch(
-      /^https:\/\/www\.youtube\.com\/playlist\?/,
-    );
   });
 });

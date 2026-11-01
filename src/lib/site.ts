@@ -1,28 +1,29 @@
 /**
  * Site identity and URL contracts — the SINGLE source for the brand name, the
- * deployed origin, the GitHub repository, the published music payload URL, the
- * owner's contact handles and the YouTube playlist URL.
+ * deployed origin, the GitHub repository, the published music payload URL and
+ * the owner's contact handles.
  *
  * Nothing here is retyped: every value is derived from an authoritative file.
  *
- *  - `SITE_NAME` is `name` in `package.json`.
+ *  - `SITE_NAME` is `name` in `package.json`. Only that one field is imported
+ *    by name, so the bundler drops the manifest's scripts and dependency
+ *    metadata instead of shipping them to the browser.
  *  - `SITE_URL` is the GitHub Pages origin, `<name>.github.io`, guarded against
  *    the `site` value in `astro.config.mjs` by `assertSiteUrl` (the config is a
  *    build-time file and cannot be imported by this pure module).
  *  - `REPOSITORY` is `<name>/<name>.github.io`; `site.test.ts` proves it equals
  *    the remote in `.git/config` so a package rename cannot silently point the
  *    music payload at a stale repository.
- *  - `MUSIC_PLAYLIST_URL` is the `url` in the pipeline's `playlist.json`.
  *
- * PURE and client-safe: JSON imports are inlined by the bundler, and this
- * module never touches `fs`, `astro:content` or the DOM.
+ * PURE and client-safe: this module holds no build-only data (the pipeline's
+ * `playlist.json` lives in `src/lib/playlist.ts`) and never touches `fs`,
+ * `astro:content` or the DOM.
  */
 
-import pkg from "../../package.json";
-import playlist from "../../scripts/music/playlist.json";
+import { name } from "../../package.json";
 
 /** The package/repository brand identifier (`package.json` `name`). */
-export const SITE_NAME: string = pkg.name;
+export const SITE_NAME: string = name;
 
 /** The deployed origin: GitHub Pages serves the repository at `<name>.github.io`. */
 export const SITE_URL = `https://${SITE_NAME}.github.io`;
@@ -60,6 +61,3 @@ export const CONTACT = {
   photoIg: `acg.${SITE_NAME}`,
   email: `${SITE_NAME}@outlook.com`,
 } as const;
-
-/** The public YouTube playlist URL, from the music pipeline's own source. */
-export const MUSIC_PLAYLIST_URL: string = playlist.url;
