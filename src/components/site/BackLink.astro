@@ -1,0 +1,50 @@
+---
+/**
+ * BackLink — the ONE back-to-home control shared by `/photographer/`, `/music/`
+ * and `/links/`.
+ *
+ * The visible label is rendered in all three locales with the static `<T>`
+ * toggle, exactly like the language switcher's accessible name and the links
+ * heading. That keeps the Astro shells free of client state and of a `useT`
+ * hook (which only works inside a hydrated React island), while the visible
+ * text still follows `<html data-locale>` with the rest of the chrome.
+ *
+ * The anchor, not the glyph, is the 44px target, so the hit area stays
+ * comfortable on touch without shrinking the icon.
+ */
+import T from "./T";
+
+interface Props {
+  /** Destination. Defaults to the home page. */
+  href?: string;
+  class?: string;
+}
+
+const { href = "/", class: className } = Astro.props;
+---
+
+<a
+  href={href}
+  data-back-link
+  class:list={[
+    "group inline-flex w-fit min-h-11 min-w-11 items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground no-underline transition-colors",
+    "hover:border-border hover:bg-accent hover:text-foreground",
+    "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+    className,
+  ]}
+>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+    class="size-4 shrink-0 text-primary transition-transform duration-200 ease-out motion-reduce:transform-none group-hover:-translate-x-0.5"
+  >
+    <path d="M19 12H5"></path>
+    <path d="M12 19l-7-7 7-7"></path>
+  </svg>
+  <T k="nav.backHome" />
+</a>

@@ -49,6 +49,7 @@ const FIXED_KEYS = [
   "nav.photography",
   "nav.contact",
   "nav.usefulLink",
+  "nav.backHome",
   "a11y.skipToContent",
   "a11y.primaryNav",
   "a11y.language",

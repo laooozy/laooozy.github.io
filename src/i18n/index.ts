@@ -60,6 +60,7 @@ export const ui = {
       photography: "攝影",
       contact: "聯絡",
       usefulLink: "連結",
+      backHome: "回到首頁",
     },
     home: {
       title: "laooozy",
@@ -147,6 +148,7 @@ export const ui = {
       photography: "摄影",
       contact: "联系",
       usefulLink: "实用链接",
+      backHome: "回到首页",
     },
     home: {
       title: "laooozy",
@@ -234,6 +236,7 @@ export const ui = {
       photography: "Photography",
       contact: "Contact",
       usefulLink: "Useful Links",
+      backHome: "Back to home",
     },
     home: {
       title: "laooozy",

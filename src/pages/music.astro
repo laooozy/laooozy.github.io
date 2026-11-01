@@ -10,6 +10,7 @@
  * network I/O and client state.
  */
 import { getEntry, render } from "astro:content";
+import BackLink from "../components/site/BackLink.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const entry = await getEntry("pages", "music");
@@ -21,14 +22,7 @@ const { Content } = await render(entry);
 
 <BaseLayout title={entry.data.title} description={entry.data.description}>
   <div class="music-page" lang="zh-Hant">
-    <nav class="photo-rail" aria-label="回到首頁">
-      <a class="photo-back" href="/">
-        <span class="photo-back__arrow" aria-hidden="true">
-          ←
-        </span>
-        <span>回到首頁</span>
-      </a>
-    </nav>
+    <BackLink />
     <Content />
   </div>
 </BaseLayout>
