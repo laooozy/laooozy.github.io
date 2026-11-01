@@ -56,7 +56,7 @@ export default function SiteFooter({ year, siteUpdated }: SiteFooterProps) {
 
         <Separator className="bg-border/40 sm:hidden" />
 
-        <p className="m-0 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-muted-foreground tabular-nums">
+        <p className="m-0 flex flex-wrap items-baseline gap-x-2 gap-y-1 pr-[calc(44px+var(--space-4)+env(safe-area-inset-right,0px))] text-sm text-muted-foreground tabular-nums sm:pr-[calc(44px+var(--space-5)+env(safe-area-inset-right,0px))]">
           <span>{t("footer.updated")}</span>
           <time dateTime={siteUpdated.iso}>{siteUpdated.display}</time>
         </p>

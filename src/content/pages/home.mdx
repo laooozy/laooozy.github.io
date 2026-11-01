@@ -1,7 +1,7 @@
 import { createElement } from "react";
 
 import LatestPosts from "../../components/blog/LatestPosts.astro";
-import Chips from "../../components/mdx/Chips.astro";
+import ChipRow from "../../components/shared/ChipRow";
 import ContactRow from "../../components/shared/ContactRow";
 import Cta from "../../components/shared/Cta";
 import InterestCard from "../../components/shared/InterestCard";
@@ -73,7 +73,7 @@ import { CONTACT } from "../../lib/site";
     <InterestCard id="games" title="Gaming">
       大多是和朋友一起玩的多人遊戲吧
 
-      <Chips
+      <ChipRow
         className="mt-(--space-4)"
         items={[
           { label: "Barotrauma" },
@@ -93,7 +93,7 @@ import { CONTACT } from "../../lib/site";
     <InterestCard id="vtuber" title="Vtuber">
       很棒！
 
-      <Chips
+      <ChipRow
         className="mt-(--space-4)"
         items={[{ label: "Gura" }, { label: "Laplus" }]}
       />

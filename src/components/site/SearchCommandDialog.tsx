@@ -223,7 +223,7 @@ export default function SearchCommandDialog({
             className="h-full rounded-none! bg-transparent p-0 sm:h-auto"
           >
             <div className="flex items-start gap-1 p-1 pb-0">
-              <div className="min-w-0 flex-1 [&_[data-slot=input-group]]:h-11! sm:[&_[data-slot=input-group]]:h-9!">
+              <div className="min-w-0 flex-1 [&_[data-slot=input-group]]:h-11!">
                 <CommandInput
                   ref={inputRef}
                   value={query}
@@ -233,7 +233,7 @@ export default function SearchCommandDialog({
                   autoComplete="off"
                   autoCapitalize="off"
                   spellCheck={false}
-                  className="min-h-11 text-base sm:min-h-9 sm:text-sm"
+                  className="min-h-11 text-base"
                 />
               </div>
               <DialogPrimitive.Close

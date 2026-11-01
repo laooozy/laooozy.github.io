@@ -214,6 +214,10 @@ button {
   top: var(--space-2);
   left: var(--space-2);
   z-index: var(--z-tooltip);
+  /* The 44px coarse-pointer floor applies on keyboard focus too. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
   /* Solid --accent: dark text on the old gradient's darker end was only 3.47:1. */

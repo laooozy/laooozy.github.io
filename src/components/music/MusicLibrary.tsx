@@ -145,7 +145,7 @@ function FilterFields({
           data-music-artist
           value={artistId}
           onChange={(event) => onArtistChange(event.target.value)}
-          className="w-full [&_select]:h-11 [&_select]:text-base md:[&_select]:text-sm"
+          className="w-full [&_select]:h-11 [&_select]:text-base"
         >
           <NativeSelectOption value="">{labels.all}</NativeSelectOption>
           {artists.map((artist) => (
@@ -162,7 +162,7 @@ function FilterFields({
           data-music-org
           value={organisation}
           onChange={(event) => onOrganisationChange(event.target.value)}
-          className="w-full [&_select]:h-11 [&_select]:text-base md:[&_select]:text-sm"
+          className="w-full [&_select]:h-11 [&_select]:text-base"
         >
           <NativeSelectOption value="">{labels.all}</NativeSelectOption>
           {orgs.map((org) => (
@@ -274,7 +274,7 @@ export default function MusicLibrary() {
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={t("music.searchPlaceholder")}
                 autoComplete="off"
-                className={CONTROL_HEIGHT}
+                className={cn(CONTROL_HEIGHT, "text-base!")}
               />
             </Field>
           </div>
