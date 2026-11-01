@@ -37,7 +37,7 @@ import {
   type Song,
 } from "@/lib/domain/music";
 
-import playlist from "../../scripts/music/playlist.json";
+import playlist from "../../../scripts/music/playlist.json";
 
 /** The build-time locale every SSR render is emitted in. Stable, no deps. */
 const defaultTranslate: Translate = (key, vars) =>

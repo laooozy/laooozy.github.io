@@ -11,7 +11,7 @@
  * Every label is a plain string prop so this stays purely presentational: no
  * hooks, no store, no adapters.
  */
-import Cluster from "@/components/layout/Cluster";
+import Cluster from "@/components/shared/layout/Cluster";
 import EmptyState from "@/components/shared/state/EmptyState";
 import Heading from "@/components/shared/typography/Heading";
 

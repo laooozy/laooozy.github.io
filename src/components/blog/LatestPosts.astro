@@ -18,8 +18,8 @@
 import { defaultLang, t } from "../../i18n/index";
 import { formatPostDate, toBlogListItem } from "../../lib/domain/posts";
 import { getAllPosts } from "../../lib/io/posts";
-import BlogEmptyView from "../BlogEmptyView";
-import PostCardView from "../PostCardView";
+import BlogEmptyView from "./BlogEmptyView";
+import PostCardView from "./PostCardView";
 import Grid from "../shared/layout/Grid";
 
 const posts = (await getAllPosts())

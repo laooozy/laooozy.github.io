@@ -16,7 +16,7 @@
  * Labels stay with the caller: this component never reads the locale or the
  * store, which keeps the MDX page kit static and the React chrome reactive.
  */
-import type { ChipItem } from "@/components/types";
+import type { ChipItem } from "@/components/shared/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

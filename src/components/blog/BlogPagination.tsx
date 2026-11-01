@@ -14,7 +14,7 @@
 import { useEffect, useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";
-import type { Pagination } from "@/components/types";
+import type { Pagination } from "@/components/shared/types";
 import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
 

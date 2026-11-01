@@ -212,8 +212,8 @@ current exact inventory:
 | `client:load` | `BlogList`         | the three blog listing routes                       | `/blog/`, `/blog/tags/<tag>/`, `/blog/archive/<period>/` |
 | `client:idle` | `SearchModal`      | the same three blog listing routes                  | same                                                     |
 | `client:load` | `MusicLibrary`     | [music.mdx](../src/content/pages/music.mdx)         | `/music/`                                                |
-| `client:load` | `NowTickerClient`  | `components/mdx/NowTicker.astro`                    | `/` when `src/data/now.json` has items                   |
-| `client:idle` | `InstagramGate`    | `components/mdx/InstagramWall.astro`                | `/photographer/`                                         |
+| `client:load` | `NowTickerClient`  | `components/site/NowTicker.astro`                   | `/` when `src/data/now.json` has items                   |
+| `client:idle` | `InstagramGate`    | `components/photography/InstagramWall.astro`        | `/photographer/`                                         |
 
 The rest is Astro-rendered at build time:
 
@@ -279,10 +279,13 @@ Drafts are excluded from every listing. The full authoring rules are in
   [photographer.mdx](../src/content/pages/photographer.mdx) and
   [music.mdx](../src/content/pages/music.mdx). Each entry accepts optional
   `title` and `description`.
-- Page components live in [src/components/mdx](../src/components/mdx). The kit
+- Page bodies are authored in MDX and import compatibility shims from
+  [src/components/mdx](../src/components/mdx); each shim forwards to its real
+  implementation in `shared/`, `site/`, `blog/` or `photography/`. The shim
   contract is documented in
   [mdx/README.md](../src/components/mdx/README.md). Page imports are explicit,
-  props carry structure, and the default slot carries authored Markdown.
+  props carry structure, and the default slot carries authored Markdown. Task 42
+  deletes the `mdx/` directory once Tasks 25/27 migrate the page imports.
 
 Page content stays zh-hant in every locale. Fixed chrome lives in
 [i18n/index.ts](../src/i18n/index.ts) and is the only translated surface.
@@ -330,45 +333,36 @@ shadcn, not Radix. The peer is `@base-ui/react`. Interaction props use
   needs a new look, a variant on a wrapper outside the generated file. See
   [Design system](./design-system.md) for the full primitive inventory and the
   component recipe.
-- Three files in `src/components/ui/` are not shadcn output: `Chip.tsx`,
-  `Heading.tsx` and `Text.tsx` are legacy hand-written wrappers. Tasks 10 to 13
-  replace them while the refactor runs. Do not treat them as generated code.
+- `src/components/ui/**` is generated shadcn output. Do not hand-edit it.
 
 ## Component folder map
 
-### Today (on disk)
+### Current (on disk after Task 14)
 
-| Path                                                 | Contents                                                                                                                                                                                                                                                                                      | Status                                                                          |
-| :--------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| [components/ui](../src/components/ui)                | 24 generated shadcn base-nova primitives plus the 3 legacy wrappers above                                                                                                                                                                                                                     | generated set stays; legacy files migrate                                       |
-| [components/layout](../src/components/layout)        | React `Stack`, `Cluster`, `Grid`, `Container`                                                                                                                                                                                                                                                 | replaced by `shared/layout` in Task 9                                           |
-| [components/mdx](../src/components/mdx)              | Astro page kit: `Hero`, `Section`, `InterestCard`, `Grid`, `Stack`, `Cluster`, `Chips`, `Cta`, `ContactRow`, `LatestPosts`, `PhotographyMasthead`, `InstagramWall`, `NowTicker`                                                                                                               | splits into `site/`, `blog/`, `photography/` and `shared/`; shims until Task 42 |
-| [components](../src/components) (root feature files) | `SiteHeader`, `SiteFooter`, `ScrollControls`, `LanguageSwitcher`, `SearchModal`, `BlogList`, `BlogFilters`, `BlogPagination`, `BlogEmpty`, `BlogEmptyView`, `PostCard`, `PostCardView`, `PostArticle`, `MusicLibrary`, `NotFound`, `InstagramGate`, `NowTickerClient`, `ChipRow`, `Card`, `T` | move into feature folders in Task 14                                            |
-| [layouts](../src/layouts)                            | `BaseLayout.astro`                                                                                                                                                                                                                                                                            | stays; later gains a blog listing wrapper                                       |
+| Path                                                    | Contents                                                                                                                                                                                                                |
+| :------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [components/ui](../src/components/ui)                   | Generated shadcn base-nova primitives only.                                                                                                                                                                             |
+| [components/site](../src/components/site)               | Feature chrome: `SiteHeader`, `SiteFooter`, `ScrollControls`, `LanguageSwitcher`, `SearchModal`, `NotFound`, `T`, `NowTickerClient`, plus the thin Astro wrappers `Hero.astro` and `NowTicker.astro`.                   |
+| [components/blog](../src/components/blog)               | `BlogList`, `BlogFilters`, `BlogPagination`, `BlogEmpty`, `BlogEmptyView`, `PostCard`, `PostCardView`, `PostArticle`, plus the build-time `LatestPosts.astro`.                                                          |
+| [components/music](../src/components/music)             | `MusicLibrary`.                                                                                                                                                                                                         |
+| [components/photography](../src/components/photography) | `InstagramGate` and the build-time `InstagramWall.astro`.                                                                                                                                                               |
+| [components/shared](../src/components/shared)           | Feature-neutral kit: `layout/`, `typography/`, `state/`, `compositions/`, `ChipRow`, `Section`, `InterestCard`, `PhotographyMasthead`, `Cta`, `ContactRow`, `HeroView`, `HeroMeta`, `Card` and the shared prop `types`. |
+| [components/mdx](../src/components/mdx)                 | Compatibility shims ONLY. Each file forwards to the path above; the directory is deleted in Task 42 after Tasks 25/27 migrate the MDX page imports.                                                                     |
+| [layouts](../src/layouts)                               | `BaseLayout.astro`.                                                                                                                                                                                                     |
 
-`src/components/T.tsx` is a static all-locale component, not an island. It
+`src/components/site/T.tsx` is a static all-locale component, not an island. It
 renders the same key in all three locales and lets CSS pick one.
 
-### Target (migration in progress, not on disk yet)
+The four Astro wrappers stay `.astro` because they need build-time I/O or a
+`client:*` directive: `site/Hero.astro` and `site/NowTicker.astro` place
+`client:load` islands, `blog/LatestPosts.astro` and
+`photography/InstagramWall.astro` use top-level `await`. Their React bodies live
+in `shared/` (`HeroView`, `HeroMeta`, `PostCardView`, `BlogEmptyView`) and in
+`photography/InstagramGate`.
 
-The refactor plan, especially Tasks 9 to 14, moves the tree to this shape:
-
-| Target path                         | Owns                                                                                                                                               |
-| :---------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/components/shared/layout/`     | Tailwind-only `Stack`, `Cluster`, `Grid`, `Container`                                                                                              |
-| `src/components/shared/typography/` | `Heading`, `Text`, `Prose`                                                                                                                         |
-| `src/components/shared/state/`      | Thin wrappers over `Empty`, `Alert`, `Skeleton`, `Spinner`, `Kbd`, `Tooltip`                                                                       |
-| `src/components/shared/`            | Feature-neutral `ChipRow`, `Section`, `InterestCard`, `PhotographyMasthead`, `Cta`, `ContactRow`                                                   |
-| `src/components/site/`              | `SiteHeader`, `SiteFooter`, `ScrollControls`, `LanguageSwitcher` and the new `SearchCommand`, plus the `Hero.astro` and `NowTicker.astro` wrappers |
-| `src/components/blog/`              | `BlogList`, `BlogFilters`, `PostCard`, `PostArticle`, `LatestPosts.astro` and a shared listing shell                                               |
-| `src/components/music/`             | `MusicLibrary`                                                                                                                                     |
-| `src/components/photography/`       | `InstagramWall.astro`, `InstagramGate`                                                                                                             |
-| `src/components/ui/`                | Generated shadcn primitives only                                                                                                                   |
-| `src/components/mdx/`               | Deleted after the content tasks; until then, compatibility shims only                                                                              |
-
-Do not move files ahead of the task that owns the move. The plan sequences the
-moves so imports never break, and Task 51 rewrites the guidance in
-[AGENTS](../AGENTS.md) after the structure lands.
+The `mdx/` shims (including the `Cta`/`ContactRow` shims) exist only so
+`home.mdx` and `photographer.mdx` keep building with their old import paths;
+they are not a second implementation. Task 42 deletes the directory.
 
 ## Testing and CI
 

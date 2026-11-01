@@ -6,11 +6,11 @@ import "../styles/pages.css";
 // Fontsource CSS loads — no hard-coded path and no duplicate download.
 import inter400Url from "@fontsource/inter/files/inter-latin-400-normal.woff2?url";
 import sora600Url from "@fontsource/sora/files/sora-latin-600-normal.woff2?url";
-import LanguageSwitcher from "../components/LanguageSwitcher";
-import ScrollControls from "../components/ScrollControls";
-import SiteFooter from "../components/SiteFooter";
-import SiteHeader from "../components/SiteHeader";
-import Container from "../components/layout/Container";
+import LanguageSwitcher from "../components/site/LanguageSwitcher";
+import ScrollControls from "../components/site/ScrollControls";
+import SiteFooter from "../components/site/SiteFooter";
+import SiteHeader from "../components/site/SiteHeader";
+import Container from "../components/shared/layout/Container";
 import { LOCALE_BOOT_SCRIPT } from "@/client/locale-boot";
 import { SITE_INDEXABLE } from "../lib/seo";
 import { langAttr, ogLocale, resolveLocale, useTranslations } from "../i18n/ui";

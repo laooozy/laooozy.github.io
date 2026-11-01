@@ -22,12 +22,12 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";
-import BlogEmpty from "@/components/BlogEmpty";
-import BlogFilters from "@/components/BlogFilters";
-import BlogPagination from "@/components/BlogPagination";
-import PostCard from "@/components/PostCard";
+import BlogEmpty from "@/components/blog/BlogEmpty";
+import BlogFilters from "@/components/blog/BlogFilters";
+import BlogPagination from "@/components/blog/BlogPagination";
+import PostCard from "@/components/blog/PostCard";
+import type { FilterLink, Pagination } from "@/components/shared/types";
 import Heading from "@/components/shared/typography/Heading";
-import type { FilterLink, Pagination } from "@/components/types";
 import { useLocale } from "@/hooks/useLocale";
 import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";

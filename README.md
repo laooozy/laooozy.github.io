@@ -134,7 +134,7 @@ The list section is marked `data-pagefind-ignore`, because its song rows are
 client-rendered from the remote payload. The page kit is described under
 [Authoring a page](#authoring-a-page).
 
-`PostArticle` (`src/components/PostArticle.tsx`) renders the article chrome
+`PostArticle` (`src/components/blog/PostArticle.tsx`) renders the article chrome
 only: the back link, title, date / reading time and tags. The Markdown body
 stays Astro-rendered by `render()` with `<Content/>` in
 `src/pages/blog/[slug].astro`. Components that need neither a UI library nor

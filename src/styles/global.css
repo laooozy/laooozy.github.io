@@ -235,7 +235,7 @@ button {
 
 /*
  * Locale toggle (zero-flash i18n). Every localized string is rendered for all
- * three locales, each in its own `[data-l]` element (see components/T.tsx).
+ * three locales, each in its own `[data-l]` element (see components/site/T.tsx).
  * Only the active locale — reflected on <html> as `data-locale` — is shown;
  * the others are removed with `display: none` so they leave the accessibility
  * tree (not merely hidden visually via opacity/visibility).

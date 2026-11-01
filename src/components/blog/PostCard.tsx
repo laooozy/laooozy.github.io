@@ -27,7 +27,7 @@
 import { useEffect, useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";
-import PostCardView from "@/components/PostCardView";
+import PostCardView from "@/components/blog/PostCardView";
 import { useLocale } from "@/hooks/useLocale";
 import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";

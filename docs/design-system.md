@@ -377,7 +377,7 @@ created, imported by a scratch page, built, and removed.
    when the chrome locale is English.
 
 4. If the page belongs in the top nav, add it to the nav list in
-   [SiteHeader.tsx](../src/components/SiteHeader.tsx), add the same key to all
+   [SiteHeader.tsx](../src/components/site/SiteHeader.tsx), add the same key to all
    three dictionaries in [i18n/index.ts](../src/i18n/index.ts), and add it to
    `FIXED_KEYS` in [parity.test.ts](../src/i18n/parity.test.ts). Do not add a
    locale prefix or a second route.
@@ -448,7 +448,7 @@ A locale is client state, not a route. Adding one touches these files:
    map, the stored-locale check and the navigator prefix matching. This script
    cannot import, so it must be edited by hand and kept in sync with
    `resolveClientLocale`.
-4. [T.tsx](../src/components/T.tsx): add the code to its `LOCALES` array, which
+4. [T.tsx](../src/components/site/T.tsx): add the code to its `LOCALES` array, which
    renders the static `[data-l]` variants.
 5. [parity.test.ts](../src/i18n/parity.test.ts): add the code to `LOCALES` and
    make sure `FIXED_KEYS` matches the new dictionary.

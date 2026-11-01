@@ -28,7 +28,7 @@ import { Check, ChevronDown, Globe } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";
-import T from "@/components/T";
+import T from "@/components/site/T";
 import { useLocale } from "@/hooks/useLocale";
 import { langAttr, languages, type Locale } from "@/i18n";
 

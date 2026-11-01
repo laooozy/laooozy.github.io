@@ -10,10 +10,10 @@
  * Every label is a plain string prop so this stays a pure presentational
  * component: no hooks, no store, no adapters.
  */
-import Card from "@/components/Card";
-import Cluster from "@/components/layout/Cluster";
-import Stack from "@/components/layout/Stack";
+import Card from "@/components/shared/Card";
 import ChipRow from "@/components/shared/ChipRow";
+import Cluster from "@/components/shared/layout/Cluster";
+import Stack from "@/components/shared/layout/Stack";
 import Heading from "@/components/shared/typography/Heading";
 import Text from "@/components/shared/typography/Text";
 
