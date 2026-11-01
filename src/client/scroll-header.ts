@@ -6,7 +6,7 @@
  * subscribes to the injected DOM port, makes the pure `resolveHeaderHidden`
  * decision, and applies the result both to the store and to the DOM adapter.
  * No browser globals and no React — everything arrives through `ClientDeps`,
- * so this is the same wiring the `useScrollHeader` hook runs, minus the hook.
+ * so this is pure wiring around `resolveHeaderHidden`, with no React.
  *
  * `attachScrollHeader` returns the unsubscribe so an island or a page script
  * can tear the subscription down; in the static layout it simply lives for the
@@ -14,7 +14,7 @@
  */
 
 import type { ClientDeps } from "@/hooks/deps";
-import { NEAR_TOP_PX, resolveHeaderHidden } from "@/hooks/useScrollHeader";
+import { NEAR_TOP_PX, resolveHeaderHidden } from "@/lib/domain/scroll";
 
 /**
  * Subscribe to scroll frames and drive header visibility through the injected

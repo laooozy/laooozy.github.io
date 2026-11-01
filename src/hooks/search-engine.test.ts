@@ -23,7 +23,7 @@ import {
   createSearchEngine,
   readRecentSearches,
   writeRecentSearches,
-} from "@/hooks/useSearch";
+} from "@/hooks/search-engine";
 import type { MusicPayload } from "@/lib/domain/music";
 import type { SearchResult } from "@/lib/domain/search";
 import { appStore } from "@/store/app-store";

@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { NEAR_TOP_PX, resolveHeaderHidden } from "@/hooks/useScrollHeader";
+import { NEAR_TOP_PX, resolveHeaderHidden } from "./scroll";
 
 describe("resolveHeaderHidden", () => {
   it("reveals within the near-top band regardless of direction", () => {

@@ -43,12 +43,9 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { createSearchEngine, type SearchEngine } from "@/hooks/search-engine";
 import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
-import {
-  createSearchEngine,
-  type SearchEngine,
-  useSearch,
-} from "@/hooks/useSearch";
+import { useSearch } from "@/hooks/useSearch";
 import type { TranslationKey } from "@/i18n";
 import type { SearchResult } from "@/lib/domain/search";
 
