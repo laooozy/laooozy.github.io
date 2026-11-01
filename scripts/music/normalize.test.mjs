@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest";
 
+import { parseMusicPayload } from "../../src/lib/domain/music";
 import {
+  assertPublishable,
   decodePayload,
   encodePayload,
   listChannels,
   normalizePlaylist,
 } from "./normalize.mjs";
 
-const ORGANIZATIONS = {
+const ORGANISATIONS = {
   kamitsubaki: {
     label: "Kamitsubaki 神椿",
     channelIds: [],
@@ -70,7 +72,7 @@ const RAW = {
 
 const NOW = () => "2026-10-31T14:05:00.000Z";
 
-const payload = () => normalizePlaylist(RAW, ORGANIZATIONS, { now: NOW });
+const payload = () => normalizePlaylist(RAW, ORGANISATIONS, { now: NOW });
 
 describe("normalizePlaylist", () => {
   it("dedupes by video id, drops private and blank entries, keeps first-seen order", () => {
@@ -119,12 +121,39 @@ describe("normalizePlaylist", () => {
   });
 
   it("falls back to 歌 for a missing playlist title and returns an empty song list for no entries", () => {
-    const p = normalizePlaylist({ id: "PLtestFixture" }, ORGANIZATIONS, {
+    const p = normalizePlaylist({ id: "PLtestFixture" }, ORGANISATIONS, {
       now: NOW,
     });
 
     expect(p.playlist.title).toBe("歌");
     expect(p.songs).toEqual([]);
+  });
+
+  it("produces a payload the client wire validator accepts", () => {
+    expect(() => parseMusicPayload(payload())).not.toThrow();
+  });
+
+  it("rejects a blank title through the wire validator and the publish guard", () => {
+    const valid = payload();
+    const emptyTitle = { ...valid, songs: [{ ...valid.songs[0], title: "" }] };
+    const whitespaceTitle = {
+      ...valid,
+      songs: [{ ...valid.songs[0], title: "   " }],
+    };
+
+    // `MusicPayloadSchema.title` is `min(1)`, so an empty string fails there;
+    // whitespace needs the publish guard, which trims before checking.
+    expect(() => parseMusicPayload(emptyTitle)).toThrow();
+    expect(() => assertPublishable(whitespaceTitle)).toThrow("blank title");
+  });
+
+  it("accepts a valid payload and rejects an empty song list", () => {
+    const valid = payload();
+
+    expect(() => assertPublishable(valid)).not.toThrow();
+    expect(() => assertPublishable({ ...valid, songs: [] })).toThrow(
+      "empty payload",
+    );
   });
 });
 
@@ -158,7 +187,7 @@ describe("normalizePlaylist org matching", () => {
         id: "PLtestFixture",
         entries: [{ id: "aaaaaaaaa09", title: "Song", channel }],
       },
-      ORGANIZATIONS,
+      ORGANISATIONS,
       { now: NOW },
     ).songs[0];
 
@@ -184,7 +213,7 @@ describe("normalizePlaylist artistId fallback", () => {
           },
         ],
       },
-      ORGANIZATIONS,
+      ORGANISATIONS,
       { now: NOW },
     ).songs;
 

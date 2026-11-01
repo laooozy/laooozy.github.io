@@ -234,6 +234,11 @@ blocked the link cards stay, the gate reports the failure and a local link-out
 card is shown. The gate itself is `InstagramGate.tsx` (`client:idle`) and never
 touches `document`/`window` directly.
 
+Builds also cap each oEmbed request at 10 s (an abort becomes a link-out card,
+never a build failure). For offline local/CI E2E builds only, set
+`INSTAGRAM_OEMBED_FIXTURE=1` before `bun run build` to use deterministic fixture
+markup with no network request; production builds must leave it unset.
+
 ## Atmosphere
 
 The deep-space background has two parts. The slow nebula wash is a CSS layer

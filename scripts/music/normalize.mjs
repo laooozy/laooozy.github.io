@@ -69,10 +69,10 @@ function resolveOrg(orgs, channelId, names) {
  * Turns a yt-dlp JSON dump into a normalised payload.
  *
  * @param {unknown} raw yt-dlp output: `{ id?, title?, entries? }`
- * @param {Record<string, { label: string, channelIds?: string[], channelTitleIncludes?: string[] }>} organizations
+ * @param {Record<string, { label: string, channelIds?: string[], channelTitleIncludes?: string[] }>} organisations
  * @param {{ now?: () => Date | string }} [options]
  */
-export function normalizePlaylist(raw, organizations, { now } = {}) {
+export function normalizePlaylist(raw, organisations, { now } = {}) {
   const source = raw && typeof raw === "object" ? raw : {};
   const entries = Array.isArray(source.entries) ? source.entries : [];
   const playlistId =
@@ -103,7 +103,7 @@ export function normalizePlaylist(raw, organizations, { now } = {}) {
 
     const rawArtist = channel || uploader;
     const org = resolveOrg(
-      organizations ?? {},
+      organisations ?? {},
       channelId,
       [channel, uploader].filter(Boolean),
     );
@@ -143,10 +143,43 @@ export function normalizePlaylist(raw, organizations, { now } = {}) {
       url: `https://www.youtube.com/playlist?list=${playlistId}`,
     },
     organisations: Object.fromEntries(
-      Object.entries(organizations ?? {}).map(([id, org]) => [id, org.label]),
+      Object.entries(organisations ?? {}).map(([id, org]) => [id, org.label]),
     ),
     songs,
   };
+}
+
+/**
+ * Refuse a normalised payload that must never be published.
+ *
+ * `normalizePlaylist` drops blank-title entries, so checking only the dump can
+ * never reach the blank-title branch of the final payload. This pure check runs
+ * on the payload itself (the same object the wire validator parses) and is
+ * exported so tests can exercise that branch directly.
+ *
+ * @param {unknown} payload
+ */
+export function assertPublishable(payload) {
+  if (
+    !payload ||
+    typeof payload !== "object" ||
+    !Array.isArray(payload.songs) ||
+    payload.songs.length === 0
+  ) {
+    throw new Error("refusing to publish an empty payload");
+  }
+
+  const hasBlankTitle = payload.songs.some(
+    (song) =>
+      !song ||
+      typeof song !== "object" ||
+      typeof song.title !== "string" ||
+      song.title.trim().length === 0,
+  );
+
+  if (hasBlankTitle) {
+    throw new Error("refusing to publish a payload with a blank title");
+  }
 }
 
 /** Gzip the payload as UTF-8 JSON at maximum compression. */

@@ -8,6 +8,10 @@
  * route (`src/pages/photographer.astro`) stays a thin MDX renderer and never
  * fetches.
  *
+ * `INSTAGRAM_OEMBED_FIXTURE=1` opts a local/CI E2E build into deterministic
+ * fixture markup with NO network request. It must stay unset for production
+ * builds, which call Meta live (and fall back to link cards on any failure).
+ *
  * Two layers, deliberately separated:
  *
  *  1. The AT-REST surface is a numbered portfolio index built ONLY from the
@@ -41,7 +45,11 @@ import { instagramPosts } from "../../data/instagram";
 import { getInstagramEmbeds } from "../../lib/io/instagram";
 import InstagramGate from "./InstagramGate.tsx";
 
-const embeds = await getInstagramEmbeds(instagramPosts);
+const instagramMode =
+  process.env.INSTAGRAM_OEMBED_FIXTURE === "1" ? "fixture" : "live";
+const embeds = await getInstagramEmbeds(instagramPosts, {
+  mode: instagramMode,
+});
 const igHandle = `@${CONTACT.photoIg}`;
 const igHref = `https://instagram.com/${CONTACT.photoIg}`;
 

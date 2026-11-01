@@ -16,6 +16,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+  assertPublishable,
   encodePayload,
   listChannels,
   normalizePlaylist,
@@ -28,8 +29,17 @@ const OUT_DIR = process.env.MUSIC_OUT_DIR
   : resolve(REPO_ROOT, ".music-out");
 const OUT_FILE = resolve(OUT_DIR, "music.json.gz");
 
-/** Hard stop: a hung extractor must not hold the runner forever. */
-const YT_DLP_TIMEOUT_MS = 10 * 60 * 1000;
+/**
+ * Hard stop: a hung extractor must not hold the runner forever. The env
+ * override exists only so the timeout failure test can finish in milliseconds;
+ * production leaves it unset.
+ */
+function resolveTimeoutMs() {
+  const override = Number(process.env.MUSIC_YTDLP_TIMEOUT_MS);
+  return Number.isFinite(override) && override > 0 ? override : 10 * 60 * 1000;
+}
+
+const YT_DLP_TIMEOUT_MS = resolveTimeoutMs();
 
 const YT_DLP_ARGS = [
   "--flat-playlist",
@@ -46,7 +56,7 @@ function readPlaylist() {
 }
 
 function readOrganisations() {
-  const raw = readFileSync(resolve(HERE, "organizations.json"), "utf8");
+  const raw = readFileSync(resolve(HERE, "organisations.json"), "utf8");
   return JSON.parse(raw);
 }
 
@@ -127,11 +137,20 @@ function runYtDlp(url) {
     fail("yt-dlp output has no playlist id");
   }
 
+  // A missing or string count cannot prove the dump is complete, so it is a
+  // failure rather than a silent pass (the old code only compared numbers).
   if (
-    typeof raw.playlist_count === "number" &&
-    Array.isArray(raw.entries) &&
-    raw.entries.length < raw.playlist_count
+    typeof raw.playlist_count !== "number" ||
+    !Number.isFinite(raw.playlist_count)
   ) {
+    fail("yt-dlp output has no numeric playlist_count");
+  }
+
+  if (!Array.isArray(raw.entries)) {
+    fail("yt-dlp output has no entries array");
+  }
+
+  if (raw.entries.length < raw.playlist_count) {
     fail(
       `yt-dlp returned ${raw.entries.length}/${raw.playlist_count} entries; refusing a partial playlist`,
     );
@@ -158,12 +177,10 @@ function main() {
     now: new Date().toISOString(),
   });
 
-  if (!Array.isArray(payload.songs) || payload.songs.length === 0) {
-    fail("refusing to publish an empty payload");
-  }
-
-  if (payload.songs.some((song) => !song.title || !song.title.trim())) {
-    fail("refusing to publish a payload with a blank title");
+  try {
+    assertPublishable(payload);
+  } catch (error) {
+    fail(error instanceof Error ? error.message : String(error));
   }
 
   mkdirSync(OUT_DIR, { recursive: true });
