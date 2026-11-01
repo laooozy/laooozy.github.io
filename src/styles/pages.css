@@ -74,9 +74,21 @@
 /* ---------------------------------------------------------------- *
  * Photography page
  * ---------------------------------------------------------------- */
+/*
+ * The rail sits close to the masthead; the authored body keeps the wide
+ * inter-section rhythm. Splitting the two gaps is what removes the old ~180px
+ * disconnect at the top of the page — a single large grid gap applied to every
+ * child, including the rail, was the cause.
+ */
 .photography {
   display: grid;
-  gap: clamp(var(--space-9), 9vw, var(--space-12));
+  gap: var(--space-5);
+}
+
+.photography__body {
+  display: grid;
+  gap: clamp(var(--space-8), 6vw, var(--space-10));
+  min-width: 0;
 }
 
 /* Back rail — a full-size pill target, not a bare text link. */
@@ -165,6 +177,18 @@
 }
 
 /* Shared CTA pills live on the React `Cta` component. */
+/*
+ * The photography pill's label needs black ink: the site-wide unlayered
+ * `a { color: var(--accent-text) }` rule outranks the component's Tailwind
+ * colour utility, and `--text-on-accent` only reaches 4.3:1 on the accent fill
+ * at 14px. Pinning the label to black here wins on specificity and meets 4.5:1
+ * without touching the shared component.
+ */
+.photo-cta,
+.photo-cta:hover,
+.photo-cta:focus-visible {
+  color: black;
+}
 
 /* Approach — ruled spec columns (no card chrome). */
 .photo-approach {
@@ -262,111 +286,112 @@
  * Instagram wall
  * ---------------------------------------------------------------- */
 /*
- * At rest the wall is a compact dark link-card grid, not Instagram's light
- * oEmbed card. Each card names the handle and the post path and offers the
- * localized "view on Instagram" action, so the Photography page is useful before any
- * third-party asset is allowed to load. The build-time blockquotes stay in the
- * DOM inside `.ig-embeds[hidden]` for the consent gate to reveal.
+ * The at-rest wall is a numbered portfolio index, not Instagram's light
+ * oEmbed card and not a thumbnail grid. Each card carries only local data —
+ * its ordinal, the owner's handle and the post path — so the Photography page
+ * is a designed index before any third-party asset is allowed to load. The
+ * build-time blockquotes stay in the DOM inside `.ig-embeds[hidden]` for the
+ * consent gate to reveal.
  */
-.ig-wall {
+.photo-index {
   display: grid;
   gap: var(--space-6);
   min-width: 0;
   max-width: 100%;
 }
 
-.ig-gate {
+.photo-index__list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.ig-gate__item {
+/* The consent gate retires the index once the real embeds load. */
+.photo-index__list[hidden] {
+  display: none;
+}
+
+.photo-index__item {
   min-width: 0;
 }
 
-.ig-gate__card {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  height: 100%;
-  min-width: 0;
-  padding: var(--space-5);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  background-color: var(--surface);
-  background-image: var(--card-bg);
-  box-shadow: var(--card-inset);
-  color: var(--text);
-  text-decoration: none;
-  transition:
-    border-color var(--dur-base) var(--ease-out),
-    background-color var(--dur-base) var(--ease-out),
-    transform var(--dur-base) var(--ease-out);
-}
-
-.ig-gate__card:hover,
-.ig-gate__card:focus-visible {
-  border-color: var(--glass-border-strong);
-  background-color: var(--surface-hover);
-  color: var(--text);
-  transform: translateY(-2px);
-}
-
-.ig-gate__badge {
+.photo-index__card {
   display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: var(--radius-pill);
-  background: var(--accent-surface);
+  grid-template-rows: auto 1fr auto;
+  gap: var(--space-5);
+  height: 100%;
+  min-height: 13rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.photo-index__number {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: var(--tracking-display);
   color: var(--accent);
 }
 
-.ig-gate__glyph {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.ig-gate__body {
+.photo-index__body {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  justify-content: flex-end;
+  gap: var(--space-2);
   min-width: 0;
 }
 
-.ig-gate__handle {
-  font-weight: 600;
-  letter-spacing: var(--tracking-tight);
+.photo-index__handle {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-muted);
 }
 
-.ig-gate__path {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--text-muted);
+.photo-index__path {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--text);
   overflow-wrap: anywhere;
 }
 
-.ig-gate__action {
+.photo-index__action {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  margin-top: var(--space-1);
+  gap: var(--space-2);
   color: var(--accent-text);
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 600;
 }
 
-.ig-gate__arrow {
-  width: 0.85rem;
-  height: 0.85rem;
+.photo-index__arrow {
+  width: 1rem;
+  height: 1rem;
   transition: transform var(--dur-fast) var(--ease-out);
 }
 
-.ig-gate__card:hover .ig-gate__arrow,
-.ig-gate__card:focus-visible .ig-gate__arrow {
+.photo-index__card:hover .photo-index__arrow,
+.photo-index__card:focus-visible .photo-index__arrow {
   transform: translate(2px, -2px);
+}
+
+@media (min-width: 48rem) {
+  .photo-index__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+
+  .photo-index__card {
+    min-height: 16rem;
+  }
 }
 
 /* The consent-gated layer. Hidden until the gate reveals it. */
@@ -522,15 +547,6 @@
   font-size: var(--text-sm);
   font-weight: 500;
   color: var(--text-muted);
-}
-
-/* The at-rest link-card wall is superseded once the real embeds load. */
-.ig-gate-wrap {
-  min-width: 0;
-}
-
-.ig-gate-wrap[hidden] {
-  display: none;
 }
 
 /*

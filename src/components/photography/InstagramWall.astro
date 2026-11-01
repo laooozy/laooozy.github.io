@@ -1,6 +1,6 @@
 ---
 /**
- * InstagramWall — the photography photo wall shell.
+ * InstagramWall — the photography at-rest portfolio index.
  *
  * This component OWNS the build-time network I/O: it resolves the permalinks in
  * `src/data/instagram.ts` through Meta's oEmbed endpoint with
@@ -10,25 +10,31 @@
  *
  * Two layers, deliberately separated:
  *
- *  1. The AT-REST surface is a compact dark link-card grid (`.ig-gate`, 2-up
- *     where the column has room, otherwise one column). Every card links to the
- *     post on Instagram and names the handle plus the post path, so the wall is
- *     useful before any third-party asset is allowed to load.
+ *  1. The AT-REST surface is a numbered portfolio index built ONLY from the
+ *     local `instagramPosts` list: one large card per post with its ordinal,
+ *     the owner's handle and the post path. It loads no image URL, no provider
+ *     thumbnail and no iframe, so the page is a designed index before any
+ *     third-party asset is allowed to load. The cards map the local list, not
+ *     the oEmbed result, so an offline build (or a deleted post) still renders
+ *     the full index.
  *  2. The build-time oEmbed blockquotes stay in the DOM inside `.ig-embeds`,
  *     which is `hidden` until consent. Keeping them server-rendered preserves
  *     the privacy-safe fallback and lets the consent gate reveal real markup
- *     instead of re-fetching. Nothing from Instagram is visible at rest, so the
- *     old light blockquote / white 950px blank never reaches the screen.
+ *     instead of re-fetching.
  *
  * The embed.js loader is NOT emitted here and never loads at rest: the
- * `InstagramGate` island (below, `client:idle`) injects it through the DomPort
- * only after a click, then reveals the hidden blockquote layer. On a provider
- * failure it leaves the link cards and shows a local fallback instead.
+ * `InstagramGate` island (`client:idle`) injects it through the DomPort only
+ * after a click, then reveals the hidden blockquote layer. On a provider
+ * failure it leaves the index and shows a local fallback instead.
  *
  * Meta's embed.js creates the final `<iframe>` itself, so build-time markup
  * cannot set that iframe's `title`/`loading`. The figure therefore carries the
  * wrapper label (`aria-label`) and the CSS constrains every embed descendant to
  * the figure width; this is the documented Meta limitation allowed by the plan.
+ *
+ * The cards reuse the project's `card` surface directly rather than the shared
+ * React `Card` component: each card is one external anchor, so it needs
+ * `target`/`rel` on that anchor, which the hook-free `Card` does not forward.
  */
 import { contactIdentity } from "../../i18n";
 import { instagramPosts } from "../../data/instagram";
@@ -49,10 +55,15 @@ function postPath(url: string): string {
     return url;
   }
 }
+
+/** Two-digit catalogue ordinal: `01`, `02`, … */
+function ordinal(position: number): string {
+  return String(position).padStart(2, "0");
+}
 ---
 
-{embeds.length > 0 ? (
-  <div class="ig-wall" data-ig-wall>
+{instagramPosts.length > 0 ? (
+  <div class="photo-index" data-ig-wall>
     {/*
         Click-to-load consent gate. `client:idle` keeps it off the critical path;
         it injects embed.js only on click and toggles the layers below through
@@ -63,60 +74,52 @@ function postPath(url: string): string {
       scriptSrc="https://www.instagram.com/embed.js"
       profileHref={igHref}
       handle={igHandle}
-      postCount={embeds.length}
+      postCount={instagramPosts.length}
     />
 
-    <div class="ig-gate-wrap" data-ig-gate>
-      <Grid as="ul" min="17rem" gap={4} className="ig-gate">
-        {embeds.map((embed) => (
-          <li class="ig-gate__item">
-            <a
-              class="ig-gate__card"
-              href={embed.url}
-              target="_blank"
-              rel="noopener"
-              aria-label={`在 Instagram 觀看 ${igHandle} 的貼文 ${postPath(embed.url)}`}
-            >
-              <span class="ig-gate__badge" aria-hidden="true">
-                <svg
-                  class="ig-gate__glyph"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.75"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
-                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
-                </svg>
-              </span>
-              <span class="ig-gate__body">
-                <span class="ig-gate__handle">{igHandle}</span>
-                <span class="ig-gate__path">{postPath(embed.url)}</span>
-                <span class="ig-gate__action">
-                  在 Instagram 觀看
-                  <svg
-                    class="ig-gate__arrow"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M7 7h10v10" />
-                    <path d="M7 17 17 7" />
-                  </svg>
-                </span>
-              </span>
-            </a>
-          </li>
-        ))}
-      </Grid>
-    </div>
+    {/*
+        The at-rest index. Every card is local: an ordinal, the handle and the
+        post path. It stays a plain external link so a visitor can always reach
+        the post even when the provider is blocked. `data-ig-gate` is the hook
+        the consent gate uses to retire this list once the real embeds load; it
+        never removes the list on a load failure.
+      */}
+    <ol class="photo-index__list" data-ig-gate>
+      {instagramPosts.map((url, position) => (
+        <li class="photo-index__item">
+          <a
+            class="card card--interactive photo-index__card"
+            href={url}
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="photo-index__number" aria-hidden="true">
+              {ordinal(position + 1)}
+            </span>
+            <span class="photo-index__body">
+              <span class="photo-index__handle">{igHandle}</span>
+              <span class="photo-index__path">{postPath(url)}</span>
+            </span>
+            <span class="photo-index__action">
+              在 Instagram 觀看
+              <svg
+                class="photo-index__arrow"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M7 7h10v10" />
+                <path d="M7 17 17 7" />
+              </svg>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ol>
 
     {/*
         Consent-gated layer. `hidden` keeps the raw oEmbed blockquotes and the
