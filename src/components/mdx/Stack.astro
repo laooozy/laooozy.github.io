@@ -1,32 +1,31 @@
 ---
 /**
- * Stack — 1D vertical flow with a token gap.
+ * Stack — compatibility shim for MDX pages.
  *
- * Astro port of `src/components/layout/Stack.tsx`; same `stack` class and
- * `--stack-gap` / `--stack-align` custom properties.
+ * The implementation is the shared React primitive in
+ * `src/components/shared/layout/Stack.tsx`; this wrapper only forwards the
+ * Astro slot as `children`. It renders on the server with no hydration.
  *
- * Props
- *  - gap?: 1..12        default: 4  → gap: var(--space-N)
- *  - as?: tag           element tag, default: "div" (e.g. "ul", "section")
+ * Props (same meanings as the old Astro port)
+ *  - gap?: 1..12        default: 4
  *  - align?: "stretch" | "start" | "center"   default: "stretch"
+ *  - as?: tag           element tag, default "div" (e.g. "ul", "section")
  *  - className?: string
  */
+import type { Gap, StackAlign } from "../shared/layout/classes";
+import Stack from "../shared/layout/Stack";
+import type { LayoutTag } from "../shared/layout/types";
+
 interface Props {
-  gap?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
-  as?: keyof HTMLElementTagNameMap;
-  align?: "stretch" | "start" | "center";
+  gap?: Gap;
+  align?: StackAlign;
+  as?: LayoutTag;
   className?: string;
 }
 
-const { gap = 4, as: Tag = "div", align = "stretch", className } = Astro.props;
+const { gap = 4, align = "stretch", as: Tag, className } = Astro.props;
 ---
 
-<Tag
-  class:list={["stack", className]}
-  style={{
-    "--stack-gap": `var(--space-${gap})`,
-    "--stack-align": align,
-  }}
->
+<Stack gap={gap} align={align} as={Tag} className={className}>
   <slot />
-</Tag>
+</Stack>

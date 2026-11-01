@@ -1,22 +1,27 @@
 ---
 /**
- * Cluster — 1D horizontal flow that wraps, with a token gap.
+ * Cluster — compatibility shim for MDX pages.
  *
- * Astro port of `src/components/layout/Cluster.tsx`; same `cluster` class and
- * `--cluster-gap` / `--cluster-align` / `--cluster-justify` custom properties.
+ * The implementation is the shared React primitive in
+ * `src/components/shared/layout/Cluster.tsx`; this wrapper only forwards the
+ * Astro slot as `children`. It renders on the server with no hydration.
  *
- * Props
+ * Props (same meanings as the old Astro port)
  *  - gap?: 1..12        default: 3
  *  - align?: "start" | "center" | "end" | "baseline"   default: "center"
  *  - justify?: "start" | "center" | "end" | "between"   default: "start"
- *  - as?: tag           element tag, default: "div"
+ *  - as?: tag           element tag, default "div"
  *  - className?: string
  */
+import type { ClusterAlign, Gap, Justify } from "../shared/layout/classes";
+import Cluster from "../shared/layout/Cluster";
+import type { LayoutTag } from "../shared/layout/types";
+
 interface Props {
-  gap?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
-  align?: "start" | "center" | "end" | "baseline";
-  justify?: "start" | "center" | "end" | "between";
-  as?: keyof HTMLElementTagNameMap;
+  gap?: Gap;
+  align?: ClusterAlign;
+  justify?: Justify;
+  as?: LayoutTag;
   className?: string;
 }
 
@@ -24,27 +29,17 @@ const {
   gap = 3,
   align = "center",
   justify = "start",
-  as: Tag = "div",
+  as: Tag,
   className,
 } = Astro.props;
-
-const justifyValue =
-  justify === "between"
-    ? "space-between"
-    : justify === "center"
-      ? "center"
-      : justify === "end"
-        ? "flex-end"
-        : "flex-start";
 ---
 
-<Tag
-  class:list={["cluster", className]}
-  style={{
-    "--cluster-gap": `var(--space-${gap})`,
-    "--cluster-align": align,
-    "--cluster-justify": justifyValue,
-  }}
+<Cluster
+  gap={gap}
+  align={align}
+  justify={justify}
+  as={Tag}
+  className={className}
 >
   <slot />
-</Tag>
+</Cluster>

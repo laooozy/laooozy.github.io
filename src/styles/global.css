@@ -195,14 +195,8 @@ button {
   outline-offset: 3px;
 }
 
-/* Centered content column. The Container primitive may override the cap with
-   an inline `--container-max`; with no override it falls back to `--container`. */
-.container {
-  width: 100%;
-  max-width: var(--container-max, var(--container));
-  margin-inline: auto;
-  padding-inline: clamp(var(--space-4), 4vw, var(--space-6));
-}
+/* The centered content column is `src/components/shared/layout/Container.tsx`;
+   its Tailwind classes own the cap and gutter. */
 
 /* Skip link — visible only on keyboard focus. */
 .skip-link {
@@ -697,28 +691,10 @@ html:not([data-locale]) [data-l="zh-hant"] {
   }
 }
 
-/* Ported primitives (task 11) — layout/UI primitive styles moved out of the
-   per-component scoped <style> blocks when the primitives became React. */
-.stack {
-  display: flex;
-  flex-direction: column;
-  align-items: var(--stack-align);
-  gap: var(--stack-gap);
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: var(--grid-template);
-  gap: var(--grid-gap);
-}
-
-.cluster {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: var(--cluster-align);
-  justify-content: var(--cluster-justify);
-  gap: var(--cluster-gap);
-}
+/* Stack, Grid and Cluster are Tailwind-only React primitives in
+   `src/components/shared/layout/**`; they own their own display, track and gap
+   utilities. The `.stack` / `.cluster` class names survive only as CSS hooks
+   that page styles can target (e.g. `.interest > .stack > p`). */
 
 /*
  * Card grids with a known item count (`data-count` is the rendered count,
@@ -782,13 +758,13 @@ html:not([data-locale]) [data-l="zh-hant"] {
   .grid--cards[data-count="3"] > :last-child {
     grid-column: 1 / -1;
     justify-self: center;
-    inline-size: calc(50% - var(--grid-gap) / 2);
+    inline-size: calc(50% - var(--space-5) / 2);
   }
 
   .grid--cards[data-count="5"] > :last-child {
     grid-column: 1 / -1;
     justify-self: center;
-    inline-size: calc(50% - var(--grid-gap) / 2);
+    inline-size: calc(50% - var(--space-5) / 2);
   }
 }
 
