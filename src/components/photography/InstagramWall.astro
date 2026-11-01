@@ -40,7 +40,6 @@ import { contactIdentity } from "../../i18n";
 import { instagramPosts } from "../../data/instagram";
 import { getInstagramEmbeds } from "../../lib/io/instagram";
 import InstagramGate from "./InstagramGate.tsx";
-import Grid from "../shared/layout/Grid";
 
 const embeds = await getInstagramEmbeds(instagramPosts);
 const igHandle = `@${contactIdentity.photoIg}`;
@@ -125,34 +124,49 @@ function ordinal(position: number): string {
         Consent-gated layer. `hidden` keeps the raw oEmbed blockquotes and the
         per-post link fallback out of paint (and out of the accessibility tree)
         until the gate reveals them. `data-ig-embeds` is the hook the gate uses.
+        One column on phones, two from `md` up; `data-pagefind-ignore` keeps
+        the third-party markup out of the search index.
       */}
-    <div class="ig-embeds" data-ig-embeds hidden>
-      <Grid min="19rem" gap={6} className="photo-wall">
-        {embeds.map((embed) =>
-          embed.html ? (
-            <figure
-              class="ig-embed"
-              role="group"
-              aria-label={`Instagram post: ${embed.url}`}
-              set:html={embed.html}
-            />
-          ) : (
-            <a
-              class="ig-fallback"
-              href={embed.url}
-              target="_blank"
-              rel="noopener"
-              aria-label={`在 Instagram 觀看 ${igHandle} 的貼文 ${postPath(embed.url)}`}
-              data-embed-failed={embed.failed ? "" : undefined}
-            >
-              <span class="ig-fallback__glyph" aria-hidden="true">
-                ↗
-              </span>
-              <span class="ig-fallback__label">在 Instagram 觀看</span>
-            </a>
-          ),
-        )}
-      </Grid>
+    <div
+      class="ig-embeds photo-wall grid min-w-0 grid-cols-1 gap-5 md:grid-cols-2"
+      data-ig-embeds
+      data-pagefind-ignore
+      hidden
+    >
+      {embeds.map((embed) =>
+        embed.html ? (
+          <figure
+            class="ig-embed"
+            role="group"
+            aria-label={`Instagram post: ${embed.url}`}
+            set:html={embed.html}
+          />
+        ) : (
+          <a
+            class="ig-fallback"
+            href={embed.url}
+            target="_blank"
+            rel="noopener"
+            aria-label={`在 Instagram 觀看 ${igHandle} 的貼文 ${postPath(embed.url)}`}
+            data-embed-failed={embed.failed ? "" : undefined}
+          >
+            <span class="ig-fallback__glyph" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M7 17 17 7" />
+                <path d="M9 7h8v8" />
+              </svg>
+            </span>
+            <span class="ig-fallback__label">在 Instagram 觀看</span>
+          </a>
+        ),
+      )}
     </div>
   </div>
 ) : (

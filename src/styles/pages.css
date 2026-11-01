@@ -502,104 +502,15 @@
   border-radius: var(--radius-pill);
   background: var(--accent-surface);
   color: var(--accent);
-  font-size: var(--text-lg);
+}
+
+.ig-fallback__glyph svg {
+  width: 1.1rem;
+  height: 1.1rem;
 }
 
 .ig-fallback__label {
   font-size: var(--text-sm);
   font-weight: 500;
   color: var(--text-muted);
-}
-
-/*
- * Consent panel. The load button is the page's one action for third-party
- * media: nothing from Instagram is fetched until it is pressed, and the panel
- * reports loading / failure in a visible live region instead of leaving a
- * blank dark slot. The link-out fallback keeps a 44px target for touch.
- */
-.ig-consent {
-  display: grid;
-  justify-items: start;
-  gap: var(--space-3);
-  padding: var(--space-5);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  background-color: var(--surface);
-  background-image: var(--card-bg);
-  box-shadow: var(--card-inset);
-}
-
-.ig-consent__button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  min-height: 44px;
-  padding: var(--space-2) var(--space-5);
-  border: 1px solid var(--control-border);
-  border-radius: var(--radius-pill);
-  background-color: var(--accent-surface);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  line-height: 1.2;
-  cursor: pointer;
-  transition:
-    background-color var(--dur-base) var(--ease-out),
-    border-color var(--dur-base) var(--ease-out);
-}
-
-.ig-consent__button:hover:not(:disabled) {
-  border-color: var(--accent);
-  background-color: var(--accent-surface-hover);
-}
-
-.ig-consent__button:disabled {
-  cursor: default;
-  opacity: 0.75;
-}
-
-.ig-consent__icon {
-  flex: 0 0 auto;
-  width: 1.1rem;
-  height: 1.1rem;
-}
-
-.ig-consent__note,
-.ig-consent__status {
-  margin: 0;
-  font-size: var(--text-sm);
-  line-height: 1.5;
-  color: var(--text-muted);
-}
-
-.ig-consent__note {
-  max-inline-size: 46ch;
-}
-
-.ig-consent[data-ig-state="error"] .ig-consent__status {
-  color: var(--text);
-}
-
-.ig-consent__fallback {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: 44px;
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--control-border);
-  border-radius: var(--radius-pill);
-  background-color: var(--surface);
-  color: var(--accent-text);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.ig-consent__fallback:hover,
-.ig-consent__fallback:focus-visible {
-  border-color: var(--control-border-strong);
-  background-color: var(--surface-hover);
-  color: var(--text);
 }
