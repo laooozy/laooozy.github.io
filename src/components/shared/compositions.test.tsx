@@ -203,7 +203,11 @@ describe("page compositions", () => {
 
       expect(html).toContain("<li");
       expect(html).toContain("Instagram（個人）");
-      expect(html).toContain('aria-label="Instagram 個人帳號"');
+      // The context is hidden text inside the link, not an `aria-label` that
+      // would remove the visible handle from the accessible name (WCAG 2.5.3).
+      expect(html).toContain('class="sr-only"');
+      expect(html).toContain("Instagram 個人帳號");
+      expect(html).not.toContain("aria-label=");
       expect(html).toContain("@laooozy");
     });
   });

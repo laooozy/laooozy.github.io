@@ -8,7 +8,12 @@ export interface ContactRowProps {
   href: string;
   /** Visible link text for a one-line handle; omit to use children. */
   value?: string;
-  /** Accessible name when the handle alone does not say which account it is. */
+  /**
+   * Announced context when the handle alone does not say which account it is.
+   * Rendered as visually hidden text INSIDE the link, so the accessible name
+   * still contains the visible handle (WCAG 2.5.3 label-in-name); an
+   * `aria-label` that replaced the handle would violate it.
+   */
   ariaLabel?: string;
   /** External target; adds `target="_blank" rel="noopener"`. */
   external?: boolean;
@@ -43,11 +48,11 @@ export default function ContactRow({
       </span>
       <a
         href={href}
-        aria-label={ariaLabel}
         target={external ? "_blank" : undefined}
         rel={external ? "noopener" : undefined}
         className="text-[length:var(--text-lg)] font-medium no-underline pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center [&_p]:m-0 [&_p]:inline"
       >
+        {ariaLabel ? <span className="sr-only">{ariaLabel} </span> : null}
         {value ?? children}
       </a>
     </li>

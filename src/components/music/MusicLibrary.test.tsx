@@ -83,9 +83,11 @@ describe("MusicLibrary states", () => {
 
     expect(rowCount(container)).toBe(4);
     for (const song of FIXTURE_SONGS) {
-      expect(
-        screen.getByRole("link", { name: `${song.title} — ${song.artist}` }),
-      ).not.toBeNull();
+      // The row's accessible name is its visible content (title, artist and
+      // organisation badge); there is no `aria-label` to diverge from it.
+      const link = screen.getByText(song.title).closest("a");
+      expect(link).not.toBeNull();
+      expect(link?.getAttribute("href")).toBe(song.url);
     }
     expect(
       screen.getAllByText("Kamitsubaki 神椿").length,

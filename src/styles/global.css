@@ -203,7 +203,19 @@ video {
 
 button {
   font: inherit;
-  color: inherit;
+}
+
+/*
+ * `color: inherit` is BASE, not unlayered: an unlayered rule outranks every
+ * `@layer utilities`, so it silently overwrote variant colours such as
+ * `text-primary-foreground` on a shadcn Button (white-on-purple at 3.39:1).
+ * In the base layer the component utility wins, and a plain button still
+ * inherits its surrounding ink.
+ */
+@layer base {
+  button {
+    color: inherit;
+  }
 }
 
 /* Keyboard focus is always visible. The outline follows the element's own

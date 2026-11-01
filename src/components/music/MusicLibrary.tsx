@@ -447,7 +447,6 @@ export default function MusicLibrary() {
                         href={song.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        aria-label={`${song.title} — ${song.artist}`}
                       >
                         <ItemMedia
                           variant="image"
