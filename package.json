@@ -17,6 +17,7 @@
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "test": "vitest run",
+    "e2e:serve": "INSTAGRAM_OEMBED_FIXTURE=1 bun run build && bun run pagefind && node scripts/serve-dist.mjs",
     "test:e2e": "playwright test --pass-with-no-tests",
     "test:a11y": "playwright test --pass-with-no-tests --grep @a11y",
     "typecheck": "astro check"

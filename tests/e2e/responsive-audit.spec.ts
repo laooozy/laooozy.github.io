@@ -137,6 +137,14 @@ async function stubMusic(page: Page) {
   );
 }
 
+// The route matrix below visits `/music/` without a per-test stub. Give every
+// test the same offline payload and thumbnail stub so no audit run ever depends
+// on the live `music_asset` branch; a later per-test `stubMusic` call wins
+// because Playwright matches the most recently registered route first.
+test.beforeEach(async ({ page }) => {
+  await stubMusic(page);
+});
+
 /**
  * Every visible interactive control in `scope` whose hit area is smaller than
  * 44x44 CSS px. Excluded, with justification:
@@ -351,6 +359,16 @@ for (const viewport of [
       await page.locator("[data-search-trigger]").click();
       const dialog = page.locator('[data-slot="command-dialog"]');
       await expect(dialog).toBeVisible();
+
+      // The popup zooms in from a scaled-down frame; wait for the settled
+      // 44px row before measuring hit areas, exactly as the search spec does.
+      await expect
+        .poll(
+          async () =>
+            (await dialog.locator('[role="option"]').first().boundingBox())
+              ?.height ?? 0,
+        )
+        .toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
 
       await expectNoHorizontalOverflow(
         page,

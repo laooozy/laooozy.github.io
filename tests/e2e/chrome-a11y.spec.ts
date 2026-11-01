@@ -4,6 +4,11 @@ import { join } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test, type TestInfo } from "@playwright/test";
 
+import {
+  BUILT_ARTIFACT_HINT,
+  HAS_BUILT_ARTIFACT,
+} from "./helpers/build-artifact";
+
 /**
  * @a11y — axe-core audit of the fixed chrome.
  *
@@ -16,13 +21,11 @@ import { expect, type Page, test, type TestInfo } from "@playwright/test";
  * compact chrome) and 1440 (the full chrome). Screenshots land in
  * `.omo/evidence/architecture-artwork-refactor/task-24/` as visual evidence.
  *
- * The search-results state needs the built + Pagefind artifact; it skips on the
- * bare dev server, exactly like `search-command.spec.ts`. Run the whole spec
- * against `bun run build && bun run pagefind && bun run preview` with
- * `PLAYWRIGHT_BASE_URL` set to audit every state.
+ * The search-results state needs the built + Pagefind artifact. The default
+ * `bun run test:e2e` harness serves exactly that, so it runs there; external
+ * `PLAYWRIGHT_BASE_URL` previews also count. Only a source-only server skips
+ * it, with an explicit reason.
  */
-
-const BUILT_PREVIEW = Boolean(process.env.PLAYWRIGHT_BASE_URL);
 const SCREENSHOT_DIR = join(
   process.cwd(),
   ".omo/evidence/architecture-artwork-refactor/task-24",
@@ -217,10 +220,7 @@ test.describe("@a11y chrome", () => {
     }
 
     test("results have zero serious violations", async ({ page }, testInfo) => {
-      test.skip(
-        !BUILT_PREVIEW,
-        "search results need the built + Pagefind preview (set PLAYWRIGHT_BASE_URL)",
-      );
+      test.skip(!HAS_BUILT_ARTIFACT, `search results ${BUILT_ARTIFACT_HINT}`);
 
       await page.setViewportSize({ width: 1440, height: 900 });
       await gotoHydrated(page);

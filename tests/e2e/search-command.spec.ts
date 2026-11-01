@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+import {
+  BUILT_ARTIFACT_HINT,
+  HAS_BUILT_ARTIFACT,
+} from "./helpers/build-artifact";
 import { expectNoHorizontalOverflow } from "./helpers/overflow";
 import {
   expectMinimumFontSize,
@@ -7,20 +11,15 @@ import {
 } from "./helpers/target-size";
 
 /**
- * Focused contract for Task 18's global ⌘K search palette.
+ * The global ⌘K search palette against the real Pagefind index.
  *
- * Pagefind only exists after `bun run build && bun run pagefind`, so this spec
- * runs against a built preview (`PLAYWRIGHT_BASE_URL=http://127.0.0.1:4321`);
- * it skips against the bare dev server, which has no generated index. Task 46
- * owns the permanent search suite.
+ * `bun run test:e2e` builds + pagefinds + serves `dist/` by default, so this
+ * suite is part of the canonical run. External-server mode still works. It only
+ * skips when neither a built artifact nor an external built preview exists, and
+ * the skip reason says how to provide one.
  */
 
-const BUILT_PREVIEW = Boolean(process.env.PLAYWRIGHT_BASE_URL);
-
-test.skip(
-  !BUILT_PREVIEW,
-  "SearchCommand spec needs a built + Pagefind preview (set PLAYWRIGHT_BASE_URL)",
-);
+test.skip(!HAS_BUILT_ARTIFACT, `SearchCommand spec ${BUILT_ARTIFACT_HINT}`);
 
 const HEADER_TRIGGER = "[data-site-header] [data-search-trigger]";
 const DIALOG = '[data-slot="command-dialog"]';
