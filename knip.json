@@ -27,7 +27,6 @@
     "src/store/types.ts": ["types"],
     "src/test/client-deps.ts": ["types"],
     "tests/e2e/helpers/*.ts": ["types"],
-    "src/hooks/useLocale.ts": ["exports"],
-    "src/hooks/useT.ts": ["exports"]
+    "src/hooks/useLocale.ts": ["exports"]
   }
 }

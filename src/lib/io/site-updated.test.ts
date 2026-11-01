@@ -36,6 +36,24 @@ describe("site-updated.json schema", () => {
     );
   });
 
+  it("rejects a calendar day that does not exist", () => {
+    expect(() => parseSiteUpdated({ updatedAt: "2026-02-31T00:00" })).toThrow(
+      "2026-02-31T00:00",
+    );
+    expect(() => parseSiteUpdated({ updatedAt: "2025-04-31T00:00" })).toThrow(
+      "2025-04-31T00:00",
+    );
+  });
+
+  it("accepts a real leap day and rejects a non-leap one", () => {
+    expect(parseSiteUpdated({ updatedAt: "2024-02-29T00:00" }).iso).toBe(
+      "2024-02-29T00:00",
+    );
+    expect(() => parseSiteUpdated({ updatedAt: "2025-02-29T00:00" })).toThrow(
+      "2025-02-29T00:00",
+    );
+  });
+
   it("throws naming a missing value", () => {
     expect(() => parseSiteUpdated({})).toThrow("updatedAt");
   });

@@ -5,10 +5,10 @@
  * this bundle from the `ClientDepsProvider` context (or, without a provider,
  * its composition-root singleton default), so the caller decides which concrete
  * ports are wired in. The composition root is the ONLY place that binds the real
- * adapters (`appStore`, `localStorageAdapter`, `navigatorLocaleSource`,
- * `domAdapter`, `pagefindAdapter`, `musicAdapter`); tests inject the
- * deterministic doubles (`memoryStorageAdapter`, `fixedLocaleSource`,
- * `noopDomAdapter`, `fakePagefind`, `fakeMusic`/`fakeMusicError`).
+ * adapters (`appStore`, `localStorageAdapter`, `domAdapter`, `pagefindAdapter`,
+ * `musicAdapter`); tests inject the deterministic doubles
+ * (`memoryStorageAdapter`, `noopDomAdapter`, `fakePagefind`,
+ * `fakeMusic`/`fakeMusicError`).
  *
  * `store` is the vanilla Zustand store API (`StoreApi<AppStore>`, as returned
  * by `createStore`) rather than the bare state shape: hooks subscribe through
@@ -19,7 +19,6 @@
 import type { StoreApi } from "zustand/vanilla";
 
 import type { DomPort } from "@/adapters/dom";
-import type { LocaleSourcePort } from "@/adapters/locale-source";
 import type { MusicPort } from "@/adapters/music";
 import type { PagefindPort } from "@/adapters/pagefind";
 import type { StoragePort } from "@/adapters/storage";
@@ -30,7 +29,6 @@ export interface ClientDeps {
   store: StoreApi<AppStore>;
   adapters: {
     storage: StoragePort;
-    localeSource: LocaleSourcePort;
     dom: DomPort;
     pagefind: PagefindPort;
     music: MusicPort;

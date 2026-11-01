@@ -13,8 +13,6 @@ import type { StoreApi } from "zustand/vanilla";
 
 import type { DomPort } from "@/adapters/dom";
 import { noopDomAdapter } from "@/adapters/dom";
-import type { LocaleSourcePort } from "@/adapters/locale-source";
-import { fixedLocaleSource } from "@/adapters/locale-source";
 import type { MusicPort } from "@/adapters/music";
 import { fakeMusic } from "@/adapters/music";
 import type { PagefindPort } from "@/adapters/pagefind";
@@ -96,7 +94,6 @@ export interface FakeDom {
   port: DomPort;
   emitKeyDown(event: KeyboardEvent): void;
   emitHashChange(hash: string): void;
-  emitPointerDown(event: PointerEvent): void;
   keyDownListenerCount(): number;
   keyDownUnsubscribeCount(): number;
   hashChangeListenerCount(): number;
@@ -106,7 +103,6 @@ export interface FakeDom {
 export function createFakeDom(overrides: Partial<DomPort> = {}): FakeDom {
   const keyDown = new Set<(event: KeyboardEvent) => void>();
   const hashChange = new Set<(hash: string) => void>();
-  const pointerDown = new Set<(event: PointerEvent) => void>();
   let keyDownUnsubscribed = 0;
 
   const port: DomPort = {
@@ -124,12 +120,6 @@ export function createFakeDom(overrides: Partial<DomPort> = {}): FakeDom {
         hashChange.delete(callback);
       };
     },
-    onPointerDown(callback) {
-      pointerDown.add(callback);
-      return () => {
-        pointerDown.delete(callback);
-      };
-    },
     ...overrides,
   };
 
@@ -140,9 +130,6 @@ export function createFakeDom(overrides: Partial<DomPort> = {}): FakeDom {
     },
     emitHashChange(hash) {
       for (const callback of hashChange) callback(hash);
-    },
-    emitPointerDown(event) {
-      for (const callback of pointerDown) callback(event);
     },
     keyDownListenerCount: () => keyDown.size,
     keyDownUnsubscribeCount: () => keyDownUnsubscribed,
@@ -158,7 +145,6 @@ export interface FakeDepsOptions {
   pagefind?: PagefindPort;
   music?: MusicPort;
   storage?: StoragePort;
-  localeSource?: LocaleSourcePort;
   /** Overrides merged into the store's search slice. */
   search?: Partial<SearchState>;
 }
@@ -188,7 +174,6 @@ export function createFakeDeps(options: FakeDepsOptions = {}): FakeClientDeps {
     store,
     adapters: {
       storage,
-      localeSource: options.localeSource ?? fixedLocaleSource("en-US"),
       dom: dom.port,
       pagefind: options.pagefind ?? fakePagefind([]),
       music: options.music ?? fakeMusic(makeMusicPayload()),

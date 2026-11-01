@@ -13,7 +13,6 @@ import type { StoreApi } from "zustand/vanilla";
 import { createStore } from "zustand/vanilla";
 
 import { noopDomAdapter } from "@/adapters/dom";
-import { fixedLocaleSource } from "@/adapters/locale-source";
 import { fakeMusic } from "@/adapters/music";
 import { fakePagefind } from "@/adapters/pagefind";
 import { memoryStorageAdapter } from "@/adapters/storage";
@@ -75,7 +74,6 @@ function makeDeps(locale: AppStore["locale"]): ClientDeps {
     store: makeStore(locale),
     adapters: {
       storage: memoryStorageAdapter(),
-      localeSource: fixedLocaleSource("en-US"),
       dom: noopDomAdapter,
       pagefind: fakePagefind([]),
       music: fakeMusic(musicPayload),

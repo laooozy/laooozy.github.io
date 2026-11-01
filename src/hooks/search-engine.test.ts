@@ -12,7 +12,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { noopDomAdapter } from "@/adapters/dom";
-import { fixedLocaleSource } from "@/adapters/locale-source";
 import { fakeMusic } from "@/adapters/music";
 import type { PagefindPort } from "@/adapters/pagefind";
 import { fakePagefind } from "@/adapters/pagefind";
@@ -55,7 +54,6 @@ function makeDeps(pagefind: PagefindPort): ClientDeps {
     store: appStore,
     adapters: {
       storage: memoryStorageAdapter(),
-      localeSource: fixedLocaleSource("en-US"),
       dom: noopDomAdapter,
       pagefind,
       music: fakeMusic(musicPayload),

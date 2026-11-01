@@ -40,7 +40,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLocale } from "@/hooks/useLocale";
-import { langAttr, type Locale, LOCALE_CODES, localeNames } from "@/i18n";
+import {
+  langAttr,
+  type Locale,
+  LOCALE_CODES,
+  localeNames,
+  resolveLocale,
+} from "@/i18n";
 
 /** Every locale, for the CSS-toggled trigger label (order is irrelevant). */
 const ALL_LOCALES: readonly Locale[] = LOCALE_CODES;
@@ -132,7 +138,7 @@ export default function LanguageSwitcher() {
             value={locale}
             aria-labelledby="language-switcher-label"
             onValueChange={(next) => {
-              const code = next as Locale;
+              const code = resolveLocale(next);
               // Choosing the current locale is a no-op — no redundant writes.
               if (code !== locale) setLocale(code);
             }}

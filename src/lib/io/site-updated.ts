@@ -28,8 +28,18 @@ export interface SiteUpdated {
   readonly display: string;
 }
 
+/** Days in `month` (1-12) for `year`, accounting for leap years. */
+function daysInMonth(year: number, month: number): number {
+  if (month === 2) {
+    const leap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+    return leap ? 29 : 28;
+  }
+  return [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1];
+}
+
 /** Reject a date/time field that is two digits but out of its calendar range. */
 function assertRange(raw: unknown, value: string): void {
+  const year = Number(value.slice(0, 4));
   const month = Number(value.slice(5, 7));
   const day = Number(value.slice(8, 10));
   const hour = Number(value.slice(11, 13));
@@ -39,7 +49,7 @@ function assertRange(raw: unknown, value: string): void {
     month >= 1 &&
     month <= 12 &&
     day >= 1 &&
-    day <= 31 &&
+    day <= daysInMonth(year, month) &&
     hour >= 0 &&
     hour <= 23 &&
     minute >= 0 &&

@@ -89,7 +89,6 @@ const zhHans = {
     language: "语言",
     menu: "菜单",
     scrollToTop: "回到顶部",
-    scrollToBottom: "跳到底部",
   },
   footer: { rights: "版权所有", updated: "更新于" },
 } as const;

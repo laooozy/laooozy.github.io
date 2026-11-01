@@ -89,7 +89,6 @@ const zhHant = {
     language: "語言",
     menu: "選單",
     scrollToTop: "回到頂部",
-    scrollToBottom: "跳到頁尾",
   },
   footer: { rights: "版權所有", updated: "更新於" },
 } as const;

@@ -31,7 +31,7 @@ import {
   type TranslationVars,
 } from "@/i18n";
 
-import type { Translate } from "./useT";
+import type { Translate } from "./types";
 
 /** What `useHydrationSafeT` returns. */
 export interface HydrationSafeTranslation {

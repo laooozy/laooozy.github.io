@@ -89,7 +89,6 @@ const en = {
     language: "Language",
     menu: "Menu",
     scrollToTop: "Back to top",
-    scrollToBottom: "Jump to bottom",
   },
   footer: { rights: "All rights reserved", updated: "Updated" },
 } as const;

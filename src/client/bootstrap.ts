@@ -12,11 +12,10 @@
  * primitive the shell needs: scroll observation, reduced motion, header
  * visibility and locale application, plus the shared animation loop and
  * document-visibility subscription the background atmosphere consumes. The
- * global event seams (`onKeyDown` / `onPointerDown`), the reversible body
- * scroll lock and the lazy platform probe live there too. The atmosphere
- * starts from a layout script and reads the port off this bundle, so no
- * component or client module ever constructs a port or reaches for a browser
- * global.
+ * global event seams (`onKeyDown` / `onHashChange`) live there too. The
+ * atmosphere starts from a layout script and reads the port off this bundle, so
+ * no component or client module ever constructs a port or reaches for a
+ * browser global.
  *
  * The store singleton is seeded here with the locale the pre-paint boot chose.
  * The boot writes its decision to `document.documentElement.dataset.locale`
@@ -26,7 +25,6 @@
  */
 
 import { domAdapter } from "@/adapters/dom";
-import { navigatorLocaleSource } from "@/adapters/locale-source";
 import { musicAdapter } from "@/adapters/music";
 import { pagefindAdapter } from "@/adapters/pagefind";
 import { localStorageAdapter } from "@/adapters/storage";
@@ -65,7 +63,6 @@ export function createClientDeps(): ClientDeps {
     store: appStore,
     adapters: {
       storage: localStorageAdapter,
-      localeSource: navigatorLocaleSource,
       dom: domAdapter,
       pagefind: pagefindAdapter,
       music: musicAdapter,

@@ -44,44 +44,11 @@ export function createScrollAdapter(): DomScrollPort {
       }
     },
 
-    distanceFromBottom() {
-      try {
-        if (typeof window === "undefined" || typeof document === "undefined") {
-          return 0;
-        }
-        const scrollHeight =
-          document.documentElement?.scrollHeight ??
-          document.body?.scrollHeight ??
-          0;
-        return Math.max(0, scrollHeight - window.scrollY - window.innerHeight);
-      } catch {
-        return 0;
-      }
-    },
-
     scrollToTop() {
       try {
         if (typeof window === "undefined") return;
         window.scrollTo({
           top: 0,
-          behavior: prefersReducedMotion() ? "auto" : "smooth",
-        });
-      } catch {
-        // Best-effort: scrolling must never break the caller.
-      }
-    },
-
-    scrollToBottom() {
-      try {
-        if (typeof window === "undefined" || typeof document === "undefined") {
-          return;
-        }
-        const scrollHeight =
-          document.documentElement?.scrollHeight ??
-          document.body?.scrollHeight ??
-          0;
-        window.scrollTo({
-          top: scrollHeight,
           behavior: prefersReducedMotion() ? "auto" : "smooth",
         });
       } catch {

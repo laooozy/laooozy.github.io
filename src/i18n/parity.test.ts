@@ -60,7 +60,6 @@ const FIXED_KEYS = [
   "a11y.language",
   "a11y.menu",
   "a11y.scrollToTop",
-  "a11y.scrollToBottom",
   "blog.heading",
   "blog.empty",
   "blog.readTime",
@@ -166,8 +165,8 @@ function collectSourceFiles(dir: string, out: string[] = []): string[] {
 /**
  * A call to `t`, `tr` or `translate` whose FIRST string-literal argument is a
  * key: either `t("blog.empty")` or the locale-first form
- * `t(DEFAULT_LOCALE, "blog.empty")`. The `useT` alias (`const t = useT(...)`) and
- * the hydration-safe `tr` alias are both plain calls, so they are covered here.
+ * `t(DEFAULT_LOCALE, "blog.empty")`. The hydration-safe `tr` alias is a plain
+ * call, so it is covered here.
  */
 const CALL_KEY_RE =
   /\b(?:t|tr|translate)\(\s*(?:[A-Za-z_$][\w$]*\s*,\s*)?(["'`])([^"'`\n]+)\1/g;

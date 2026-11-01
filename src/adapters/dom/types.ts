@@ -32,20 +32,10 @@ export interface DomScrollPort {
   /** Current vertical scroll offset in CSS pixels. `0` without a DOM. */
   scrollY(): number;
   /**
-   * Pixels of scroll remaining below the fold:
-   * `max(0, scrollHeight - scrollY - innerHeight)`. `0` without a DOM.
-   */
-  distanceFromBottom(): number;
-  /**
    * Scroll to the very top. Smooth unless the user prefers reduced motion,
    * in which case it jumps instantly. Never throws.
    */
   scrollToTop(): void;
-  /**
-   * Scroll to the very bottom. Smooth unless the user prefers reduced motion,
-   * in which case it jumps instantly. Never throws.
-   */
-  scrollToBottom(): void;
 }
 
 /** Reduced-motion preference, the shared animation loop and tab visibility. */
@@ -124,7 +114,7 @@ export interface DomScriptsPort {
   loadScript(src: string, options?: DomScriptOptions): Promise<boolean>;
 }
 
-/** Global event seams, body scroll locking and platform detection. */
+/** Global event seams. */
 export interface DomEventsPort {
   /**
    * Observe same-document hash changes (`hashchange`). The callback receives
@@ -139,30 +129,6 @@ export interface DomEventsPort {
    * touch `document` themselves. Returns an unsubscribe. Never throws.
    */
   onKeyDown(callback: (event: KeyboardEvent) => void): () => void;
-  /**
-   * Observe global `pointerdown` presses on the document. Returns an
-   * unsubscribe. Never throws.
-   */
-  onPointerDown(callback: (event: PointerEvent) => void): () => void;
-  /**
-   * Lock or unlock page scrolling by setting `body { overflow: hidden }`.
-   *
-   * Contract: reversible and non-destructive. Locking remembers the body's
-   * current inline `overflow` value; unlocking restores exactly that value
-   * (including "no inline override"). A repeated lock is idempotent, and an
-   * unlock that this port did not issue is a no-op, so two overlays cannot
-   * clobber each other's saved state. Never throws; without a `document.body`
-   * it does nothing.
-   */
-  setBodyScrollLocked(locked: boolean): void;
-  /**
-   * `true` on Apple platforms (macOS, iPhone, iPad, iPod), read lazily from the
-   * present `navigator` and never throwing. Controls the keyboard-shortcut
-   * label (`⌘K` vs `Ctrl+K`); it must NOT be used in server-rendered markup,
-   * because the build host's answer differs from a visitor's and would cause
-   * a hydration mismatch. `false` without a DOM.
-   */
-  isApplePlatform(): boolean;
 }
 
 /** Every browser-effect primitive the shell injects. */

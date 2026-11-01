@@ -314,7 +314,8 @@ Rules for the recipe:
 4. Use token utilities (`bg-card`, `border-border`, `text-muted-foreground`,
    `rounded-lg`, `min-h-11`). Do not write raw colours.
 5. Keep copy out of the component when it is fixed chrome. Take a string prop or
-   let the caller pass children; render chrome labels through `useT`.
+   let the caller pass children; render chrome labels through
+   `useHydrationSafeT`.
 6. If the component is interactive, give it a real touch target and a visible
    focus style. Do not add `onMouseEnter`-only behavior.
 7. Verify with `bun run typecheck`, `bun run lint` and `bun run build`.

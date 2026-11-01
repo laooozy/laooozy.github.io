@@ -54,9 +54,7 @@ export const domAdapter: DomPort = createDomAdapter();
 export const noopDomAdapter: DomPort = {
   onScroll: () => () => {},
   scrollY: () => 0,
-  distanceFromBottom: () => 0,
   scrollToTop: () => {},
-  scrollToBottom: () => {},
   prefersReducedMotion: () => false,
   startLoop: () => () => {},
   onVisibilityChange: () => () => {},
@@ -68,7 +66,4 @@ export const noopDomAdapter: DomPort = {
   loadScript: () => Promise.resolve(false),
   onHashChange: () => () => {},
   onKeyDown: () => () => {},
-  onPointerDown: () => () => {},
-  setBodyScrollLocked: () => {},
-  isApplePlatform: () => false,
 };

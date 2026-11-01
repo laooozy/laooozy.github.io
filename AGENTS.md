@@ -37,21 +37,21 @@ file and the code disagree, fix the code or this file in the same change.
   inline pre-paint script in `<head>`. It resolves `localStorage`, then
   `navigator`, then falls back to `zh-hant`, and sets `<html lang>` plus
   `data-locale` before first paint. Locale-dependent chrome reads the locale
-  from the store through `useT()` and re-renders in place. Because the static
+  from the store through `useHydrationSafeT()` and re-renders in place. Because
+  the static
   build emits the default locale, a non-default visitor sees a brief `zh-hant`
   flash before hydration. That is an accepted trade-off, not a bug.
 - **Adapters and ports.** Every browser, network and storage effect sits behind
-  a port in `src/adapters/**` (`storage`, `locale-source`, `dom`, `pagefind`,
-  `music`). Real adapters are wired only in `src/client/bootstrap.ts`.
+  a port in `src/adapters/**` (`storage`, `dom`, `pagefind`, `music`). Real
+  adapters are wired only in `src/client/bootstrap.ts`.
   Components and hooks receive the injected `ClientDeps`; do not import a real
   adapter or touch `document`, `window`, `navigator` or `localStorage` from a
   component.
 - **DomPort is split, one interface.** `src/adapters/dom/**` implements cohesive
   slices: `scroll`, `motion`, `focus`, `locale`, `scripts` and `events`.
   `createDomAdapter` assembles them into the single `DomPort` every consumer
-  receives. The `events` slice owns global keydown/pointerdown subscriptions,
-  the reversible body scroll lock and the lazy platform probe. Do not add a
-  second event system.
+  receives. The `events` slice owns the global keydown and hashchange
+  subscriptions. Do not add a second event system.
 - **Atmosphere behind the DOM port.** `src/client/atmosphere.ts` mounts from a
   layout script with `ClientDeps` and draws star dust, shooting stars and
   lightning on one fixed `pointer-events:none` canvas. It uses the SINGLE
@@ -133,8 +133,8 @@ file and the code disagree, fix the code or this file in the same change.
   only for the HTML landmark. Use `organisation` for the music payload grouping
   and `menu` for the header disclosure state.
 - Use `t` for a translator already bound to a locale. Use `getTranslations` for
-  the build-time dictionary lookup and `useT` for the React hook. Do not add a
-  second translation helper or a second locale list.
+  the build-time dictionary lookup and `useHydrationSafeT` for the React hook.
+  Do not add a second translation helper or a second locale list.
 - Files: React components are `PascalCase.tsx`, Astro components are
   `PascalCase.astro`, hooks are `useX.ts`, and pure modules, adapters and
   utilities are `kebab-case.ts`. Tests are `*.test.ts` or `*.test.tsx` beside

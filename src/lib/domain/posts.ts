@@ -9,7 +9,8 @@
  * rendered with that locale's UI chrome.
  *
  * The site is single-URL: path builders are LOCALE-FREE. `formatPostDate` /
- * `formatPeriodLabel` still take a `lang`, because they format *text*, not URLs.
+ * `formatPeriodLabel` still take a `locale`, because they format *text*, not
+ * URLs.
  */
 import type { Locale } from "../../i18n/locales";
 import { parsePostId } from "./filename";
@@ -234,16 +235,16 @@ const EN_MONTHS = [
  * (`YYYY-MM-DD`). Split-and-format only: no `Date`, so a viewer's timezone can
  * never move the day.
  */
-export function formatPostDate(date: string, lang: Locale): string {
+export function formatPostDate(date: string, locale: Locale): string {
   const [year, month, day] = date.split("-").map(Number);
-  if (lang === "en") return `${EN_MONTHS[month - 1]} ${day}, ${year}`;
+  if (locale === "en") return `${EN_MONTHS[month - 1]} ${day}, ${year}`;
   return `${year}年${month}月${day}日`;
 }
 
 /** Human-readable label for a `YYYY` or `YYYY-MM` archive period, per locale. */
-export function formatPeriodLabel(period: string, lang: Locale): string {
+export function formatPeriodLabel(period: string, locale: Locale): string {
   const [year, month] = period.split("-");
-  if (!month) return lang === "en" ? year : `${year}年`;
-  if (lang === "en") return `${EN_MONTHS[Number(month) - 1]} ${year}`;
+  if (!month) return locale === "en" ? year : `${year}年`;
+  if (locale === "en") return `${EN_MONTHS[Number(month) - 1]} ${year}`;
   return `${year}年${Number(month)}月`;
 }

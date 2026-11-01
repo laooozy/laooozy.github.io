@@ -220,7 +220,7 @@ export default function MusicLibrary() {
     };
   }, [attempt, deps]);
 
-  const lang = langAttr[locale];
+  const langAttrValue = langAttr[locale];
 
   const songs = payload?.songs ?? EMPTY_SONGS;
   const artists = collectArtists([...songs]);
@@ -249,7 +249,7 @@ export default function MusicLibrary() {
       className="grid min-w-0 gap-(--space-4)"
       data-music-library
       data-pagefind-ignore
-      lang={lang}
+      lang={langAttrValue}
     >
       {/* Sticky toolbar: one band, search + filters + count. It sits under the
           sticky site header (`--z-sticky`), so it only shows at the top once

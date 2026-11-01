@@ -60,9 +60,8 @@ export default defineConfig(
 
   {
     files: ["**/*.{ts,tsx,jsx}"],
-    // These two rules flag event handlers on the existing switcher, search
-    // dialog and mobile-menu wrappers. Demoted to warnings so the tooling task
-    // stays green; the handlers move onto ports in later component tasks.
+    // Kept as warnings: no current code triggers them, and the gate runs with
+    // `--max-warnings 0`, so any new hit still fails CI.
     rules: {
       "jsx-a11y/no-static-element-interactions": "warn",
       "jsx-a11y/no-noninteractive-element-interactions": "warn",

@@ -104,10 +104,10 @@ disagree. The site is non-indexable by default.
    and `data-locale` before first paint.
 2. An island mounts. It reads `ClientDeps` through `useClientDeps()` and
    subscribes to the vanilla store through `useStore`.
-3. Locale-reactive text is rendered with `useT()`
-   ([useT.ts](../src/hooks/useT.ts)), which re-renders in place when the store
-   locale changes. `useHydrationSafeT()` pins the build locale for the first
-   render so SSR HTML and the hydration render agree.
+3. Locale-reactive text is rendered with `useHydrationSafeT()`
+   ([useHydrationSafeT.ts](../src/hooks/useHydrationSafeT.ts)), which pins the
+   build locale for the first render so SSR HTML and the hydration render agree,
+   then re-renders in place when the store locale changes.
 4. The language switcher writes the new locale to the store, to
    `document.documentElement` through `DomPort.applyLocale`, and to the
    `StoragePort`. The URL never changes.
@@ -154,12 +154,11 @@ library. The shape lives in [store/types.ts](../src/store/types.ts).
 
 Hooks are adapters over the store and the injected ports:
 
-| Hook                                                      | Responsibility                                      |
-| :-------------------------------------------------------- | :-------------------------------------------------- |
-| [useT.ts](../src/hooks/useT.ts)                           | Locale-bound `t()` that re-renders on locale change |
-| [useHydrationSafeT.ts](../src/hooks/useHydrationSafeT.ts) | Pins the build locale until the first client render |
-| [useLocale.ts](../src/hooks/useLocale.ts)                 | Reads and sets the active locale                    |
-| [useSearch.ts](../src/hooks/useSearch.ts)                 | Debounced Pagefind search through `PagefindPort`    |
+| Hook                                                      | Responsibility                                                        |
+| :-------------------------------------------------------- | :-------------------------------------------------------------------- |
+| [useHydrationSafeT.ts](../src/hooks/useHydrationSafeT.ts) | Pins the build locale until the first client render, then binds `t()` |
+| [useLocale.ts](../src/hooks/useLocale.ts)                 | Reads and sets the active locale                                      |
+| [useSearch.ts](../src/hooks/useSearch.ts)                 | Debounced Pagefind search through `PagefindPort`                      |
 
 The injection contract is [hooks/deps.ts](../src/hooks/deps.ts), and the React
 context is
@@ -171,13 +170,12 @@ Every browser, network and storage effect sits behind a port. Each port module
 exports an interface, one real adapter and at least one deterministic double.
 Adapters are bound only in [bootstrap.ts](../src/client/bootstrap.ts).
 
-| Port                                                                      | Real adapter            | Test double                    | What it hides                                                                      |
-| :------------------------------------------------------------------------ | :---------------------- | :----------------------------- | :--------------------------------------------------------------------------------- |
-| `StoragePort` ([storage.ts](../src/adapters/storage.ts))                  | `localStorageAdapter`   | `memoryStorageAdapter`         | `localStorage`, with an in-memory fallback when storage is blocked                 |
-| `LocaleSourcePort` ([locale-source.ts](../src/adapters/locale-source.ts)) | `navigatorLocaleSource` | `fixedLocaleSource`            | `navigator.language`                                                               |
-| `DomPort` ([dom/](../src/adapters/dom/))                                  | `domAdapter`            | `noopDomAdapter`               | Scroll, motion, focus, locale application, script injection and global event seams |
-| `PagefindPort` ([pagefind.ts](../src/adapters/pagefind.ts))               | `pagefindAdapter`       | `fakePagefind`                 | The lazy Pagefind import and result mapping                                        |
-| `MusicPort` ([music.ts](../src/adapters/music.ts))                        | `musicAdapter`          | `fakeMusic` / `fakeMusicError` | The remote gzip payload, the 10 second abort and typed fetch errors                |
+| Port                                                        | Real adapter          | Test double                    | What it hides                                                                      |
+| :---------------------------------------------------------- | :-------------------- | :----------------------------- | :--------------------------------------------------------------------------------- |
+| `StoragePort` ([storage.ts](../src/adapters/storage.ts))    | `localStorageAdapter` | `memoryStorageAdapter`         | `localStorage`, with an in-memory fallback when storage is blocked                 |
+| `DomPort` ([dom/](../src/adapters/dom/))                    | `domAdapter`          | `noopDomAdapter`               | Scroll, motion, focus, locale application, script injection and global event seams |
+| `PagefindPort` ([pagefind.ts](../src/adapters/pagefind.ts)) | `pagefindAdapter`     | `fakePagefind`                 | The lazy Pagefind import and result mapping                                        |
+| `MusicPort` ([music.ts](../src/adapters/music.ts))          | `musicAdapter`        | `fakeMusic` / `fakeMusicError` | The remote gzip payload, the 10 second abort and typed fetch errors                |
 
 `ClientDeps` is the bundle every client consumer accepts:
 
@@ -186,7 +184,6 @@ interface ClientDeps {
   store: StoreApi<AppStore>;
   adapters: {
     storage: StoragePort;
-    localeSource: LocaleSourcePort;
     dom: DomPort;
     pagefind: PagefindPort;
     music: MusicPort;
@@ -197,11 +194,10 @@ interface ClientDeps {
 `DomPort` is implemented as cohesive slices under
 [`src/adapters/dom/`](../src/adapters/dom/): `scroll`, `motion`, `focus`,
 `locale`, `scripts` and `events`, assembled by `createDomAdapter`. The `events`
-slice owns the only document-level keydown/pointerdown subscriptions, the
-reversible body scroll lock (`DomPort.setBodyScrollLocked`, which restores the
-prior inline `overflow`) and the lazy `isApplePlatform` probe. Components
-receive the aggregate port through `ClientDeps`; none subscribes to a browser
-global itself. Do not add a second animation loop or a second event system.
+slice owns the only document-level keydown and hashchange subscriptions.
+Components receive the aggregate port through `ClientDeps`; none subscribes to
+a browser global itself. Do not add a second animation loop or a second event
+system.
 
 Enforcement is structural and linted. [eslint.config.js](../eslint.config.js)
 errors on adapter imports outside the composition root and on `document`,

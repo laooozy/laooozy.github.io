@@ -7,19 +7,17 @@
  * (never throws) and degrades to a no-op / `false` when the platform lacks the
  * API; `startLoop` is the ONE animation loop (schedules a follow-up frame and
  * cancels on stop); `onVisibilityChange` reports the current state then changes;
- * the global event seams subscribe and unsubscribe cleanly; and the body scroll
- * lock is reversible without clobbering a pre-existing inline value.
+ * and the global event seams subscribe and unsubscribe cleanly.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { domAdapter, noopDomAdapter } from "@/adapters/dom";
 
-type StubbedGlobal = "window" | "document" | "navigator";
+type StubbedGlobal = "window" | "document";
 
 const originals = new Map<StubbedGlobal, PropertyDescriptor | undefined>([
   ["window", Object.getOwnPropertyDescriptor(globalThis, "window")],
   ["document", Object.getOwnPropertyDescriptor(globalThis, "document")],
-  ["navigator", Object.getOwnPropertyDescriptor(globalThis, "navigator")],
 ]);
 
 function defineGlobal(key: StubbedGlobal, value: unknown): void {
@@ -55,23 +53,11 @@ describe("noopDomAdapter", () => {
     }).not.toThrow();
 
     expect(noopDomAdapter.scrollY()).toBe(0);
-    expect(noopDomAdapter.distanceFromBottom()).toBe(0);
-    expect(() => {
-      noopDomAdapter.scrollToTop();
-      noopDomAdapter.scrollToBottom();
-    }).not.toThrow();
+    expect(() => noopDomAdapter.scrollToTop()).not.toThrow();
 
     const stopKeyDown = noopDomAdapter.onKeyDown(() => {});
-    const stopPointerDown = noopDomAdapter.onPointerDown(() => {});
     expect(typeof stopKeyDown).toBe("function");
-    expect(typeof stopPointerDown).toBe("function");
-    expect(() => {
-      stopKeyDown();
-      stopPointerDown();
-    }).not.toThrow();
-    expect(() => noopDomAdapter.setBodyScrollLocked(true)).not.toThrow();
-    expect(() => noopDomAdapter.setBodyScrollLocked(false)).not.toThrow();
-    expect(noopDomAdapter.isApplePlatform()).toBe(false);
+    expect(() => stopKeyDown()).not.toThrow();
     expect(() => noopDomAdapter.setHeaderHidden(true)).not.toThrow();
     expect(noopDomAdapter.isHeaderFocusWithin()).toBe(false);
     expect(typeof noopDomAdapter.keepHeaderFocusStable()).toBe("function");
@@ -101,23 +87,11 @@ describe("domAdapter without a DOM", () => {
       stopVisibility();
     }).not.toThrow();
     expect(domAdapter.scrollY()).toBe(0);
-    expect(domAdapter.distanceFromBottom()).toBe(0);
-    expect(() => {
-      domAdapter.scrollToTop();
-      domAdapter.scrollToBottom();
-    }).not.toThrow();
+    expect(() => domAdapter.scrollToTop()).not.toThrow();
     expect(() => domAdapter.setHidden("[data-ig-embeds]", false)).not.toThrow();
     const stopKeyDown = domAdapter.onKeyDown(() => {});
-    const stopPointerDown = domAdapter.onPointerDown(() => {});
     expect(typeof stopKeyDown).toBe("function");
-    expect(typeof stopPointerDown).toBe("function");
-    expect(() => {
-      stopKeyDown();
-      stopPointerDown();
-    }).not.toThrow();
-    expect(() => domAdapter.setBodyScrollLocked(true)).not.toThrow();
-    expect(() => domAdapter.setBodyScrollLocked(false)).not.toThrow();
-    expect(domAdapter.isApplePlatform()).toBe(false);
+    expect(() => stopKeyDown()).not.toThrow();
     await expect(
       domAdapter.loadScript("https://example.com/x.js"),
     ).resolves.toBe(false);
@@ -145,38 +119,24 @@ describe("domAdapter prefersReducedMotion", () => {
 });
 
 describe("domAdapter scroll controls", () => {
-  it("reads the offset and the distance left below the fold", () => {
-    defineGlobal("window", { scrollY: 300, innerHeight: 700 });
-    defineGlobal("document", { documentElement: { scrollHeight: 2000 } });
+  it("reads the vertical offset", () => {
+    defineGlobal("window", { scrollY: 300 });
+    defineGlobal("document", {});
 
     expect(domAdapter.scrollY()).toBe(300);
-    expect(domAdapter.distanceFromBottom()).toBe(1000);
   });
 
-  it("never reports a negative distance from the bottom", () => {
-    defineGlobal("window", { scrollY: 1500, innerHeight: 700 });
-    defineGlobal("document", { documentElement: { scrollHeight: 2000 } });
-
-    expect(domAdapter.distanceFromBottom()).toBe(0);
-  });
-
-  it("smooth-scrolls to both ends and jumps under reduced motion", () => {
+  it("smooth-scrolls to the top and jumps under reduced motion", () => {
     const scrollTo = vi.fn();
     defineGlobal("window", {
       scrollTo,
       matchMedia: () => ({ matches: false }),
     });
-    defineGlobal("document", { documentElement: { scrollHeight: 2000 } });
 
     domAdapter.scrollToTop();
-    domAdapter.scrollToBottom();
 
     expect(scrollTo).toHaveBeenNthCalledWith(1, {
       top: 0,
-      behavior: "smooth",
-    });
-    expect(scrollTo).toHaveBeenNthCalledWith(2, {
-      top: 2000,
       behavior: "smooth",
     });
 
@@ -185,10 +145,10 @@ describe("domAdapter scroll controls", () => {
       matchMedia: () => ({ matches: true }),
     });
 
-    domAdapter.scrollToBottom();
+    domAdapter.scrollToTop();
 
-    expect(scrollTo).toHaveBeenNthCalledWith(3, {
-      top: 2000,
+    expect(scrollTo).toHaveBeenNthCalledWith(2, {
+      top: 0,
       behavior: "auto",
     });
   });
@@ -473,126 +433,8 @@ describe("domAdapter event seams", () => {
     expect(listeners.size).toBe(0);
   });
 
-  it("subscribes to document pointerdown and unsubscribes", () => {
-    const listeners = new Map<string, (event: PointerEvent) => void>();
-    defineGlobal("document", {
-      addEventListener: (type: string, cb: (event: PointerEvent) => void) =>
-        listeners.set(type, cb),
-      removeEventListener: (type: string) => listeners.delete(type),
-    });
-
-    const callback = vi.fn();
-    const stop = domAdapter.onPointerDown(callback);
-
-    expect([...listeners.keys()]).toEqual(["pointerdown"]);
-    const event = { clientX: 1 } as PointerEvent;
-    listeners.get("pointerdown")!(event);
-    expect(callback).toHaveBeenCalledWith(event);
-
-    stop();
-    expect(listeners.size).toBe(0);
-  });
-
   it("is a no-op without a document", () => {
     expect(() => domAdapter.onKeyDown(() => {})()).not.toThrow();
-    expect(() => domAdapter.onPointerDown(() => {})()).not.toThrow();
-  });
-});
-
-describe("domAdapter setBodyScrollLocked", () => {
-  function installBody(overflow = "") {
-    const body = { style: { overflow } };
-    defineGlobal("document", { body });
-    return body;
-  }
-
-  it("hides overflow and restores the prior inline value", () => {
-    const body = installBody("scroll");
-
-    domAdapter.setBodyScrollLocked(true);
-    expect(body.style.overflow).toBe("hidden");
-
-    domAdapter.setBodyScrollLocked(false);
-    expect(body.style.overflow).toBe("scroll");
-  });
-
-  it("restores an absent inline override to absent", () => {
-    const body = installBody("");
-
-    domAdapter.setBodyScrollLocked(true);
-    expect(body.style.overflow).toBe("hidden");
-
-    domAdapter.setBodyScrollLocked(false);
-    expect(body.style.overflow).toBe("");
-  });
-
-  it("keeps the first saved value across a repeated lock", () => {
-    const body = installBody("");
-
-    domAdapter.setBodyScrollLocked(true);
-    body.style.overflow = "auto";
-    domAdapter.setBodyScrollLocked(true);
-    expect(body.style.overflow).toBe("hidden");
-
-    domAdapter.setBodyScrollLocked(false);
-    expect(body.style.overflow).toBe("");
-  });
-
-  it("ignores an unlock it did not issue", () => {
-    const body = installBody("visible");
-
-    domAdapter.setBodyScrollLocked(false);
-    expect(body.style.overflow).toBe("visible");
-  });
-
-  it("stays silent without a body", () => {
-    defineGlobal("document", {});
-
-    expect(() => domAdapter.setBodyScrollLocked(true)).not.toThrow();
-    expect(() => domAdapter.setBodyScrollLocked(false)).not.toThrow();
-  });
-});
-
-describe("domAdapter isApplePlatform", () => {
-  it("detects macOS and iOS from the platform string", () => {
-    defineGlobal("navigator", { platform: "MacIntel", userAgent: "" });
-    expect(domAdapter.isApplePlatform()).toBe(true);
-
-    defineGlobal("navigator", { platform: "iPhone", userAgent: "" });
-    expect(domAdapter.isApplePlatform()).toBe(true);
-  });
-
-  it("falls back to the user agent when the platform is absent", () => {
-    defineGlobal("navigator", {
-      platform: "",
-      userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0)",
-    });
-    expect(domAdapter.isApplePlatform()).toBe(true);
-  });
-
-  it("reports false on other platforms and without a navigator", () => {
-    defineGlobal("navigator", {
-      platform: "Win32",
-      userAgent: "Mozilla/5.0 (Windows NT 10.0)",
-    });
-    expect(domAdapter.isApplePlatform()).toBe(false);
-
-    defineGlobal("navigator", {});
-    expect(domAdapter.isApplePlatform()).toBe(false);
-
-    defineGlobal("navigator", undefined);
-    expect(domAdapter.isApplePlatform()).toBe(false);
-  });
-
-  it("returns false when reading the platform throws", () => {
-    defineGlobal("navigator", {
-      get platform(): string {
-        throw new Error("boom");
-      },
-      userAgent: "",
-    });
-
-    expect(domAdapter.isApplePlatform()).toBe(false);
   });
 });
 
