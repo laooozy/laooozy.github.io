@@ -10,7 +10,7 @@
  * loads on every route. It is kept as its own file (rather than appended to
  * `global.css`) so page-island styling stays a self-contained unit.
  *
- * Sections: Section primitive → Home page → Photography page → Instagram wall → 404.
+ * Sections: Section primitive → Home page → Photography page → Instagram wall.
  */
 
 /* ---------------------------------------------------------------- *
@@ -602,84 +602,4 @@
   border-color: var(--control-border-strong);
   background-color: var(--surface-hover);
   color: var(--text);
-}
-
-/* ---------------------------------------------------------------- *
- * 404
- * ---------------------------------------------------------------- */
-.not-found {
-  display: grid;
-  justify-items: center;
-  gap: var(--space-6);
-  padding-block: clamp(var(--space-8), 10vw, var(--space-11));
-  text-align: center;
-}
-
-.not-found__code {
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: clamp(var(--text-4xl), 18vw, 8rem);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: var(--tracking-display);
-  /*
-   * The old two-hue accent gradient was retired in the single-purple
-   * consolidation. Paint the numeral with the solid --accent instead: the clip
-   * plus transparent fill still render it as the brand purple, and the
-   * reduced-motion fallback below (which resets the background and restores
-   * currentColor) keeps working unchanged.
-   */
-  background: var(--accent);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-}
-
-.not-found__card {
-  max-width: var(--container-narrow);
-  text-align: center;
-}
-
-.not-found__title {
-  margin: 0 0 var(--space-3);
-}
-
-.not-found__body {
-  margin: 0 0 var(--space-5);
-  color: var(--text-muted);
-}
-
-.not-found__link {
-  font-weight: 600;
-  color: var(--accent-text);
-  text-decoration: none;
-}
-
-.not-found__link:hover,
-.not-found__link:focus-visible {
-  color: var(--text);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .not-found__code {
-    background: none;
-    -webkit-text-fill-color: currentColor;
-    color: var(--text);
-  }
-}
-
-/*
- * Touch targets for the page-level controls (compact header breakpoint,
- * ≤621px). Same contract as the global block: a 44x44 CSS-px minimum hit area,
- * no change to colour, radius or type, and desktop untouched. The contact row
- * switches its baseline alignment to centre so the label and the now-taller
- * link share one vertical axis.
- */
-@media (max-width: 621px) {
-  .not-found__link {
-    display: inline-flex;
-    align-items: center;
-    min-block-size: 44px;
-  }
 }

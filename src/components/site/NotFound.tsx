@@ -10,11 +10,18 @@
  * the first client render. Rendering the default locale until `mounted` flips
  * keeps the hydration render byte-identical to the server and eliminates the
  * mismatch; the store locale is adopted immediately after mount.
+ *
+ * Styling uses the generated shadcn `Card`/`Button` and the shared `Heading`.
+ * The big numeral is painted with a plain `text-primary` fill — NO
+ * `background-clip: text` — so `forced-colors: active` keeps it visible instead
+ * of painting it transparent.
  */
 
 import { useEffect, useState } from "react";
 
-import Card from "@/components/shared/Card";
+import Heading from "@/components/shared/typography/Heading";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
 
@@ -37,18 +44,38 @@ export default function NotFound() {
   const tr = mounted ? t : defaultTranslate;
 
   return (
-    <section className="not-found" aria-labelledby="notfound-heading">
-      <p className="not-found__code" aria-hidden="true">
+    <section
+      data-not-found
+      aria-labelledby="notfound-heading"
+      className="mx-auto flex w-full max-w-[var(--container-narrow)] flex-col items-center gap-6 text-center"
+    >
+      <p
+        data-not-found-code
+        aria-hidden="true"
+        className="m-0 font-mono text-[length:clamp(var(--text-4xl),18vw,8rem)] leading-none font-bold tracking-[var(--tracking-display)] text-primary select-none"
+      >
         404
       </p>
-      <Card className="not-found__card">
-        <h1 id="notfound-heading" className="not-found__title">
-          {tr("notFound.heading")}
-        </h1>
-        <p className="not-found__body">{tr("notFound.body")}</p>
-        <a className="not-found__link" href={HOME_HREF}>
-          {tr("notFound.backHome")} →
-        </a>
+      <Card className="w-full">
+        <CardContent className="flex flex-col items-center gap-4">
+          <Heading level={1} id="notfound-heading">
+            {tr("notFound.heading")}
+          </Heading>
+          <p className="m-0 max-w-[var(--measure)] text-pretty text-muted-foreground">
+            {tr("notFound.body")}
+          </p>
+          <Button
+            size="lg"
+            className="min-h-11 rounded-full px-5"
+            render={
+              <a href={HOME_HREF}>
+                <span className="text-primary-foreground">
+                  {tr("notFound.backHome")}
+                </span>
+              </a>
+            }
+          />
+        </CardContent>
       </Card>
     </section>
   );
