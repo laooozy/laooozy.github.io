@@ -13,7 +13,6 @@
  */
 import { useEffect, useState } from "react";
 
-import { clientDeps } from "@/client/bootstrap";
 import type { Pagination } from "@/components/shared/types";
 import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
@@ -30,7 +29,7 @@ export default function BlogPagination({
   pagination,
   className,
 }: BlogPaginationProps) {
-  const t = useT(clientDeps);
+  const t = useT();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

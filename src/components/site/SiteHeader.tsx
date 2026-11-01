@@ -40,7 +40,7 @@ import { Menu, X } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useStore } from "zustand";
 
-import { clientDeps } from "@/client/bootstrap";
+import { useClientDeps } from "@/components/shared/ClientDepsContext";
 import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
 
@@ -96,15 +96,13 @@ export default function SiteHeader({
   children,
   currentPath = "/",
 }: SiteHeaderProps) {
-  const t = useT(clientDeps);
+  const deps = useClientDeps();
+  const t = useT();
   // `false` on the server AND on the first client render, so SSR and the
   // hydration render agree; flipped after mount to adopt the store locale.
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const headerHidden = useStore(
-    clientDeps.store,
-    (state) => state.headerHidden,
-  );
+  const headerHidden = useStore(deps.store, (state) => state.headerHidden);
 
   const menuRef = useRef<HTMLDetailsElement>(null);
   const summaryRef = useRef<HTMLElement>(null);
@@ -122,14 +120,14 @@ export default function SiteHeader({
   // too (e.g. `/#about` from `/`) and never leave the panel over the target.
   useEffect(() => {
     if (!menuOpen) return;
-    return clientDeps.adapters.dom.onHashChange(() => setMenuOpen(false));
-  }, [menuOpen]);
+    return deps.adapters.dom.onHashChange(() => setMenuOpen(false));
+  }, [deps, menuOpen]);
 
   // Publish the panel state for the scroll-header guard so a scroll-down can
   // never hide the bar out from under an open menu.
   useEffect(() => {
-    clientDeps.store.getState().setHeaderMenuOpen(menuOpen);
-  }, [menuOpen]);
+    deps.store.getState().setHeaderMenuOpen(menuOpen);
+  }, [deps, menuOpen]);
 
   // Safety net: if the bar is ever hidden anyway, close the panel instead of
   // leaving it translated off-screen.

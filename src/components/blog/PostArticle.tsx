@@ -23,7 +23,6 @@
 
 import { useEffect, useState } from "react";
 
-import { clientDeps } from "@/client/bootstrap";
 import ChipRow from "@/components/shared/ChipRow";
 import Cluster from "@/components/shared/layout/Cluster";
 import { useLocale } from "@/hooks/useLocale";
@@ -52,8 +51,8 @@ export default function PostArticle({
   tags = [],
   readingMinutes,
 }: PostArticleProps) {
-  const t = useT(clientDeps);
-  const { locale } = useLocale(clientDeps);
+  const t = useT();
+  const { locale } = useLocale();
   // `false` on the server AND on the first client render, so SSR and the
   // hydration render agree; flipped after mount to adopt the store locale.
   const [mounted, setMounted] = useState(false);

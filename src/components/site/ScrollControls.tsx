@@ -13,7 +13,7 @@ import { ArrowDownToLine, ArrowUpToLine } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useStore } from "zustand";
 
-import { clientDeps } from "@/client/bootstrap";
+import { useClientDeps } from "@/components/shared/ClientDepsContext";
 import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
 
@@ -107,8 +107,9 @@ const SCROLL_CONTROLS_CSS = `
 `;
 
 export default function ScrollControls() {
-  const t = useT(clientDeps);
-  const menuOpen = useStore(clientDeps.store, (state) => state.headerMenuOpen);
+  const deps = useClientDeps();
+  const t = useT();
+  const menuOpen = useStore(deps.store, (state) => state.headerMenuOpen);
   const [mounted, setMounted] = useState(false);
   const [showTop, setShowTop] = useState(false);
   const [showBottom, setShowBottom] = useState(false);
@@ -118,7 +119,7 @@ export default function ScrollControls() {
   }, []);
 
   useEffect(() => {
-    const dom = clientDeps.adapters.dom;
+    const dom = deps.adapters.dom;
 
     const sync = (y: number) => {
       setShowTop(y > 500);
@@ -127,10 +128,10 @@ export default function ScrollControls() {
 
     sync(dom.scrollY());
     return dom.onScroll(sync);
-  }, []);
+  }, [deps]);
 
   const tr = mounted ? t : defaultTranslate;
-  const dom = clientDeps.adapters.dom;
+  const dom = deps.adapters.dom;
   // The mobile disclosure panel overlays the controls, so hide them (and take
   // them out of the Tab order) while it is open.
   const upVisible = showTop && !menuOpen;

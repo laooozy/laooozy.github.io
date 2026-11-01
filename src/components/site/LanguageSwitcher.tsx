@@ -27,7 +27,6 @@
 import { Check, ChevronDown, Globe } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { clientDeps } from "@/client/bootstrap";
 import T from "@/components/site/T";
 import { useLocale } from "@/hooks/useLocale";
 import { langAttr, languages, type Locale } from "@/i18n";
@@ -237,7 +236,7 @@ const SWITCHER_CSS = `
 `;
 
 export default function LanguageSwitcher() {
-  const { locale, setLocale } = useLocale(clientDeps);
+  const { locale, setLocale } = useLocale();
   // `false` on the server AND on the first client render, so the SSR HTML and
   // the hydration render are byte-identical (the menu is never in the SSR).
   const [open, setOpen] = useState(false);

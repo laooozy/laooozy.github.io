@@ -8,6 +8,7 @@
 import { useCallback } from "react";
 import { useStore } from "zustand";
 
+import { useClientDeps } from "@/components/shared/ClientDepsContext";
 import type { Locale } from "@/i18n";
 
 import type { ClientDeps } from "./deps";
@@ -33,7 +34,8 @@ export function applyLocaleChange(deps: ClientDeps, next: Locale): void {
   deps.adapters.dom.applyLocale(next);
 }
 
-export function useLocale(deps: ClientDeps): LocaleController {
+export function useLocale(): LocaleController {
+  const deps = useClientDeps();
   const locale = useStore(deps.store, (state) => state.locale);
   const setLocale = useCallback(
     (next: Locale) => applyLocaleChange(deps, next),

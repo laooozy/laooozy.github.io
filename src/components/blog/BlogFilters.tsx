@@ -19,7 +19,6 @@
  */
 import { useEffect, useState } from "react";
 
-import { clientDeps } from "@/client/bootstrap";
 import ChipRow from "@/components/shared/ChipRow";
 import type { FilterLink } from "@/components/shared/types";
 import { Separator } from "@/components/ui/separator";
@@ -41,7 +40,7 @@ export default function BlogFilters({
   periods = [],
   className,
 }: BlogFiltersProps) {
-  const t = useT(clientDeps);
+  const t = useT();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

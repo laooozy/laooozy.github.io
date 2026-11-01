@@ -8,13 +8,12 @@
 import { useCallback } from "react";
 import { useStore } from "zustand";
 
+import { useClientDeps } from "@/components/shared/ClientDepsContext";
 import {
   t as translate,
   type TranslationKey,
   type TranslationVars,
 } from "@/i18n";
-
-import type { ClientDeps } from "./deps";
 
 /** A translation function already bound to one locale. */
 export type Translate = (
@@ -22,7 +21,8 @@ export type Translate = (
   vars?: TranslationVars,
 ) => string;
 
-export function useT(deps: ClientDeps): Translate {
+export function useT(): Translate {
+  const deps = useClientDeps();
   const locale = useStore(deps.store, (state) => state.locale);
   return useCallback(
     (key: TranslationKey | (string & {}), vars?: TranslationVars) =>

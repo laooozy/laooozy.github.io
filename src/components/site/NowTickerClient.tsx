@@ -18,7 +18,7 @@
 import { Pause, Play } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
 
-import { clientDeps } from "@/client/bootstrap";
+import { useClientDeps } from "@/components/shared/ClientDepsContext";
 import { useLocale } from "@/hooks/useLocale";
 import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, langAttr, t as translate } from "@/i18n";
@@ -81,8 +81,9 @@ function NowTickerItems({
 }
 
 export default function NowTickerClient({ items }: NowTickerClientProps) {
-  const t = useT(clientDeps);
-  const { locale } = useLocale(clientDeps);
+  const deps = useClientDeps();
+  const t = useT();
+  const { locale } = useLocale();
   // `false` on the server AND on the first client render, so SSR and the
   // hydration render agree; flipped after mount.
   const [mounted, setMounted] = useState(false);
@@ -91,9 +92,9 @@ export default function NowTickerClient({ items }: NowTickerClientProps) {
 
   useEffect(() => {
     setMounted(true);
-    const reduced = clientDeps.adapters.dom.prefersReducedMotion();
+    const reduced = deps.adapters.dom.prefersReducedMotion();
     setRunning(!reduced && items.length >= 2);
-  }, [items.length]);
+  }, [deps, items.length]);
 
   const tr = mounted ? t : defaultTranslate;
   const activeLocale = mounted ? locale : defaultLang;

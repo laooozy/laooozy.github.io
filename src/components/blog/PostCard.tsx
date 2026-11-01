@@ -26,7 +26,6 @@
  */
 import { useEffect, useState } from "react";
 
-import { clientDeps } from "@/client/bootstrap";
 import PostCardView from "@/components/blog/PostCardView";
 import { useLocale } from "@/hooks/useLocale";
 import { type Translate, useT } from "@/hooks/useT";
@@ -59,8 +58,8 @@ export default function PostCard({
   variant = "card",
   className,
 }: PostCardProps) {
-  const t = useT(clientDeps);
-  const { locale } = useLocale(clientDeps);
+  const t = useT();
+  const { locale } = useLocale();
   // `false` on the server AND on the first client render, so SSR and the
   // hydration render agree; flipped after mount to adopt the store locale.
   const [mounted, setMounted] = useState(false);

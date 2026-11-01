@@ -21,7 +21,6 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 
-import { clientDeps } from "@/client/bootstrap";
 import BlogEmpty from "@/components/blog/BlogEmpty";
 import BlogFilters from "@/components/blog/BlogFilters";
 import BlogPagination from "@/components/blog/BlogPagination";
@@ -76,8 +75,8 @@ export default function BlogList({
   pagination,
   children,
 }: BlogListProps) {
-  const t = useT(clientDeps);
-  const { locale } = useLocale(clientDeps);
+  const t = useT();
+  const { locale } = useLocale();
   // `false` on the server AND on the first client render, so SSR and the
   // hydration render agree; flipped after mount to adopt the store locale.
   const [mounted, setMounted] = useState(false);

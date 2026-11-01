@@ -22,7 +22,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { clientDeps } from "@/client/bootstrap";
+import { useClientDeps } from "@/components/shared/ClientDepsContext";
 import AlertState from "@/components/shared/state/AlertState";
 import SkeletonState from "@/components/shared/state/SkeletonState";
 import SpinnerState from "@/components/shared/state/SpinnerState";
@@ -397,8 +397,9 @@ const MUSIC_CSS = `
 `;
 
 export default function MusicLibrary() {
-  const t = useT(clientDeps);
-  const { locale } = useLocale(clientDeps);
+  const deps = useClientDeps();
+  const t = useT();
+  const { locale } = useLocale();
   const statusRef = useRef<HTMLParagraphElement>(null);
   // `false` on the server AND on the first client render, so the SSR HTML and
   // the hydration render are byte-identical.
@@ -423,7 +424,7 @@ export default function MusicLibrary() {
     let cancelled = false;
     setStatus("loading");
 
-    clientDeps.adapters.music
+    deps.adapters.music
       .load()
       .then((next) => {
         if (cancelled) return;
@@ -438,7 +439,7 @@ export default function MusicLibrary() {
     return () => {
       cancelled = true;
     };
-  }, [attempt]);
+  }, [attempt, deps]);
 
   const tr = mounted ? t : defaultTranslate;
   const lang = mounted ? langAttr[locale] : langAttr[defaultLang];

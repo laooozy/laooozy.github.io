@@ -14,6 +14,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useStore } from "zustand";
 
+import { useClientDeps } from "@/components/shared/ClientDepsContext";
 import type { SearchResult, SearchStatus } from "@/store/types";
 
 import type { ClientDeps } from "./deps";
@@ -99,9 +100,9 @@ interface EngineRef {
 }
 
 export function useSearch(
-  deps: ClientDeps,
   debounceMs: number = SEARCH_DEBOUNCE_MS,
 ): SearchController {
+  const deps = useClientDeps();
   const open = useStore(deps.store, (state) => state.search.open);
   const query = useStore(deps.store, (state) => state.search.query);
   const status = useStore(deps.store, (state) => state.search.status);

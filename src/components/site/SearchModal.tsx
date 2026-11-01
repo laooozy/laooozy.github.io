@@ -22,7 +22,6 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { clientDeps } from "@/client/bootstrap";
 import AlertState from "@/components/shared/state/AlertState";
 import EmptyState from "@/components/shared/state/EmptyState";
 import { Kbd } from "@/components/shared/state/Kbd";
@@ -36,9 +35,9 @@ const defaultTranslate: Translate = (key, vars) =>
   translate(defaultLang, key, vars);
 
 export default function SearchModal() {
-  const t = useT(clientDeps);
+  const t = useT();
   const { open, query, status, results, openSearch, closeSearch, setQuery } =
-    useSearch(clientDeps);
+    useSearch();
 
   // `false` on the server AND on the first client render, so SSR and the
   // hydration render agree; flipped after mount to adopt the store locale.

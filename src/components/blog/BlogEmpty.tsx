@@ -9,7 +9,6 @@
  */
 import { useEffect, useState } from "react";
 
-import { clientDeps } from "@/client/bootstrap";
 import BlogEmptyView from "@/components/blog/BlogEmptyView";
 import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
@@ -18,7 +17,7 @@ const defaultTranslate: Translate = (key, vars) =>
   translate(defaultLang, key, vars);
 
 export default function BlogEmpty() {
-  const t = useT(clientDeps);
+  const t = useT();
   // `false` on the server AND on the first client render, so SSR and the
   // hydration render agree; flipped after mount to adopt the store locale.
   const [mounted, setMounted] = useState(false);

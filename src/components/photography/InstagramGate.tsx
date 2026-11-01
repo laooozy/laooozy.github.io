@@ -18,7 +18,7 @@
 import { ArrowUpRight, Camera, RefreshCw } from "lucide-react";
 import { useState } from "react";
 
-import { clientDeps } from "@/client/bootstrap";
+import { useClientDeps } from "@/components/shared/ClientDepsContext";
 import SpinnerState from "@/components/shared/state/SpinnerState";
 
 /** The server-rendered oEmbed layer the gate reveals after consent. */
@@ -61,12 +61,13 @@ export default function InstagramGate({
   handle,
   postCount,
 }: InstagramGateProps) {
+  const deps = useClientDeps();
   const [state, setState] = useState<GateState>("idle");
   const busy = state === "loading" || state === "loaded";
 
   async function load() {
     if (busy) return;
-    const dom = clientDeps.adapters.dom;
+    const dom = deps.adapters.dom;
 
     setState("loading");
     dom.setHidden(EMBEDS_SELECTOR, false);
