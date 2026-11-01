@@ -83,6 +83,14 @@ body {
    */
   overflow-x: clip;
   overflow-wrap: break-word;
+  /*
+   * CJK line breaking, inherited by every surface. `line-break: strict` is the
+   * conservative base: it adds the CJK forbidden-break rules (no line before
+   * closing punctuation, small kana, iteration marks) while still allowing a
+   * break between ordinary Han characters — the right default for Chinese
+   * prose. The article body opts into the same value explicitly below.
+   */
+  line-break: strict;
 }
 
 /*
@@ -466,6 +474,31 @@ html:not([data-locale]) [data-l="zh-hant"] {
   text-wrap: pretty;
 }
 
+/*
+ * Short CJK labels only — nav items, buttons, chips, card titles and one-line
+ * notes. `keep-all` stops a break between Han characters, so a two-character
+ * compound stays whole; `anywhere` is the escape hatch that lets an
+ * unexpectedly long run break instead of overflowing the viewport.
+ *
+ * NEVER put this on long prose: with no break opportunities between Han
+ * characters, a paragraph becomes one unbreakable run.
+ */
+@utility cjk-label {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * Keep one short CJK compound on a single line inside prose. Applied in the
+ * authored Markdown to the handful of words where a mid-word break reads as a
+ * typo (`網站`, `碎碎念`, `同好`, `看看`). `nowrap` is correct here because the
+ * span is always two to four characters wide — it can move to the next line as
+ * a unit, but can never itself overflow a viewport.
+ */
+[data-cjk-keep] {
+  white-space: nowrap;
+}
+
 @utility focus-ring {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
@@ -485,9 +518,17 @@ html:not([data-locale]) [data-l="zh-hant"] {
   font-family: var(--font-body);
   font-size: var(--text-lg);
   line-height: var(--leading-relaxed);
-  /* Break CJK between characters, but only at a word boundary for Latin
-     tokens and URLs; never split a short compound. */
-  line-break: normal;
+  /* CJK strategy for the article body:
+   *  - `line-break: strict` keeps CJK punctuation off the start of a line;
+   *  - `word-break: normal` still allows a break between ordinary Han
+   *    characters, so a long Chinese paragraph fills the measure instead of
+   *    overflowing (NEVER `keep-all` on prose — that overflows the viewport);
+   *  - `overflow-wrap: break-word` lets an unbroken URL or Latin run break
+   *    inside itself as a last resort;
+   *  - `text-wrap: pretty` avoids orphaned final lines.
+   * The four short compounds that must never split are marked with
+   * `data-cjk-keep` spans in the authored Markdown, not by relaxing prose. */
+  line-break: strict;
   word-break: normal;
   overflow-wrap: break-word;
   text-wrap: pretty;
@@ -509,6 +550,23 @@ html:not([data-locale]) [data-l="zh-hant"] {
   --tw-prose-pre-bg: var(--surface);
   --tw-prose-th-borders: var(--glass-border);
   --tw-prose-td-borders: var(--glass-border);
+}
+
+/*
+ * Progressive enhancement: phrase-aware breaking.
+ *
+ * Chrome/Edge implement `word-break: auto-phrase` (line-break 4), but their
+ * segmentation is Japanese-first — Chinese phrase dictionaries are not
+ * guaranteed, so a Chinese paragraph may get no benefit and no harm (it falls
+ * back to the normal between-Han-character breaking above). The `@supports`
+ * gate means browsers without the value keep `word-break: normal`. Because the
+ * enhancement is unreliable for Traditional Chinese, the four compounds that
+ * MUST stay whole are protected by `data-cjk-keep` spans, not by this rule.
+ */
+@supports (word-break: auto-phrase) {
+  .prose-brand {
+    word-break: auto-phrase;
+  }
 }
 
 .prose-brand h1,

@@ -43,7 +43,7 @@ draft: false
 這個大概從今年人生中的第一次去漫展開始的(ACGHK)，我用手機把老師們拍的太黑了，我有點不太甘心，然後就買了個相機，學了一下，目前屬於是純興趣的攝影師吧（？
 
 如果有老師看到這裡的話又在展場看到我的話，歡迎交個朋友喔喔喔！！！
-當然如果有同好看到的話歡迎多多指教！
+當然如果有<span data-cjk-keep>同好</span>看到的話歡迎多多指教！
 
 目前的裝備列表的話
 Canon EOS R10
@@ -52,7 +52,7 @@ Sigma 30 F1.4 (會買但還沒買的)
 Godox V1mid
 Godox X3 Pro
 
-如果有興趣多了解我這方面的東西，可以去看看[攝影版](https://laooozy.github.io/photographer/)
+如果有興趣多了解我這方面的東西，可以去<span data-cjk-keep>看看</span>[攝影版](https://laooozy.github.io/photographer/)
 
 #### 遊戲
 

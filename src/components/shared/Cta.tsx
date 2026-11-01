@@ -15,7 +15,7 @@ export interface CtaProps {
 }
 
 const BASE_CLASSES =
-  "group inline-flex items-center gap-[var(--space-2)] rounded-[var(--radius-pill)] text-[length:var(--text-sm)] no-underline pointer-coarse:min-h-11";
+  "cjk-label group inline-flex items-center gap-[var(--space-2)] rounded-[var(--radius-pill)] text-[length:var(--text-sm)] no-underline pointer-coarse:min-h-11";
 
 const VARIANT_CLASSES = {
   link: "border border-[var(--control-border)] bg-[var(--surface)] px-[var(--space-4)] py-[var(--space-2)] font-medium text-foreground transition-[background-color,border-color] duration-[var(--dur-fast)] ease-brand hover:border-[var(--control-border-strong)] hover:bg-[var(--accent-surface)] hover:text-foreground",

@@ -117,21 +117,35 @@
    * Typography
    * ------------------------------------------------------------------ */
   /*
-   * Latin faces are self-hosted (Fontsource, imported in global.css). Chinese
-   * body copy falls through to the platform's own Traditional Chinese face;
-   * `PingFang TC` is macOS/iOS, `Microsoft JhengHei` is Windows and
-   * `Noto Sans TC` is Android/Linux. No CJK webfont is downloaded — the
-   * system stack keeps the payload small and renders instantly.
+   * Latin faces are self-hosted (Fontsource, imported in global.css) and stay
+   * FIRST, so Latin glyphs never fall through to a CJK face. Traditional
+   * Chinese body copy then uses the platform's own face, in this order:
+   *
+   *   PingFang TC          macOS / iOS
+   *   Microsoft JhengHei   Windows
+   *   Noto Sans CJK TC     Linux (Debian/Ubuntu/Fedora Noto OTC package)
+   *   Source Han Sans TC   Adobe/Google Source Han (same design as Noto CJK)
+   *   Noto Sans TC         Android and the Google Fonts build
+   *   Heiti TC             older macOS releases
+   *
+   * The explicit CJK fallbacks matter: without them a Linux box with only
+   * `Noto Sans CJK TC` installed can render Chinese through an arbitrary
+   * `sans-serif` match (often a Japanese face, with subtly wrong glyphs for
+   * Traditional Chinese). No CJK webfont is downloaded — the system stack
+   * keeps the payload small and renders instantly.
    */
   --font-display:
-    "Sora", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", ui-sans-serif,
-    system-ui, sans-serif;
+    "Sora", "PingFang TC", "Microsoft JhengHei", "Noto Sans CJK TC",
+    "Source Han Sans TC", "Noto Sans TC", "Heiti TC", ui-sans-serif, system-ui,
+    sans-serif;
   --font-body:
-    "Inter", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", ui-sans-serif,
-    system-ui, sans-serif;
+    "Inter", "PingFang TC", "Microsoft JhengHei", "Noto Sans CJK TC",
+    "Source Han Sans TC", "Noto Sans TC", "Heiti TC", ui-sans-serif, system-ui,
+    sans-serif;
   --font-mono:
-    "JetBrains Mono", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC",
-    ui-monospace, SFMono-Regular, monospace;
+    "JetBrains Mono", "PingFang TC", "Microsoft JhengHei", "Noto Sans CJK TC",
+    "Source Han Sans TC", "Noto Sans TC", "Heiti TC", ui-monospace,
+    SFMono-Regular, monospace;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;

@@ -30,9 +30,10 @@ function hostOf(href: string): string {
  * note and ONE action, the host button, so the card has a single tab stop and
  * there is no duplicate link target.
  *
- * Every text run uses `break-keep wrap-anywhere`: CJK compounds stay whole when
- * the line wraps at punctuation, while an unbroken URL or a very long run can
- * still break inside itself instead of overflowing at 320px.
+ * Every text run uses the shared `cjk-label` utility (`word-break: keep-all` +
+ * `overflow-wrap: anywhere`): CJK compounds stay whole when the line wraps at
+ * punctuation, while an unbroken URL or a very long run can still break inside
+ * itself instead of overflowing at 320px. Short labels only — never prose.
  */
 export default function LinksList({ links, className }: LinksListProps) {
   if (links.length === 0) return null;
@@ -53,11 +54,11 @@ export default function LinksList({ links, className }: LinksListProps) {
           <li key={`${link.href}-${link.label}`} className="min-w-0">
             <Card data-link-card className="h-full">
               <CardHeader>
-                <CardTitle className="text-base leading-snug wrap-anywhere break-keep text-foreground">
+                <CardTitle className="text-base leading-snug cjk-label text-foreground">
                   {link.label}
                 </CardTitle>
                 {link.note ? (
-                  <CardDescription className="wrap-anywhere break-keep">
+                  <CardDescription className="cjk-label">
                     {link.note}
                   </CardDescription>
                 ) : null}
@@ -73,7 +74,7 @@ export default function LinksList({ links, className }: LinksListProps) {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <span className="wrap-anywhere break-keep">{host}</span>
+                      <span className="cjk-label">{host}</span>
                       <ArrowUpRight aria-hidden="true" />
                     </a>
                   }

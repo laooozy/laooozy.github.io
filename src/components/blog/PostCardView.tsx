@@ -109,11 +109,11 @@ export default function PostCardView({
             id={titleId}
             level={level}
             size={isRow ? "lg" : "md"}
-            className="wrap-anywhere break-keep"
+            className="cjk-label"
           >
             {title}
           </Heading>
-          <Text size="sm" tone="muted" className="wrap-anywhere break-keep">
+          <Text size="sm" tone="muted" className="cjk-label">
             {description}
           </Text>
           {tags.length > 0 && (

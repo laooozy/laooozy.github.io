@@ -87,7 +87,7 @@ export default function PostHeader({
           id="post-title"
           level={1}
           lang="zh-Hant"
-          className="mb-(--space-4) text-[length:var(--text-page-title)] wrap-anywhere"
+          className="mb-(--space-4) text-[length:var(--text-page-title)] cjk-label"
         >
           {title}
         </Heading>
