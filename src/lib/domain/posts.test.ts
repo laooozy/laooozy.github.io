@@ -13,6 +13,7 @@ import {
   blogIndexPath,
   blogPostPath,
   blogTagPath,
+  buildListingFilters,
   collectPeriods,
   collectTags,
   estimateReadingTime,
@@ -73,34 +74,64 @@ describe("collectTags", () => {
 });
 
 describe("collectPeriods", () => {
-  it("emits newest-first months, then newest-first years", () => {
+  it("emits newest-first years only", () => {
     const ids = [
-      "2026-02-14_post", // 2026-02
-      "2026-01-05_post", // 2026-01
-      "2025-12-01_post", // 2025-12
-      "2026-01-20_post", // 2026-01 (duplicate month)
+      "2026-02-14_post",
+      "2026-01-05_post",
+      "2025-12-01_post",
+      "2026-01-20_post",
     ];
     const posts = ids.map((id) => makePost({}, id));
 
-    expect(collectPeriods(posts)).toEqual([
-      "2026-02",
-      "2026-01",
-      "2025-12",
-      "2026",
-      "2025",
-    ]);
+    expect(collectPeriods(posts)).toEqual(["2026", "2025"]);
   });
 
-  it("dedupes identical month and year keys", () => {
+  it("dedupes identical year keys", () => {
     const posts = [
       makePost({}, "2026-06-01_post"),
       makePost({}, "2026-06-30_post"),
     ];
-    expect(collectPeriods(posts)).toEqual(["2026-06", "2026"]);
+    expect(collectPeriods(posts)).toEqual(["2026"]);
   });
 
   it("returns an empty array for an empty post set", () => {
     expect(collectPeriods([])).toEqual([]);
+  });
+});
+
+describe("buildListingFilters", () => {
+  const posts = [
+    makePost({ tags: ["隨筆", "技術"] }, "2026-02-14_post"),
+    makePost({ tags: ["技術"] }, "2025-12-01_post"),
+  ];
+
+  it("builds tag and year links, none active for the index", () => {
+    expect(buildListingFilters(posts)).toEqual({
+      tags: [
+        { tag: "技術", href: "/blog/tags/%E6%8A%80%E8%A1%93/", active: false },
+        { tag: "隨筆", href: "/blog/tags/%E9%9A%A8%E7%AD%86/", active: false },
+      ],
+      periods: [
+        { period: "2026", href: "/blog/archive/2026/", active: false },
+        { period: "2025", href: "/blog/archive/2025/", active: false },
+      ],
+    });
+  });
+
+  it("marks the active tag", () => {
+    const { tags, periods } = buildListingFilters(posts, { tag: "技術" });
+    expect(tags.filter((item) => item.active)).toEqual([
+      { tag: "技術", href: "/blog/tags/%E6%8A%80%E8%A1%93/", active: true },
+    ]);
+    expect(periods.every((item) => !item.active)).toBe(true);
+  });
+
+  it("marks the active year", () => {
+    const { tags, periods } = buildListingFilters(posts, { period: "2025" });
+    expect(periods.filter((item) => item.active)).toEqual([
+      { period: "2025", href: "/blog/archive/2025/", active: true },
+    ]);
+    expect(tags.every((item) => !item.active)).toBe(true);
   });
 });
 
@@ -155,7 +186,7 @@ describe("calendar-date invariance", () => {
     expect(matchesPeriod(post, "2026-01")).toBe(true);
     expect(matchesPeriod(post, "2025")).toBe(false);
     expect(matchesPeriod(post, "2025-12")).toBe(false);
-    expect(collectPeriods([post])).toEqual(["2026-01", "2026"]);
+    expect(collectPeriods([post])).toEqual(["2026"]);
   });
 
   it("carries the date-only filename string into the listing item", () => {

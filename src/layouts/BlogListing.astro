@@ -1,0 +1,73 @@
+---
+/**
+ * Shared build-time composition for every blog listing: the paginated index,
+ * tag pages and year archives. It loads the full post set once, derives the
+ * filter tray in the pure domain, and mounts the single `BlogList`
+ * island; routes only supply which listing they are and (for the index) the
+ * paginated slice.
+ */
+import BlogList from "../components/blog/BlogList";
+import type { Pagination } from "../components/shared/types";
+import {
+  type BlogListItem,
+  buildListingFilters,
+  formatPeriodLabel,
+  matchesPeriod,
+  toBlogListItem,
+} from "../lib/domain/posts";
+import { getAllPosts } from "../lib/io/posts";
+import { useTranslations } from "../i18n/ui";
+import BaseLayout from "./BaseLayout.astro";
+
+export type BlogListingHeading =
+  | { kind: "index" }
+  | { kind: "tag"; tag: string }
+  | { kind: "archive"; period: string };
+
+interface Props {
+  heading: BlogListingHeading;
+  /** The index passes its paginated slice; tag/year pages derive theirs. */
+  posts?: BlogListItem[];
+  pagination?: Pagination;
+}
+
+const locale = "zh-hant" as const;
+const { heading, posts, pagination } = Astro.props;
+const t = useTranslations(locale);
+const allPosts = await getAllPosts();
+
+const filters = buildListingFilters(allPosts, {
+  tag: heading.kind === "tag" ? heading.tag : undefined,
+  period: heading.kind === "archive" ? heading.period : undefined,
+});
+
+const items =
+  posts ??
+  allPosts
+    .filter((post) => {
+      if (heading.kind === "tag") return post.data.tags.includes(heading.tag);
+      if (heading.kind === "archive") {
+        return matchesPeriod(post, heading.period);
+      }
+      return true;
+    })
+    .map(toBlogListItem);
+
+const title =
+  heading.kind === "index"
+    ? t.blog.heading
+    : heading.kind === "tag"
+      ? `${t.blog.byTag} · ${heading.tag}`
+      : formatPeriodLabel(heading.period, locale);
+---
+
+<BaseLayout title={title}>
+  <BlogList
+    client:load
+    posts={items}
+    heading={heading}
+    tags={filters.tags}
+    periods={filters.periods}
+    pagination={pagination}
+  />
+</BaseLayout>

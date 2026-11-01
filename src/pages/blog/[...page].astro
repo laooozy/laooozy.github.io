@@ -1,53 +1,14 @@
 ---
-/**
- * Blog index — served unprefixed at `/blog/` (default locale).
- * 4 posts per page, newest first; drafts excluded; build-time pagination.
- *
- * Posts are reduced to plain, serializable fields before they cross into the
- * `BlogList` React island; the heading is a locale-independent descriptor, so
- * the island re-derives every label from the store locale on the client.
- */
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import BlogList from "../../components/blog/BlogList";
-import { useTranslations } from "../../i18n/ui";
-import {
-  blogArchivePath,
-  blogTagPath,
-  collectPeriods,
-  collectTags,
-  PAGE_SIZE,
-  toBlogListItem,
-} from "../../lib/domain/posts";
+import type { PaginateFunction as Paginate } from "astro";
+import BlogListing from "../../layouts/BlogListing.astro";
+import { PAGE_SIZE, toBlogListItem } from "../../lib/domain/posts";
 import { getAllPosts } from "../../lib/io/posts";
 
-const locale = "zh-hant" as const;
-
-export async function getStaticPaths({
-  paginate,
-}: {
-  paginate: import("astro").PaginateFunction;
-}) {
-  const posts = await getAllPosts();
-  return paginate(posts, { pageSize: PAGE_SIZE });
+export async function getStaticPaths({ paginate }: { paginate: Paginate }) {
+  return paginate(await getAllPosts(), { pageSize: PAGE_SIZE });
 }
 
-const t = useTranslations(locale);
 const { page } = Astro.props;
-
-const allPosts = await getAllPosts();
-const tags = collectTags(allPosts).map((tag) => ({
-  tag,
-  href: blogTagPath(tag),
-}));
-const periods = collectPeriods(allPosts)
-  .filter((period) => period.length === 4)
-  .map((period) => ({
-    period,
-    href: blogArchivePath(period),
-  }));
-
-const posts = page.data.map(toBlogListItem);
-const heading = { kind: "index" } as const;
 const pagination = {
   currentPage: page.currentPage,
   lastPage: page.lastPage,
@@ -55,13 +16,8 @@ const pagination = {
 };
 ---
 
-<BaseLayout title={t.blog.heading}>
-  <BlogList
-    client:load
-    posts={posts}
-    heading={heading}
-    tags={tags}
-    periods={periods}
-    pagination={pagination}
-  />
-</BaseLayout>
+<BlogListing
+  heading={{ kind: "index" }}
+  posts={page.data.map(toBlogListItem)}
+  pagination={pagination}
+/>

@@ -77,17 +77,67 @@ export function collectTags(posts: Post[]): string[] {
   return [...tags].sort((a, b) => a.localeCompare(b));
 }
 
-/** `YYYY` and `YYYY-MM` keys present in a post set, newest first (months, then years). */
+/**
+ * `YYYY` keys present in a post set, newest first.
+ *
+ * The listing only links year archives, so month keys are deliberately not
+ * emitted: a month key would imply a `YYYY-MM` route that does not exist.
+ * `matchesPeriod` still understands month keys for callers that need them.
+ */
 export function collectPeriods(posts: Post[]): string[] {
   const years = new Set<string>();
-  const months = new Set<string>();
   for (const post of posts) {
-    const date = postDateString(post);
-    years.add(date.slice(0, 4));
-    months.add(date.slice(0, 7));
+    years.add(postDateString(post).slice(0, 4));
   }
-  const desc = (a: string, b: string) => b.localeCompare(a);
-  return [...[...months].sort(desc), ...[...years].sort(desc)];
+  return [...years].sort((a, b) => b.localeCompare(a));
+}
+
+/** A tag filter chip: raw tag, its listing URL, and whether it is active. */
+export interface ListingTagFilter {
+  tag: string;
+  href: string;
+  active: boolean;
+}
+
+/** A year filter chip: raw `YYYY`, its archive URL, and whether it is active. */
+export interface ListingPeriodFilter {
+  period: string;
+  href: string;
+  active: boolean;
+}
+
+/** Which filter, if any, the current listing represents. */
+export interface ListingFilterSelection {
+  tag?: string;
+  period?: string;
+}
+
+/** The complete filter tray for a listing, built from its full post set. */
+export interface ListingFilters {
+  tags: ListingTagFilter[];
+  periods: ListingPeriodFilter[];
+}
+
+/**
+ * Build the tag and year filter links every blog listing shares, marking the
+ * one matching `active` (the index passes no selection, so nothing is active).
+ */
+export function buildListingFilters(
+  posts: Post[],
+  active: ListingFilterSelection = {},
+): ListingFilters {
+  return {
+    tags: collectTags(posts).map((tag) => ({
+      tag,
+      href: blogTagPath(tag),
+      active: tag === active.tag,
+    })),
+    periods: collectPeriods(posts).map((period) => ({
+      period,
+      href: blogArchivePath(period),
+      active: period === active.period,
+    })),
+  };
 }
 
 /** Does a post belong to a `YYYY` or `YYYY-MM` archive period? */
