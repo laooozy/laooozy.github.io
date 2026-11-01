@@ -1,110 +1,47 @@
 /**
- * ScrollControls — floating scroll-to-top / scroll-to-bottom chrome.
+ * ScrollControls — the single fixed back-to-top chrome control.
  *
- * Both buttons are icon-only and start hidden (`showTop`/`showBottom` are
- * `false` on the server and on the first client render, so hydration always
- * matches). Visibility is derived from the DOM port's scroll subscription
- * (`onScroll`, `scrollY`, `distanceFromBottom`) — this island never attaches a
- * listener or touches a browser global itself. Labels are locale-reactive via
- * `useT` behind the same `mounted` gate as `SiteFooter`.
+ * One icon-only shadcn `Button` with a shadcn tooltip and an accessible name.
+ * It starts hidden on the server AND on the first client render (`showTop` is
+ * `false` in both), so hydration always matches. Visibility is derived from the
+ * DOM port's single scroll subscription (`onScroll`, `scrollY`) — this island
+ * never attaches a listener, starts a frame loop, or touches a browser global.
+ * `scrollToTop` on the port already chooses `behavior: "auto"` under reduced
+ * motion, so the jump is instant when the user asks for less motion.
+ *
+ * Position: fixed bottom-right, inset by the safe-area insets and the page
+ * gutter. `BaseLayout` reserves a matching bottom band inside `<main>` so the
+ * final row/card can always clear the control rather than relying on luck.
+ * The label is locale-reactive via `useT` behind the same `mounted` gate as
+ * `SiteHeader`/`SiteFooter`.
  */
 
-import { ArrowDownToLine, ArrowUpToLine } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useStore } from "zustand";
 
 import { useClientDeps } from "@/components/shared/ClientDepsContext";
+import TooltipState from "@/components/shared/state/TooltipState";
+import { Button } from "@/components/ui/button";
 import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
+import { cn } from "@/lib/utils";
 
 /** The build-time locale every SSR render is emitted in. Stable, no deps. */
 const defaultTranslate: Translate = (key, vars) =>
   translate(defaultLang, key, vars);
 
-const SCROLL_CONTROLS_CSS = `
-.scroll-controls {
-	/* A plain wrapper: each button is independently \`position: fixed\`, so the
-	   container itself carries no layout and never groups the pair. */
-	display: contents;
-}
+/**
+ * Scroll offset (CSS px) past which the control appears. It is hidden at the
+ * very top, where "back to top" would be a no-op.
+ */
+const SHOW_AFTER_PX = 500;
 
-.scroll-controls__button {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	inline-size: 44px;
-	block-size: 44px;
-	padding: 0;
-	border: 1px solid var(--control-border);
-	border-radius: var(--radius-pill);
-	background: var(--surface);
-	background-image: var(--card-bg);
-	color: var(--text);
-	box-shadow: var(--card-inset), 0 8px 24px -12px rgb(0 0 0 / 0.6);
-	-webkit-backdrop-filter: blur(var(--glass-blur));
-	backdrop-filter: blur(var(--glass-blur));
-	pointer-events: none;
-	cursor: pointer;
-	opacity: 0;
-	visibility: hidden;
-	transform: translateY(8px);
-	transition:
-		opacity 150ms var(--ease-out),
-		transform 150ms var(--ease-out),
-		color 150ms var(--ease-out),
-		border-color 150ms var(--ease-out);
-}
+/** Hidden state: no layout, no pointer events, out of the tab order. */
+const HIDDEN_CLASSES = "pointer-events-none invisible translate-y-2 opacity-0";
 
-/* Back to top: top-right, just below the sticky header. */
-.scroll-controls__button--top {
-	position: fixed;
-	top: 5.5rem;
-	inset-inline-end: calc(var(--space-4) + env(safe-area-inset-right, 0px));
-	z-index: calc(var(--z-sticky) - 1);
-}
-
-/* Jump to bottom: bottom-right, aligned with the top button. */
-.scroll-controls__button--bottom {
-	position: fixed;
-	bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
-	inset-inline-end: calc(var(--space-4) + env(safe-area-inset-right, 0px));
-	z-index: calc(var(--z-sticky) - 1);
-}
-
-.scroll-controls__button[data-visible="true"] {
-	opacity: 1;
-	visibility: visible;
-	transform: translateY(0);
-	pointer-events: auto;
-}
-
-.scroll-controls__button:hover {
-	border-color: var(--accent-text);
-	color: var(--accent-text);
-}
-
-.scroll-controls__button:focus-visible {
-	outline: 2px solid var(--accent);
-	outline-offset: 2px;
-}
-
-@media (min-width: 39rem) {
-	.scroll-controls__button--top {
-		inset-inline-end: calc(var(--space-5) + env(safe-area-inset-right, 0px));
-	}
-
-	.scroll-controls__button--bottom {
-		bottom: calc(var(--space-5) + env(safe-area-inset-bottom, 0px));
-		inset-inline-end: calc(var(--space-5) + env(safe-area-inset-right, 0px));
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.scroll-controls__button {
-		transition: none;
-	}
-}
-`;
+/** Shown state: the single visible control. */
+const SHOWN_CLASSES = "pointer-events-auto visible translate-y-0 opacity-100";
 
 export default function ScrollControls() {
   const deps = useClientDeps();
@@ -112,7 +49,6 @@ export default function ScrollControls() {
   const menuOpen = useStore(deps.store, (state) => state.headerMenuOpen);
   const [mounted, setMounted] = useState(false);
   const [showTop, setShowTop] = useState(false);
-  const [showBottom, setShowBottom] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -122,8 +58,7 @@ export default function ScrollControls() {
     const dom = deps.adapters.dom;
 
     const sync = (y: number) => {
-      setShowTop(y > 500);
-      setShowBottom(y > 500 && dom.distanceFromBottom() > 240);
+      setShowTop(y > SHOW_AFTER_PX);
     };
 
     sync(dom.scrollY());
@@ -132,43 +67,45 @@ export default function ScrollControls() {
 
   const tr = mounted ? t : defaultTranslate;
   const dom = deps.adapters.dom;
-  // The mobile disclosure panel overlays the controls, so hide them (and take
-  // them out of the Tab order) while it is open.
-  const upVisible = showTop && !menuOpen;
-  const downVisible = showBottom && !menuOpen;
+  // The mobile disclosure panel overlays the control, so hide it (and take it
+  // out of the Tab order) while the menu is open.
+  const visible = showTop && !menuOpen;
 
   return (
-    <div className="scroll-controls">
-      <style dangerouslySetInnerHTML={{ __html: SCROLL_CONTROLS_CSS }} />
-      <button
-        type="button"
-        className="scroll-controls__button scroll-controls__button--top"
-        aria-label={tr("a11y.scrollToTop")}
-        onClick={(event) => {
-          // Hiding the focused button mid-scroll cancels Chrome's smooth scroll.
-          event.currentTarget.blur();
-          dom.scrollToTop();
-        }}
-        data-visible={upVisible}
-        tabIndex={upVisible ? 0 : -1}
-        aria-hidden={!upVisible}
-      >
-        <ArrowUpToLine size={20} aria-hidden />
-      </button>
-      <button
-        type="button"
-        className="scroll-controls__button scroll-controls__button--bottom"
-        aria-label={tr("a11y.scrollToBottom")}
-        onClick={(event) => {
-          event.currentTarget.blur();
-          dom.scrollToBottom();
-        }}
-        data-visible={downVisible}
-        tabIndex={downVisible ? 0 : -1}
-        aria-hidden={!downVisible}
-      >
-        <ArrowDownToLine size={20} aria-hidden />
-      </button>
+    <div className="contents">
+      <TooltipState
+        content={tr("a11y.scrollToTop")}
+        side="top"
+        align="center"
+        trigger={
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label={tr("a11y.scrollToTop")}
+            data-back-to-top=""
+            data-visible={visible ? "true" : "false"}
+            tabIndex={visible ? 0 : -1}
+            aria-hidden={!visible}
+            onClick={(event) => {
+              // Hiding the focused button mid-scroll cancels Chrome's smooth
+              // scroll; blur first so the jump always completes.
+              event.currentTarget.blur();
+              dom.scrollToTop();
+            }}
+            className={cn(
+              "fixed z-[calc(var(--z-sticky)_-_1)] size-11 min-h-11 min-w-11 rounded-full border-[var(--control-border)] bg-[var(--surface)] text-[var(--text)] shadow-[0_8px_24px_-12px_rgb(0_0_0/0.6)]",
+              "right-[calc(var(--space-4)_+_env(safe-area-inset-right,0px))] bottom-[calc(var(--space-4)_+_env(safe-area-inset-bottom,0px))]",
+              "sm:right-[calc(var(--space-5)_+_env(safe-area-inset-right,0px))] sm:bottom-[calc(var(--space-5)_+_env(safe-area-inset-bottom,0px))]",
+              "transition-[opacity,transform,color,border-color] duration-150 ease-[var(--ease-out)] motion-reduce:transition-none",
+              "hover:border-[var(--accent-text)] hover:text-[var(--accent-text)]",
+              visible ? SHOWN_CLASSES : HIDDEN_CLASSES,
+            )}
+          >
+            <ArrowUp size={20} aria-hidden />
+          </Button>
+        }
+      />
     </div>
   );
 }
