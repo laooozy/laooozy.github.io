@@ -30,7 +30,10 @@ const { Content } = await render(entry);
 <style>
   .music-page {
     display: grid;
-    gap: clamp(var(--space-9), 9vw, var(--space-12));
+    /* Back link, masthead and the library toolbar read as one block: the old
+       clamp(space-9, 9vw, space-12) left ~128px of dead space between the
+       masthead and the toolbar at 1440. */
+    gap: clamp(var(--space-3), 2vw, var(--space-5));
   }
 
   /*
