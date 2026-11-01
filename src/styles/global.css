@@ -1869,7 +1869,7 @@ a.now-ticker__item:focus-visible {
 
   .skip-link,
   .search,
-  .lang-switch,
+  .language-switcher,
   .site-menu,
   .now-ticker__toggle {
     display: none !important;

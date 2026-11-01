@@ -135,11 +135,13 @@ if (!themeColor) {
      * Header and footer are hydrated React islands (task 32): their nav /
      * footer labels render from the client locale store, so the chrome
      * re-renders in place when the language changes — no navigation, no
-     * reload. The switcher keeps its own `client:idle` island, nested in the
-     * header's flex row so the layout is unchanged.
+     * reload. The switcher keeps its own `client:load` island, nested in the
+     * header's action cluster so the layout is unchanged: language is a
+     * primary control, so it must be interactive on first input rather than
+     * waiting for the browser to go idle.
      */}
     <SiteHeader client:load currentPath={Astro.url.pathname}>
-      <LanguageSwitcher client:idle />
+      <LanguageSwitcher client:load />
     </SiteHeader>
 
     {/*

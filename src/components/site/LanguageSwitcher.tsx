@@ -1,33 +1,44 @@
 /**
  * LanguageSwitcher — store-driven, zero-redirect locale dropdown.
  *
- * Renders ONE glassy trigger button (a globe icon plus the CURRENT language)
- * that opens a menu listing every supported locale. Selecting one calls the
- * store-backed `setLocale` (through the injected `clientDeps`), which persists
- * the choice and reflects `<html lang>` + `data-locale` — the URL never changes
- * and no navigation happens, so switching is instant and flash-free.
+ * Built on the generated shadcn `DropdownMenu` (base-nova, Base UI under the
+ * hood): the trigger is `DropdownMenuTrigger`, the list is
+ * `DropdownMenuRadioGroup` + `DropdownMenuRadioItem`. The primitive owns the
+ * menu semantics — arrow-key navigation, typeahead, Escape/outside close and
+ * focus return to the trigger — so this component holds no document listener.
  *
  * Hydration safety
  * ----------------
  * The trigger's label is rendered as three constant, locale-independent names
  * (`繁體中文`, `简体中文`, `English`), each in its own `[data-l]` span toggled by
- * CSS from `html[data-locale="…"]` (see `global.css`). The server-rendered
- * markup is therefore identical for every build-time locale and no React value
- * is read at render time, so the first client render matches the SSR HTML
- * exactly: no hydration mismatch and no `zh-hant` flash in this control.
+ * CSS from `html[data-locale="…"]` (see `global.css`). No React value is read
+ * at render time, so the server-rendered markup is identical to the first
+ * client render: no hydration mismatch and no `zh-hant` flash in this control.
+ * The menu itself is portal-mounted only while open, so the store-backed
+ * radio selection never takes part in hydration either.
  *
- * The menu is always rendered but `hidden` while closed (client state that
- * starts `false` on both server and client), so it never causes a mismatch and
- * the trigger's `aria-controls` always resolves.
+ * The accessible name uses the all-locale `<T>` component (the same
+ * `[data-l]` CSS toggle), so it is mismatch-free as well and the current
+ * language is announced in its own `lang`.
  *
- * The accessible name is rendered with the all-locale `<T>` component (three
- * `[data-l]` spans toggled by the same CSS), so it is mismatch-free as well.
+ * z-index
+ * -------
+ * The generated `DropdownMenuContent` hard-codes `z-50` on its Positioner,
+ * which would sit under the sticky header (`--z-sticky`, 200). The content is
+ * therefore composed from the same Base UI parts with the Positioner raised to
+ * `--z-popover` (250); every other primitive stays the generated export.
  */
 
-import { Check, ChevronDown, Globe } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Menu as MenuPrimitive } from "@base-ui/react/menu";
+import { ChevronDown, Globe } from "lucide-react";
 
 import T from "@/components/site/T";
+import {
+  DropdownMenu,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useLocale } from "@/hooks/useLocale";
 import { langAttr, languages, type Locale } from "@/i18n";
 
@@ -37,398 +48,106 @@ const ALL_LOCALES: readonly Locale[] = ["zh-hant", "zh-hans", "en"];
 /** Menu order, as specified: English · 繁體中文 · 簡體中文. */
 const MENU_ORDER: readonly Locale[] = ["en", "zh-hant", "zh-hans"];
 
-const SWITCHER_CSS = `
-.lang-switch {
-	position: relative;
-	display: inline-flex;
-}
+const FOCUS_RING =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]";
 
-.lang-switch__trigger {
-	display: inline-flex;
-	align-items: center;
-	gap: var(--space-2);
-	padding: var(--space-1) var(--space-3);
-	border: 1px solid var(--control-border);
-	border-radius: var(--radius-pill);
-	background: var(--surface);
-	-webkit-backdrop-filter: blur(var(--glass-blur));
-	backdrop-filter: blur(var(--glass-blur));
-	color: var(--text-muted);
-	font-family: var(--font-body);
-	font-size: var(--text-sm);
-	line-height: 1.4;
-	white-space: nowrap;
-	cursor: pointer;
-	transition:
-		color var(--dur-fast) var(--ease-out),
-		border-color var(--dur-fast) var(--ease-out),
-		background-color var(--dur-fast) var(--ease-out);
-}
+/** Compact header (≤621px) makes the trigger a 44x44 icon-only control. */
+const TRIGGER_CLASS =
+  "inline-flex cursor-pointer items-center gap-2 rounded-[var(--radius-pill)] border border-[var(--control-border)] bg-[var(--surface)] px-3 py-1 text-sm whitespace-nowrap text-muted-foreground backdrop-blur-[var(--glass-blur)] transition-colors duration-[var(--dur-fast)] ease-[var(--ease-out)] hover:border-[var(--control-border-strong)] hover:bg-[var(--surface-hover)] hover:text-foreground data-[popup-open]:border-[var(--control-border-strong)] data-[popup-open]:bg-[var(--accent-soft)] data-[popup-open]:text-foreground pointer-coarse:min-h-11 pointer-coarse:min-w-11 max-[621px]:size-11 max-[621px]:justify-center max-[621px]:gap-0 max-[621px]:p-0 " +
+  FOCUS_RING;
 
-.lang-switch__trigger:hover {
-	color: var(--text);
-	border-color: var(--control-border-strong);
-	background: var(--surface-hover);
-}
+const RADIO_ITEM_CLASS =
+  "relative flex min-h-11 cursor-default items-center gap-2 rounded-md py-1 pr-8 pl-3 text-sm outline-hidden select-none data-highlighted:bg-[var(--surface-hover)] data-highlighted:text-foreground data-checked:bg-[var(--accent-soft)] data-checked:text-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4";
 
-.lang-switch__trigger:focus-visible {
-	color: var(--text);
-	outline: 2px solid var(--accent);
-	outline-offset: 2px;
-}
-
-.lang-switch__trigger[aria-expanded="true"] {
-	color: var(--text);
-	border-color: var(--control-border-strong);
-	background: var(--accent-soft);
-}
-
-.lang-switch__globe {
-	flex: none;
-	color: var(--accent);
-}
-
-.lang-switch__chevron {
-	flex: none;
-	transition: transform var(--dur-fast) var(--ease-out);
-}
-
-.lang-switch__trigger[aria-expanded="true"] .lang-switch__chevron {
-	transform: rotate(180deg);
-}
-
-.lang-switch__menu {
-	position: absolute;
-	top: calc(100% + var(--space-2));
-	right: 0;
-	/* Portaled-style popover token: must clear the sticky header. */
-	z-index: var(--z-popover);
-	display: flex;
-	flex-direction: column;
-	min-width: 10rem;
-	max-inline-size: calc(100vw - 2rem);
-	margin: 0;
-	padding: var(--space-1);
-	list-style: none;
-	border: 1px solid color-mix(in oklab, var(--glass-border-strong) 60%, transparent);
-	border-radius: var(--radius-md);
-	background: color-mix(in oklab, var(--bg-elevated) 88%, transparent);
-	-webkit-backdrop-filter: blur(var(--glass-blur));
-	backdrop-filter: blur(var(--glass-blur));
-	box-shadow: var(--shadow-lift);
-}
-
-/* Always-rendered but closed: keeps the trigger's aria-controls resolvable
-   while leaving the menu out of the accessibility tree and tab order. */
-.lang-switch__menu[hidden] {
-	display: none;
-}
-
-.lang-switch__item {
-	display: flex;
-	align-items: center;
-	gap: var(--space-2);
-	width: 100%;
-	min-block-size: 44px;
-	padding: var(--space-2) var(--space-3);
-	border: 0;
-	border-radius: var(--radius-sm);
-	background: transparent;
-	color: var(--text-muted);
-	font-family: var(--font-body);
-	font-size: var(--text-sm);
-	line-height: 1.4;
-	text-align: start;
-	white-space: nowrap;
-	cursor: pointer;
-	transition:
-		color var(--dur-fast) var(--ease-out),
-		background-color var(--dur-fast) var(--ease-out);
-}
-
-.lang-switch__item:hover {
-	color: var(--text);
-	background: var(--surface-hover);
-}
-
-.lang-switch__item:focus-visible {
-	color: var(--text);
-	background: var(--surface-hover);
-	outline: 2px solid var(--accent);
-	outline-offset: -2px;
-}
-
-.lang-switch__item[aria-checked="true"] {
-	color: var(--text);
-	background: var(--accent-soft);
-}
-
-.lang-switch__check {
-	display: inline-flex;
-	justify-content: center;
-	width: 1rem;
-	flex: none;
-	color: var(--accent);
-}
-
-.lang-switch__sr {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border: 0;
-}
-
-/*
- * Compact header (see SiteHeader's disclosure breakpoint): on narrow screens
- * the trigger becomes a 44x44 icon-only control. The locale label is clipped
- * rather than removed from the accessibility tree, so the trigger's name stays
- * "language + current locale" while only the globe is visible.
+/**
+ * The generated content's Positioner is fixed at `z-50`; this mirrors the
+ * generated Popup styling but lifts the Positioner to the brand popover layer
+ * so the menu clears the sticky header. `align="end"` keeps the menu inside
+ * the viewport on the compact 320/390 layouts.
  */
-@media (max-width: 621px) {
-	.lang-switch__trigger {
-		inline-size: 44px;
-		block-size: 44px;
-		padding: 0;
-		gap: 0;
-		justify-content: center;
-	}
-
-	/*
-	 * The compact row places the 44px disclosure button one --space-3 gap to
-	 * the right of the trigger, so the action cluster ends
-	 * (44px + var(--space-3)) past the trigger's right edge. Offset the menu
-	 * by exactly that so it right-aligns with the cluster instead of hanging
-	 * off the left-aligned trigger; the width cap keeps it inside 320px.
-	 */
-	.lang-switch__menu {
-		right: calc(-1 * (44px + var(--space-3)));
-	}
-
-	.lang-switch__trigger [data-l] {
-		position: absolute;
-		inline-size: 1px;
-		block-size: 1px;
-		padding: 0;
-		margin: -1px;
-		overflow: hidden;
-		clip: rect(0, 0, 0, 0);
-		white-space: nowrap;
-		border: 0;
-	}
-
-	.lang-switch__chevron {
-		display: none;
-	}
+function LanguageMenuContent({ children }: { children: React.ReactNode }) {
+  return (
+    <MenuPrimitive.Portal>
+      <MenuPrimitive.Positioner
+        align="end"
+        side="bottom"
+        sideOffset={8}
+        className="isolate z-[var(--z-popover)] outline-none"
+      >
+        <MenuPrimitive.Popup
+          data-slot="dropdown-menu-content"
+          data-language-menu=""
+          className="max-h-(--available-height) w-(--anchor-width) min-w-40 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:overflow-hidden data-closed:fade-out-0 data-closed:zoom-out-95"
+        >
+          {children}
+        </MenuPrimitive.Popup>
+      </MenuPrimitive.Positioner>
+    </MenuPrimitive.Portal>
+  );
 }
-
-@media (prefers-reduced-motion: reduce) {
-	.lang-switch__trigger,
-	.lang-switch__chevron,
-	.lang-switch__item {
-		transition: none;
-	}
-}
-`;
 
 export default function LanguageSwitcher() {
   const { locale, setLocale } = useLocale();
-  // `false` on the server AND on the first client render, so the SSR HTML and
-  // the hydration render are byte-identical (the menu is never in the SSR).
-  const [open, setOpen] = useState(false);
-
-  const rootRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
-
-  const getItems = useCallback(
-    () => itemRefs.current.filter((el): el is HTMLButtonElement => el !== null),
-    [],
-  );
-
-  const close = useCallback((returnFocus: boolean) => {
-    setOpen(false);
-    if (returnFocus) triggerRef.current?.focus({ preventScroll: true });
-  }, []);
-
-  // Close on a pointer press outside the switcher.
-  useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [open]);
-
-  // Move focus into the menu when it opens, landing on the active locale.
-  useEffect(() => {
-    if (!open) return;
-    const items = getItems();
-    const active = items.find((el) => el.dataset.lang === locale);
-    (active ?? items[0])?.focus({ preventScroll: true });
-    // `locale` is intentionally not a dependency: this should run once per
-    // open, not refocus the list every time the locale changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, getItems]);
-
-  /** Wrap focus around the menu items. */
-  const moveFocus = (index: number) => {
-    const items = getItems();
-    if (items.length === 0) return;
-    const next = (index + items.length) % items.length;
-    items[next]?.focus({ preventScroll: true });
-  };
-
-  const onItemKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
-    const items = getItems();
-    const current = items.indexOf(event.currentTarget);
-    switch (event.key) {
-      case "ArrowDown":
-        event.preventDefault();
-        moveFocus(current + 1);
-        break;
-      case "ArrowUp":
-        event.preventDefault();
-        moveFocus(current - 1);
-        break;
-      case "Home":
-        event.preventDefault();
-        moveFocus(0);
-        break;
-      case "End":
-        event.preventDefault();
-        moveFocus(items.length - 1);
-        break;
-      default: {
-        // Typeahead: a printable character jumps to the next item whose
-        // locale name or code starts with it (English / 繁 / 簡, or en/zh).
-        if (
-          event.key.length === 1 &&
-          event.key.trim() !== "" &&
-          !event.ctrlKey &&
-          !event.metaKey &&
-          !event.altKey
-        ) {
-          const char = event.key.toLocaleLowerCase();
-          const matches = (item: HTMLButtonElement) => {
-            const label = (item.textContent ?? "").trim().toLocaleLowerCase();
-            const code = item.dataset.lang?.toLocaleLowerCase() ?? "";
-            return label.startsWith(char) || code.startsWith(char);
-          };
-          for (let step = 1; step <= items.length; step += 1) {
-            const candidate = items[(current + step) % items.length];
-            if (candidate && matches(candidate)) {
-              candidate.focus({ preventScroll: true });
-              break;
-            }
-          }
-        }
-        break;
-      }
-    }
-  };
-
-  const select = (code: Locale) => {
-    // Choosing the current locale is a no-op — no redundant writes.
-    if (locale !== code) setLocale(code);
-    close(true);
-  };
 
   return (
     <nav
-      className="language-switcher"
+      className="language-switcher inline-flex items-center"
       aria-labelledby="language-switcher-label"
+      data-language-switcher=""
     >
-      <style dangerouslySetInnerHTML={{ __html: SWITCHER_CSS }} />
-      <span id="language-switcher-label" className="lang-switch__sr">
+      <span id="language-switcher-label" className="sr-only">
         <T k="a11y.language" />
       </span>
-      <div
-        className="lang-switch"
-        ref={rootRef}
-        onKeyDown={(event) => {
-          // Escape closes from the trigger or any item and restores focus.
-          if (open && event.key === "Escape") {
-            event.preventDefault();
-            close(true);
-          }
-          // Tab dismisses the menu; the browser then moves focus naturally
-          // past the hidden items (back to the trigger on Shift+Tab).
-          if (open && event.key === "Tab") setOpen(false);
-        }}
-        onBlurCapture={(event) => {
-          // Tabbing out of the switcher closes it without stealing focus back.
-          if (
-            open &&
-            !rootRef.current?.contains(event.relatedTarget as Node | null)
-          ) {
-            setOpen(false);
-          }
-        }}
-      >
-        <button
-          type="button"
-          className="lang-switch__trigger"
-          ref={triggerRef}
-          aria-haspopup="menu"
-          aria-expanded={open}
-          aria-controls="lang-switch-menu"
-          onClick={() => setOpen((prev) => !prev)}
-        >
-          <Globe className="lang-switch__globe" aria-hidden="true" size={16} />
-          {/* Static all-locale context: "Language" + the visible locale name is
-              the trigger's accessible name, including when the label is
-              visually clipped on compact screens. */}
-          <span className="lang-switch__sr">
-            <T k="a11y.language" />
-          </span>
-          {ALL_LOCALES.map((code) => (
-            <span key={code} data-l={code} lang={langAttr[code]}>
-              {languages[code]}
-            </span>
-          ))}
-          <ChevronDown
-            className="lang-switch__chevron"
+      <DropdownMenu>
+        <DropdownMenuTrigger className={TRIGGER_CLASS} data-language-trigger="">
+          <Globe
+            className="flex-none text-[var(--accent)]"
             aria-hidden="true"
             size={16}
           />
-        </button>
-        <ul
-          id="lang-switch-menu"
-          className="lang-switch__menu"
-          role="menu"
-          aria-labelledby="language-switcher-label"
-          hidden={!open}
-        >
-          {MENU_ORDER.map((code, index) => (
-            <li key={code} role="none">
-              <button
-                type="button"
-                role="menuitemradio"
-                aria-checked={locale === code}
-                className="lang-switch__item"
-                data-lang={code}
-                lang={langAttr[code]}
-                ref={(el) => {
-                  itemRefs.current[index] = el;
-                }}
-                onClick={() => select(code)}
-                onKeyDown={onItemKeyDown}
-              >
-                <span className="lang-switch__check" aria-hidden="true">
-                  {locale === code && <Check size={14} />}
-                </span>
+          {/* Static all-locale context: "Language" + the visible locale name is
+              the trigger's accessible name, including when the label is
+              visually clipped on compact screens. */}
+          <span className="sr-only">
+            <T k="a11y.language" />
+          </span>
+          <span className="max-[621px]:sr-only" data-language-label="">
+            {ALL_LOCALES.map((code) => (
+              <span key={code} data-l={code} lang={langAttr[code]}>
                 {languages[code]}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+              </span>
+            ))}
+          </span>
+          <ChevronDown
+            className="flex-none transition-transform duration-[var(--dur-fast)] ease-[var(--ease-out)] data-[popup-open]:rotate-180 max-[621px]:hidden"
+            aria-hidden="true"
+            size={16}
+          />
+        </DropdownMenuTrigger>
+        <LanguageMenuContent>
+          <DropdownMenuRadioGroup
+            value={locale}
+            aria-labelledby="language-switcher-label"
+            onValueChange={(next) => {
+              const code = next as Locale;
+              // Choosing the current locale is a no-op — no redundant writes.
+              if (code !== locale) setLocale(code);
+            }}
+          >
+            {MENU_ORDER.map((code) => (
+              <DropdownMenuRadioItem
+                key={code}
+                value={code}
+                closeOnClick
+                className={RADIO_ITEM_CLASS}
+                lang={langAttr[code]}
+              >
+                <span lang={langAttr[code]}>{languages[code]}</span>
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
+        </LanguageMenuContent>
+      </DropdownMenu>
     </nav>
   );
 }
