@@ -1,22 +1,11 @@
 ---
 /**
- * Cta — the two call-to-action pills already on the site.
- *
- * Props
- *  - href: string
- *  - label?: string      one-line visible text (preferred); omit it and pass
- *                        Markdown children instead
- *  - variant?: "link" | "photo"   default: "link"
- *      link  → `.link-arrow` (quiet pill, used in the About card)
- *      photo → `.photo-cta` (accent pill, used on the Photography page)
- *  - external?: boolean  adds target="_blank" rel="noopener" (photography links)
- *  - className?: string
- *
- * The arrow glyph and its wrapper class match the current markup exactly, so
- * the existing hover translations in global.css/pages.css keep working. With a
- * `label` the output is byte-identical to the React markup; with Markdown
- * children the children's paragraph is flattened back to inline.
+ * Cta — COMPATIBILITY SHIM. The implementation is the shared React component
+ * in `src/components/shared/Cta.tsx`; `home.mdx` and `photographer.mdx` keep
+ * importing this path until Tasks 25/27. Task 42 deletes this shim.
  */
+import Cta from "../shared/Cta";
+
 interface Props {
   href: string;
   label?: string;
@@ -32,32 +21,14 @@ const {
   external = false,
   className,
 } = Astro.props;
-
-const isPhoto = variant === "photo";
-const target = external ? "_blank" : undefined;
-const rel = external ? "noopener" : undefined;
 ---
 
-<a
-  class:list={[isPhoto ? "photo-cta" : "link-arrow", className]}
+<Cta
   href={href}
-  target={target}
-  rel={rel}
+  label={label}
+  variant={variant}
+  external={external}
+  className={className}
 >
-  {isPhoto ? label ? <span>{label}</span> : <slot /> : label ? label : <slot />}
-  <span
-    class={isPhoto ? "photo-cta__arrow" : "link-arrow__arrow"}
-    aria-hidden="true"
-  >
-    →
-  </span>
-</a>
-
-<style is:global>
-  /* Markdown children are parsed as a paragraph; the pill is an inline row. */
-  .link-arrow p,
-  .photo-cta p {
-    display: inline;
-    margin: 0;
-  }
-</style>
+  <slot />
+</Cta>

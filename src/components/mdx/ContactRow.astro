@@ -1,24 +1,11 @@
 ---
 /**
- * ContactRow — one line of the home contact list.
- *
- * Renders the current `contact__item` markup: a label and a link. Pass the
- * visible link text through `value` for a one-line handle (the common case);
- * the default slot is available for richer inline Markdown and is rendered as
- * Markdown inside the link.
- *
- * Wrap a list of rows in `<Stack as="ul" gap={3}>`; the `<li>` is part of this
- * component so the authored list stays semantic.
- *
- * Props
- *  - label: string       the muted field label
- *  - href: string        link target (mailto:, https://, …)
- *  - value?: string      visible link text; omit it to use the default slot
- *  - ariaLabel?: string  accessible name when the visible value alone (a
- *                        handle) does not say which account it is
- *  - external?: boolean  adds target="_blank" rel="noopener"
- *  - className?: string
+ * ContactRow — COMPATIBILITY SHIM. The implementation is the shared React
+ * component in `src/components/shared/ContactRow.tsx`; kept at this path for
+ * `home.mdx` until Task 25 migrates it. Task 42 deletes this shim.
  */
+import ContactRow from "../shared/ContactRow";
+
 interface Props {
   label: string;
   href: string;
@@ -38,26 +25,13 @@ const {
 } = Astro.props;
 ---
 
-<li class:list={["contact__item", className]}>
-  <span class="contact__label">{label}</span>
-  <a
-    class="contact__link"
-    href={href}
-    aria-label={ariaLabel}
-    target={external ? "_blank" : undefined}
-    rel={external ? "noopener" : undefined}
-  >
-    {value ?? <slot />}
-  </a>
-</li>
-
-<style is:global>
-  /*
-   * Markdown children arrive wrapped in a <p>. The link text is inline, so
-   * flatten the paragraph without changing the markup the author wrote.
-   */
-  .contact__link p {
-    display: inline;
-    margin: 0;
-  }
-</style>
+<ContactRow
+  label={label}
+  href={href}
+  value={value}
+  ariaLabel={ariaLabel}
+  external={external}
+  className={className}
+>
+  <slot />
+</ContactRow>

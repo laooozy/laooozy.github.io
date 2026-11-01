@@ -1,93 +1,23 @@
 ---
 /**
- * Hero — the home masthead. The fold's anchor: who this is, what's happening
- * now, and the way in.
- *
- * Astro port of the former React `Hero`; same `hero*` classes and markup.
- *
- * Props
- *  - title: string                     the wordmark (rendered as <h1>)
- *  - tagline?: string                  one-line description; the tagline
- *                                      paragraph is omitted when absent
- *  - meta?: { label; value; href? }[]  right-column spec rows (Base / Now / …);
- *                                      a row with `href` renders its value as a link
- *  - className?: string
- *
- * The default slot is optional extra masthead Markdown, appended after the
- * tagline. Two columns ≥60rem (text + spec panel), stacked below.
- *
- * The "now" status line is `NowTicker.astro`: it validates the owner-edited
- * JSON at build time and renders nothing when the list is empty, so the label
- * is fixed chrome owned by the client island, not a Hero prop.
+ * Hero — COMPATIBILITY SHIM. The implementation lives in
+ * `src/components/site/Hero.astro` (thin Astro wrapper around the React
+ * `HeroView`/`HeroMeta` plus the build-time `NowTicker`). Kept at this path
+ * for `home.mdx` until Task 25 migrates it. Task 42 deletes this shim.
  */
-import NowTicker from "./NowTicker.astro";
-interface HeroMeta {
-  label: string;
-  value: string;
-  /** Optional link target; when set, the value is rendered as an anchor. */
-  href?: string;
-}
+import type { HeroMetaItem } from "../shared/HeroMeta";
+import Hero from "../site/Hero.astro";
 
 interface Props {
   title: string;
   tagline?: string;
-  meta?: HeroMeta[];
+  meta?: HeroMetaItem[];
   className?: string;
 }
 
 const { title, tagline, meta = [], className } = Astro.props;
 ---
 
-<header class:list={["hero", className]}>
-  <div class="hero__main">
-    <NowTicker />
-
-    <h1 class="hero__title">
-      {title}
-      <span class="hero__period" aria-hidden="true">
-        .
-      </span>
-    </h1>
-
-    {tagline && <p class="hero__tagline">{tagline}</p>}
-
-    <slot />
-  </div>
-
-  {meta.length > 0 && (
-    <dl class="hero__meta">
-      {meta.map((row) => (
-        <div class="hero__meta-row">
-          <dt>{row.label}</dt>
-          <dd>
-            {row.href ? (
-              <a class="hero__meta-link" href={row.href}>
-                {row.value}
-              </a>
-            ) : (
-              row.value
-            )}
-          </dd>
-        </div>
-      ))}
-    </dl>
-  )}
-</header>
-
-<style>
-  /* A linked meta value keeps the row's ink and type so the baseline
-     composition is unchanged; hover/focus reveals the accent and underline. */
-  .hero__meta-link {
-    /* Vertical padding on an inline element grows the tap area to 44px
-       without contributing to line height, so the row does not move. */
-    padding-block: var(--space-3);
-    color: inherit;
-    text-decoration: none;
-  }
-
-  .hero__meta-link:hover,
-  .hero__meta-link:focus-visible {
-    color: var(--accent-text);
-    text-decoration: underline;
-  }
-</style>
+<Hero title={title} tagline={tagline} meta={meta} className={className}>
+  <slot />
+</Hero>

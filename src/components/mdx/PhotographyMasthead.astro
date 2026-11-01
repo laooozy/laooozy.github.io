@@ -1,17 +1,11 @@
 ---
 /**
- * PhotographyMasthead — the photography page intro.
- *
- * The hero-scale `<h1>` followed by the intro stack. The lead line stays a
- * prop because it carries the xl / muted / measure utilities; the rest of the
- * intro is authored Markdown through the default slot.
- *
- * Props
- *  - title: string      the hero heading (rendered as <h1>)
- *  - intro?: string     the larger muted lead paragraph
- *  - className?: string
+ * PhotographyMasthead — COMPATIBILITY SHIM. The implementation is the shared
+ * React component in `src/components/shared/PhotographyMasthead.tsx`. The old
+ * `intro` prop is translated to the shared `lead` vocabulary here; Task 27
+ * migrates the MDX body and Task 42 deletes this shim.
  */
-import Stack from "./Stack.astro";
+import PhotographyMasthead from "../shared/PhotographyMasthead";
 
 interface Props {
   title: string;
@@ -22,26 +16,6 @@ interface Props {
 const { title, intro, className } = Astro.props;
 ---
 
-<header class:list={["photo-masthead", className]}>
-  <h1 class="m-0 font-heading font-bold leading-tight tracking-[var(--tracking-display)] text-balance text-[length:var(--text-hero)] photo-masthead__title">
-    {title}
-  </h1>
-
-  <Stack gap={4} className="photo-masthead__intro">
-    {intro && (
-      <p class="m-0 max-w-[var(--measure)] text-[length:var(--text-xl)] text-muted-foreground text-pretty">
-        {intro}
-      </p>
-    )}
-    <slot />
-  </Stack>
-</header>
-
-<style is:global>
-  /* Parity with the React masthead's `<Text measure>` body: no extra margins. */
-  .photo-masthead__intro > p,
-  .photo-masthead__intro > ul,
-  .photo-masthead__intro > ol {
-    margin: 0;
-  }
-</style>
+<PhotographyMasthead title={title} lead={intro} className={className}>
+  <slot />
+</PhotographyMasthead>

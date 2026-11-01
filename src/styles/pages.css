@@ -14,30 +14,13 @@
  */
 
 /* ---------------------------------------------------------------- *
- * Section primitive (task 33 port)
+ * Section primitive
+ *
+ * Section/InterestCard/ContactRow own their own layout and type through the
+ * shared React primitives and Tailwind utilities. Only the authored-Markdown
+ * descendants below stay here, because the MDX slot is rendered outside the
+ * component's class scope.
  * ---------------------------------------------------------------- */
-.section__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-3) var(--space-5);
-  margin-bottom: var(--space-5);
-}
-
-.section__title {
-  margin: 0;
-}
-
-.section__lead {
-  max-width: var(--measure);
-  margin: 0 0 var(--space-6);
-  color: var(--text-muted);
-}
-
-.section__head + .section__lead {
-  margin-top: calc(var(--space-1) * -1);
-}
 
 /* ---------------------------------------------------------------- *
  * Home page
@@ -47,9 +30,45 @@
   gap: clamp(var(--space-8), 6vw, var(--space-10));
 }
 
-.interest__label {
-  margin: 0 0 var(--space-2);
-  font-size: var(--text-lg);
+/*
+ * Slotted Markdown lives in the consuming page's scope, so these parity rules
+ * are global descendants of the About card only (the class names are unique to
+ * the cards). They reproduce the card body's muted, margin-free children and
+ * the small gear list without touching article prose.
+ */
+.interest > .stack > p,
+.interest > .stack > ul,
+.interest > .stack > ol {
+  margin: 0;
+}
+
+.interest > .stack > p {
+  color: var(--text-muted);
+}
+
+/* The runner card used the smaller body note. */
+.interest--runner > .stack > p {
+  font-size: var(--text-sm);
+}
+
+/* The paragraph that introduces a list is the smaller "gear intro" line. */
+.interest > .stack > p:has(+ ul) {
+  font-size: var(--text-sm);
+}
+
+/*
+ * A Markdown list in a card is the gear list: one muted small line per item,
+ * no bullets, one space-1 row gap.
+ */
+.interest > .stack > ul {
+  display: grid;
+  gap: var(--space-1);
+  list-style: none;
+}
+
+.interest > .stack > ul > li {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
 }
 
 .interest__chips {
@@ -58,29 +77,6 @@
 
 .section__more {
   font-size: var(--text-sm);
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.contact__item {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-2) var(--space-4);
-  margin: 0;
-}
-
-.contact__label {
-  min-width: 6rem;
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.contact__link {
-  font-size: var(--text-lg);
   font-weight: 500;
   text-decoration: none;
 }
@@ -131,32 +127,8 @@
   transform: translateX(-3px);
 }
 
-/* Masthead */
-.photo-masthead {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-5);
-  padding-bottom: clamp(var(--space-2), 3vw, var(--space-6));
-}
-
-/* The masthead's local aurora glow is gone — the single fixed ambient layer
-   (`body::before`) now paints it, so the Photography page reads as the same one
-   background, not a doubled glow. The children stay above that wash. */
-.photo-masthead > * {
-  position: relative;
-  z-index: 1;
-}
-
-.photo-masthead__title {
-  margin: 0;
-  max-width: 20ch;
-}
-
-.photo-masthead__intro {
-  max-width: var(--measure);
-}
+/* Photomasthead layout and type live on the shared React component; only its
+   entrance motion stays here so the animation keeps a stable class hook. */
 
 /* Photo wall */
 .photo-wall {
@@ -202,38 +174,7 @@
   color: var(--accent);
 }
 
-/* Shared CTA pill */
-.photo-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-5);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-pill);
-  background-color: var(--accent);
-  color: var(--text-on-accent);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  text-decoration: none;
-  transition:
-    transform var(--dur-base) var(--ease-out),
-    box-shadow var(--dur-base) var(--ease-out);
-}
-
-.photo-cta:hover,
-.photo-cta:focus-visible {
-  color: var(--text-on-accent);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lift);
-}
-
-.photo-cta__arrow {
-  transition: transform var(--dur-base) var(--ease-out);
-}
-
-.photo-cta:hover .photo-cta__arrow {
-  transform: translateX(3px);
-}
+/* Shared CTA pills live on the React `Cta` component. */
 
 /* Approach — ruled spec columns (no card chrome). */
 .photo-approach {
@@ -324,13 +265,6 @@
 
   .photography .reveal:nth-of-type(3) {
     animation-delay: 120ms;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .photo-cta:hover,
-  .photo-cta:focus-visible {
-    transform: none;
   }
 }
 
@@ -775,11 +709,6 @@
  * link share one vertical axis.
  */
 @media (max-width: 621px) {
-  .contact__item {
-    align-items: center;
-  }
-
-  .contact__link,
   .photo-back,
   .not-found__link {
     display: inline-flex;

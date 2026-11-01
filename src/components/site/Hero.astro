@@ -1,0 +1,46 @@
+---
+/**
+ * Hero — the home masthead wrapper.
+ *
+ * This stays an Astro component for exactly one reason: the "now" status line
+ * (`NowTicker`) reads and validates `src/data/now.json` at BUILD time and
+ * renders the hydrated `NowTickerClient` island. React cannot top-level await,
+ * and a `client:load` directive only exists on an Astro-rendered island, so the
+ * ticker must remain a sibling of the React body rather than a child of it.
+ *
+ * The presentational identity block is `shared/HeroView` (React) and the spec
+ * panel is `shared/HeroMeta` (React); both render statically. The ticker is
+ * rendered here, inside `.hero__main`, before the identity block so the SSR
+ * order is unchanged.
+ *
+ * Props
+ *  - title: string                     the wordmark (rendered as <h1>)
+ *  - tagline?: string                  one-line description; mapped to HeroView's `lead`
+ *  - meta?: { label; value; href? }[]  right-column spec rows
+ *  - className?: string
+ */
+import type { HeroMetaItem } from "../shared/HeroMeta";
+import HeroMeta from "../shared/HeroMeta";
+import HeroView from "../shared/HeroView";
+import NowTicker from "./NowTicker.astro";
+
+interface Props {
+  title: string;
+  tagline?: string;
+  meta?: HeroMetaItem[];
+  className?: string;
+}
+
+const { title, tagline, meta = [], className } = Astro.props;
+---
+
+<header class:list={["hero", className]}>
+  <div class="hero__main">
+    <NowTicker />
+    <HeroView title={title} lead={tagline}>
+      <slot />
+    </HeroView>
+  </div>
+
+  <HeroMeta meta={meta} />
+</header>

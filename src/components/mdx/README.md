@@ -1,10 +1,22 @@
 # MDX page components
 
-Presentational `.astro` components for the Markdown/MDX page layer. They are
-thin ports of the React layout primitives and the page compositions, so an
-MDX page can be written as Markdown without changing a single class name,
-spacing token, or grid rule. Interactive chrome (header, footer, search,
-language switcher) stays a React island and is **not** part of this kit.
+The paths in this directory are **compatibility shims** for the Markdown/MDX
+page layer. Each one forwards to its real implementation elsewhere in
+`src/components/`:
+
+- `Hero`, `Section`, `InterestCard`, `PhotographyMasthead`, `Cta` and
+  `ContactRow` are React/Tailwind compositions in `src/components/shared/`.
+- `Grid`, `Stack`, `Cluster` and `Chips` wrap the shared layout/ChipRow
+  primitives.
+- `LatestPosts` is the build-time wrapper in `src/components/blog/`, and
+  `InstagramWall` is the build-time wrapper in `src/components/photography/`.
+  Both stay Astro because they need top-level `await`; `Hero`/`NowTicker` stay
+  Astro because the "now" island needs a `client:load` directive.
+
+The shims exist only until Tasks 25/27 migrate `home.mdx` and
+`photographer.mdx` to the new components; Task 42 deletes this directory.
+Interactive chrome (header, footer, search, language switcher) stays a React
+island and is **not** part of this kit.
 
 ## Authoring contract
 
@@ -56,9 +68,10 @@ language switcher) stays a React island and is **not** part of this kit.
      `src/data/now.json`; there are no `nowLabel`/`nowText` props. The default
      slot is optional extra masthead Markdown.
    - `PhotographyMasthead`: `title` (renders the hero `<h1>`), `intro` (the
-     larger muted lead), `className`. There are no `handle` or `label` props.
-     It renders `header.photo-masthead` with `photo-masthead__title` and
-     `photo-masthead__intro`; the rest of the intro is the default slot.
+     larger muted lead; the shared component calls it `lead`), `className`.
+     There are no `handle` or `label` props. It renders the shared
+     `PhotographyMasthead` with the `photo-masthead` class hook; the rest of the
+     intro is the default slot.
    - `ContactRow`: `label` and `href`; pass the one-line visible text as
      `value` (or use the default slot). It renders the `<li>`, so wrap rows in
      `<Stack as="ul" gap={3}>`.
@@ -68,9 +81,9 @@ language switcher) stays a React island and is **not** part of this kit.
    - `Chips`: `items` (`{ label, href?, active? }[]`), `variant` (`"tag"` or
      `"filter"`), `ariaLabel`, `gap`, `className`.
    - `Cta`: `href`, `label` (or a Markdown child), `variant` (`"link"` for the
-     quiet `link-arrow` pill, `"photo"` for the accent `photo-cta` pill),
-     `external`. Prefer `label` for a one-line control; a Markdown child works
-     too and is flattened back to inline.
+     quiet pill, `"photo"` for the accent pill), `external`. Prefer `label` for
+     a one-line control; a Markdown child works too and is flattened back to
+     inline.
    - `Grid` / `Stack` / `Cluster`: `gap` (1–12), `as` (any HTML tag),
      plus the primitive's `min`/`columns` (Grid), `align` (Stack/Cluster) and
      `justify` (Cluster).
@@ -94,19 +107,19 @@ language switcher) stays a React island and is **not** part of this kit.
 
 ## Components
 
-| Component                   | Renders                                                                           | Notes                          |
-| --------------------------- | --------------------------------------------------------------------------------- | ------------------------------ |
-| `Hero.astro`                | `<header class="hero">` + `hero__main` / `hero__meta`                             | home masthead                  |
-| `Section.astro`             | `<section class="section">` + `section__head` / `section__lead` / `section__body` | body + `actions` slots         |
-| `InterestCard.astro`        | `card interest interest--<id>` + `h3.interest__label` + `Stack`                   | About-grid card                |
-| `Grid.astro`                | `.grid` with `--grid-gap` / `--grid-template`                                     | same auto-fit formula as React |
-| `Stack.astro`               | `.stack` with `--stack-gap` / `--stack-align`                                     | 1D vertical flow               |
-| `Cluster.astro`             | `.cluster` with gap/align/justify custom properties                               | wrapping row                   |
-| `Chips.astro`               | shared `ChipRow` rendered at build time (shadcn Badge/Button)                     | static, no hydration           |
-| `Cta.astro`                 | `a.link-arrow` or `a.photo-cta`                                                   | arrow glyph included           |
-| `ContactRow.astro`          | `li.contact__item` + `contact__label` / `contact__link`                           | wrap in `Stack as="ul"`        |
-| `LatestPosts.astro`         | `.grid` of build-time `post-card` entries, or the empty copy                      | build-time, no hydration       |
-| `PhotographyMasthead.astro` | `header.photo-masthead` + hero `<h1>` + `photo-masthead__intro` stack             | photography intro              |
+| Component                   | Implementation                                                                     | Notes                      |
+| --------------------------- | ---------------------------------------------------------------------------------- | -------------------------- |
+| `Hero.astro`                | `src/components/site/Hero.astro` (React `HeroView`/`HeroMeta` + build-time ticker) | home masthead              |
+| `Section.astro`             | `src/components/shared/Section.tsx`                                                | body + `actions` slot shim |
+| `InterestCard.astro`        | `src/components/shared/InterestCard.tsx`                                           | About-grid card            |
+| `Grid.astro`                | `src/components/shared/layout/Grid.tsx`                                            | auto-fit layout primitive  |
+| `Stack.astro`               | `src/components/shared/layout/Stack.tsx`                                           | 1D vertical flow           |
+| `Cluster.astro`             | `src/components/shared/layout/Cluster.tsx`                                         | wrapping row               |
+| `Chips.astro`               | `src/components/shared/ChipRow.tsx` (shadcn Badge/Button)                          | static, no hydration       |
+| `Cta.astro`                 | `src/components/shared/Cta.tsx`                                                    | arrow glyph included       |
+| `ContactRow.astro`          | `src/components/shared/ContactRow.tsx`                                             | wrap in `Stack as="ul"`    |
+| `LatestPosts.astro`         | `src/components/blog/LatestPosts.astro`                                            | build-time, no hydration   |
+| `PhotographyMasthead.astro` | `src/components/shared/PhotographyMasthead.tsx`                                    | photography intro          |
 
 ## Hiding unfinished content
 

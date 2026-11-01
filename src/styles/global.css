@@ -1060,19 +1060,6 @@ a.now-ticker__item:focus-visible {
   }
 }
 
-.hero__title {
-  margin: 0;
-  font-size: var(--text-hero);
-  font-weight: 700;
-  line-height: 1.02;
-  letter-spacing: var(--tracking-display);
-  color: var(--text);
-}
-
-.hero__period {
-  color: var(--accent);
-}
-
 /* Reusable pill link with a trailing arrow. Promoted from the old hero
    quick-link row when that row was removed; cards that need a "go there" link
    (e.g. the About photography card) opt in with `class="link-arrow"` and put the arrow
