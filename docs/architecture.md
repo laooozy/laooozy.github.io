@@ -134,11 +134,12 @@ order:
 
 The script sets `<html lang>` to the BCP-47 value and `data-locale` to the
 lowercase code. `bootstrap.ts` seeds the store from the already-applied root
-value, falling back to storage and then the default. The supported list and the
-BCP-47 map are duplicated in the inline script because it cannot import from
-`src/i18n`; keep it in sync with `LOCALE_CODES` in
-[locales.ts](../src/i18n/locales.ts). The dictionary parity test
-([parity.test.ts](../src/i18n/parity.test.ts)) catches chrome drift.
+value, falling back to storage and then the default. The inline script stays
+self-contained, so its supported list and BCP-47 map are generated at build
+time from `LOCALE_CODES` and `langAttr` in
+[locales.ts](../src/i18n/locales.ts); they are not hand-copied. The dictionary
+parity test ([parity.test.ts](../src/i18n/parity.test.ts)) executes the
+generated string and asserts it matches the metadata.
 
 Because the build is static, every page ships the default locale (`zh-hant`)
 chrome until an island mounts. A visitor on another locale sees a brief

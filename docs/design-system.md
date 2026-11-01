@@ -53,7 +53,7 @@ bar cannot drift from the page canvas.
 ### `global.css` bridges shadcn names
 
 [global.css](../src/styles/global.css) is the one CSS entry. It imports
-`tokens.css`, `atmosphere.css`, the seven Fontsource faces, Tailwind,
+`tokens.css`, `atmosphere.css`, the six Fontsource faces, Tailwind,
 `tw-animate-css`, `shadcn/tailwind.css`, and wires the Typography plugin. It
 then contains:
 
@@ -110,7 +110,7 @@ Chinese text falls through to the platform's own Traditional Chinese face:
 sans stack. No CJK webfont is downloaded. The computed stack is defined in
 `--font-display`, `--font-body` and `--font-mono` in `tokens.css`.
 
-Do not add a new family or a new weight without a measured need. The seven
+Do not add a new family or a new weight without a measured need. The six
 faces above are the whole budget.
 
 ### Prose
@@ -223,10 +223,11 @@ kit. It stays presentational: no store, no adapters, no feature hooks.
 
 | Folder          | Contents                                                                                                 |
 | :-------------- | :------------------------------------------------------------------------------------------------------- |
+| `shared/*.tsx`  | `ChipRow`, `ContactRow`, `Cta`, `InterestCard`, `Section`, `HeroView`, `HeroMeta`, `PhotographyMasthead` |
 | `layout/`       | `Stack`, `Cluster`, `Grid`, `Container`, the static class maps and `useLayoutElement`                    |
 | `typography/`   | `Heading`, `Text`, `Prose`, the `cva` variants                                                           |
 | `state/`        | `EmptyState`, `AlertState`, `SkeletonState`, `SpinnerState`, `TooltipState`, `Kbd`                       |
-| `compositions/` | `ChipRow`, `ContactRow`, `Cta`, `InterestCard`, `Section`, `HeroView`, `HeroMeta`, `PhotographyMasthead` |
+| `compositions/` | `hasRenderableChildren` in `utils.ts`                                                                    |
 
 There are no MDX compatibility shims and no second implementation beside the
 kit. Page content imports these components directly.
@@ -379,7 +380,9 @@ Rules for the recipe:
 
 5. If the page belongs in the top nav, add it to the nav list in
    [SiteHeader.tsx](../src/components/site/SiteHeader.tsx), add the same key to
-   all three dictionaries in [i18n/index.ts](../src/i18n/index.ts), and add it
+   all three dictionaries in
+   [src/i18n/dictionaries/](../src/i18n/dictionaries/); `index.ts` only
+   assembles them into `ui`. Then add it
    to `FIXED_KEYS` in [parity.test.ts](../src/i18n/parity.test.ts). Do not add a
    locale prefix or a second route. Photography is not a nav item.
 
