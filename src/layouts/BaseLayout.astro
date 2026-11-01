@@ -192,16 +192,17 @@ if (!themeColor) {
    * document reserves its height and there is zero layout shift when it
    * slides away. Hiding is a GPU-composited transform, never a height change.
    */
+  /*
+   * The header's layout, surface, nav and disclosure are authored with
+   * Tailwind utilities inside `SiteHeader.tsx`; this rule keeps only the
+   * scroll-hide contract, which is driven by the `data-hidden` attribute the
+   * DOM adapter toggles. `will-change` and the transition stay here so the
+   * compositor-only transform keeps working even before hydration.
+   */
   .site-header {
     position: sticky;
     top: 0;
     z-index: var(--z-sticky);
-    padding-block: var(--space-4);
-    border-bottom: 1px solid
-      color-mix(in oklab, var(--glass-border) 55%, transparent);
-    background: color-mix(in oklab, var(--bg-base) 72%, transparent);
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    backdrop-filter: blur(var(--glass-blur));
     transform: translateY(0);
     will-change: transform;
     transition: transform var(--dur-base) var(--ease-out);
@@ -209,178 +210,6 @@ if (!themeColor) {
 
   .site-header[data-hidden] {
     transform: translateY(-100%);
-  }
-
-  .site-header__inner {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-    gap: var(--space-4) var(--space-5);
-  }
-
-  .brand {
-    display: inline-flex;
-    align-items: center;
-    font-family: var(--font-display);
-    font-size: var(--text-lg);
-    font-weight: 700;
-    letter-spacing: var(--tracking-tight);
-    color: var(--text);
-    text-decoration: none;
-  }
-
-  .brand:hover {
-    color: var(--accent-text);
-  }
-
-  .site-nav {
-    margin-inline-start: auto;
-  }
-
-  .site-nav__list {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: var(--space-5);
-    list-style: none;
-  }
-
-  .site-nav__link {
-    font-size: var(--text-sm);
-    font-weight: 500;
-    color: var(--text-muted);
-    text-decoration: none;
-  }
-
-  .site-nav__link:hover {
-    color: var(--text);
-  }
-
-  .site-nav__link[aria-current="page"] {
-    color: var(--text);
-    font-weight: 600;
-    text-decoration: underline;
-    text-decoration-color: color-mix(
-      in oklab,
-      var(--text-muted) 55%,
-      transparent
-    );
-    text-decoration-thickness: 1px;
-    text-underline-offset: var(--space-1);
-  }
-
-  .site-actions {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-3);
-  }
-
-  /* Disclosure is a compact-header control only; the desktop nav owns wide
-     screens. */
-  .site-menu {
-    display: none;
-  }
-
-  .site-menu__trigger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: 44px;
-    block-size: 44px;
-    padding: 0;
-    border: 1px solid var(--control-border);
-    border-radius: var(--radius-md);
-    background: var(--surface);
-    color: var(--text-muted);
-    list-style: none;
-    cursor: pointer;
-    transition:
-      color var(--dur-fast) var(--ease-out),
-      border-color var(--dur-fast) var(--ease-out),
-      background-color var(--dur-fast) var(--ease-out);
-  }
-
-  .site-menu__trigger::-webkit-details-marker {
-    display: none;
-  }
-
-  .site-menu__trigger:hover {
-    color: var(--text);
-    border-color: var(--control-border-strong);
-    background: var(--surface-hover);
-  }
-
-  .site-menu__panel {
-    position: absolute;
-    inset-inline: 0;
-    top: 100%;
-    z-index: var(--z-dropdown);
-    max-block-size: calc(100dvh - 72px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    padding: var(--space-2) clamp(var(--space-4), 4vw, var(--space-6))
-      var(--space-3);
-    border-block-end: 1px solid
-      color-mix(in oklab, var(--glass-border) 55%, transparent);
-    background: var(--bg-deep);
-  }
-
-  .site-menu__list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .site-menu__link {
-    display: flex;
-    align-items: center;
-    min-block-size: 44px;
-    padding-inline: var(--space-2);
-    border-radius: var(--radius-sm);
-    color: var(--text-muted);
-    font-size: var(--text-base);
-    font-weight: 500;
-    text-decoration: none;
-  }
-
-  .site-menu__link:hover {
-    color: var(--text);
-    background: var(--surface-hover);
-  }
-
-  .site-menu__link[aria-current="page"] {
-    color: var(--text);
-    background: var(--accent-soft);
-  }
-
-  /*
-   * Below 622px brand + five nav labels + the language trigger no longer fit on
-   * one row (English is the widest locale), so the compact row takes over: the
-   * desktop nav is hidden, the disclosure button appears, and the language
-   * trigger drops its visible label (see LanguageSwitcher's compact rules).
-   */
-  @media (max-width: 621px) {
-    .site-header {
-      padding-block: var(--space-3);
-    }
-
-    .site-nav {
-      display: none;
-    }
-
-    .site-actions {
-      margin-inline-start: auto;
-    }
-
-    .site-menu {
-      display: block;
-    }
-
-    .brand {
-      min-block-size: 44px;
-    }
   }
 
   /*

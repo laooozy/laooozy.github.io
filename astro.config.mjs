@@ -15,6 +15,18 @@ export default defineConfig({
   // SITE_INDEXABLE in src/lib/seo.ts.
   integrations: [...(SITE_INDEXABLE ? [sitemap()] : []), react(), mdx()],
 
+  /*
+   * Warm every internal route on pointer hover. The site is fully static and
+   * there is no client router, so prefetching only fetches the next document's
+   * HTML; it never changes navigation semantics or adds a second animation
+   * loop. `prefetchAll` covers the React-rendered chrome links without
+   * sprinkling `data-astro-prefetch` on every anchor.
+   */
+  prefetch: {
+    prefetchAll: true,
+    defaultStrategy: "hover",
+  },
+
   vite: {
     plugins: [tailwindcss()],
   },
