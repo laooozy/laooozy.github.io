@@ -64,8 +64,6 @@ import {
 } from "@/lib/domain/music";
 import { cn } from "@/lib/utils";
 
-import playlist from "../../../scripts/music/playlist.json";
-
 /** The build-time locale every SSR render is emitted in. Stable, no deps. */
 const defaultTranslate: Translate = (key, vars) =>
   translate(defaultLang, key, vars);
@@ -214,6 +212,9 @@ export default function MusicLibrary() {
   useEffect(() => {
     let cancelled = false;
     setStatus("loading");
+    // Drop any previous payload so a failed reload can never leave a stale
+    // playlist link or row list behind.
+    setPayload(null);
 
     deps.adapters.music
       .load()
@@ -244,6 +245,7 @@ export default function MusicLibrary() {
     org: organisation,
   });
   const orgLabels = payload?.organisations ?? {};
+  const playlistUrl = payload?.playlist.url ?? null;
 
   const isReady = status === "ready" && payload !== null;
   const activeFilterCount =
@@ -383,20 +385,6 @@ export default function MusicLibrary() {
               >
                 {tr("music.retry")}
               </Button>
-              <Button
-                variant="link"
-                className="min-h-11 px-0"
-                render={
-                  <a
-                    href={playlist.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {tr("music.playlistLink")}
-                    <ExternalLink data-icon="inline-end" aria-hidden="true" />
-                  </a>
-                }
-              />
             </Cluster>
           </div>
         </AlertState>
@@ -416,20 +404,25 @@ export default function MusicLibrary() {
               mediaVariant="icon"
               title={tr("music.empty")}
               action={
-                <Button
-                  variant="link"
-                  className="min-h-11"
-                  render={
-                    <a
-                      href={playlist.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {tr("music.playlistLink")}
-                      <ExternalLink data-icon="inline-end" aria-hidden="true" />
-                    </a>
-                  }
-                />
+                playlistUrl !== null ? (
+                  <Button
+                    variant="link"
+                    className="min-h-11"
+                    render={
+                      <a
+                        href={playlistUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {tr("music.playlistLink")}
+                        <ExternalLink
+                          data-icon="inline-end"
+                          aria-hidden="true"
+                        />
+                      </a>
+                    }
+                  />
+                ) : undefined
               }
             />
           )}

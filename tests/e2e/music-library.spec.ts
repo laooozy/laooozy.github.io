@@ -309,7 +309,7 @@ test.describe("mobile filter disclosure", () => {
 });
 
 test.describe("loading, empty and error states", () => {
-  test("an empty payload shows the empty state and playlist link", async ({
+  test("an empty payload shows the empty state and its playlist link", async ({
     page,
   }) => {
     await stubMusic(page, EMPTY_PAYLOAD);
@@ -320,9 +320,28 @@ test.describe("loading, empty and error states", () => {
       "歌單暫時沒有歌曲。",
     );
     await expect(page.locator("[data-music-row]")).toHaveCount(0);
+    const link = page.getByRole("link", { name: /在 YouTube 開啟歌單/ });
+    await expect(link).toBeVisible();
+    await expect(link).toHaveAttribute("href", MUSIC_PAYLOAD.playlist.url);
+    await expect(link).toHaveAttribute("target", "_blank");
+    await expect(link).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  test("the playlist link comes from the payload, not the build data", async ({
+    page,
+  }) => {
+    const payloadOnlyUrl =
+      "https://www.youtube.com/playlist?list=PLpayloadOnlyE2E";
+    await stubMusic(page, {
+      ...EMPTY_PAYLOAD,
+      playlist: { ...EMPTY_PAYLOAD.playlist, url: payloadOnlyUrl },
+    });
+    await page.goto("/music/");
+    await waitForIsland(page, "MusicLibrary");
+
     await expect(
       page.getByRole("link", { name: /在 YouTube 開啟歌單/ }),
-    ).toBeVisible();
+    ).toHaveAttribute("href", payloadOnlyUrl);
   });
 
   test("a failed fetch shows the error state and retry recovers", async ({
@@ -351,6 +370,10 @@ test.describe("loading, empty and error states", () => {
     await expect(
       page.getByText("歌單暫時無法載入，請再試一次。"),
     ).toBeVisible();
+    // A failed load has no validated payload, so no playlist link may linger.
+    await expect(
+      page.getByRole("link", { name: /在 YouTube 開啟歌單/ }),
+    ).toHaveCount(0);
 
     await page.getByRole("button", { name: "重試" }).click();
     await expect(page.locator("[data-music-row]")).toHaveCount(SONG_COUNT);
