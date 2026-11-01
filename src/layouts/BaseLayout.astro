@@ -13,6 +13,7 @@ import SiteFooter from "../components/site/SiteFooter";
 import SiteHeader from "../components/site/SiteHeader";
 import Container from "../components/shared/layout/Container";
 import { LOCALE_BOOT_SCRIPT } from "@/client/locale-boot";
+import { siteUpdated } from "../lib/io/site-updated";
 import { SITE_INDEXABLE } from "../lib/seo";
 import { langAttr, ogLocale, resolveLocale, useTranslations } from "../i18n/ui";
 import { readFileSync } from "node:fs";
@@ -35,6 +36,14 @@ const {
 } = Astro.props;
 const locale = resolveLocale(Astro.currentLocale);
 const t = useTranslations(locale);
+
+/*
+ * The footer's copyright year is a BUILD-time value, not a runtime clock. The
+ * hydrated island receives it as a prop, so its SSR HTML and its first client
+ * render always agree (a visitor whose system clock is in another year still
+ * sees the year this build was produced for).
+ */
+const buildYear = new Date().getFullYear();
 
 const site = Astro.site ?? new URL("https://laooozy.github.io");
 const pageTitle = title ? `${title} · ${t.home.title}` : t.home.title;
@@ -169,7 +178,12 @@ if (!themeColor) {
       </Container>
     </main>
 
-    <SiteFooter client:load />
+    {/*
+     * The footer takes the build year and the validated stamp as serializable
+     * props. The island itself never imports `src/lib/io/**` and never reads
+     * the clock, so the built HTML and the hydrated render are identical.
+     */}
+    <SiteFooter client:load year={buildYear} siteUpdated={siteUpdated} />
     <ScrollControls client:load />
 
     <script>
@@ -240,6 +254,11 @@ if (!themeColor) {
     pointer-events: none;
   }
 
+  /*
+   * The footer's layout, rule and spacing are authored with Tailwind utilities
+   * inside `SiteFooter.tsx`. This rule keeps only the stacking contract that
+   * lifts both shells above the atmosphere canvas.
+   */
   .site-main,
   .site-footer {
     position: relative;
@@ -249,46 +268,6 @@ if (!themeColor) {
   .site-main {
     flex: 1;
     padding-block: clamp(var(--space-8), 8vw, var(--space-11));
-  }
-
-  .site-footer {
-    border-top: 1px solid
-      color-mix(in oklab, var(--glass-border) 40%, transparent);
-    padding-block: var(--space-6);
-  }
-
-  .site-footer__inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: var(--space-4);
-  }
-
-  @media (max-width: 29.99rem) {
-    .site-footer__inner {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-  }
-
-  .site-footer__copy {
-    max-width: none;
-    margin: 0;
-    font-size: var(--text-sm);
-    color: var(--text-muted);
-  }
-
-  /*
-   * The committed update stamp. Position and stacking come from
-   * `.site-footer__inner` (space-between on one row, a left column below
-   * 29.99rem); this rule only sets colour and type.
-   */
-  .site-footer__updated {
-    margin: 0;
-    font-size: var(--text-sm);
-    color: var(--text-muted);
-    font-variant-numeric: tabular-nums;
   }
 
   /*

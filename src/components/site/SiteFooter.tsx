@@ -1,9 +1,17 @@
 /**
  * SiteFooter — the site chrome's footer as a hydrated React island.
  *
- * It renders the copyright line, driven by `useT` (store-bound locale), so the
- * footer text re-renders in place when the language switcher changes the locale
- * — no navigation, no reload.
+ * It renders the copyright line and the committed update stamp, driven by
+ * `useT` (store-bound locale), so the footer text re-renders in place when the
+ * language switcher changes the locale — no navigation, no reload.
+ *
+ * Build-time data, not a runtime clock
+ * ------------------------------------
+ * Both values arrive as serializable props from `BaseLayout.astro`:
+ * `year` is resolved once at build time and `siteUpdated` is the validated
+ * stamp. This island never imports the build-time IO edge and never reads the
+ * clock, so the server HTML and the client render cannot disagree about the
+ * year or the stamp, even if a visitor's clock is wrong.
  *
  * Hydration safety mirrors `SiteHeader`: the build-time SSR HTML is always the
  * DEFAULT locale, while the store may already hold another locale on the first
@@ -14,15 +22,34 @@
 
 import { useEffect, useState } from "react";
 
+import { Separator } from "@/components/ui/separator";
 import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
-import { siteUpdated } from "@/lib/io/site-updated";
 
 /** The build-time locale every SSR render is emitted in. Stable, no deps. */
 const defaultTranslate: Translate = (key, vars) =>
   translate(defaultLang, key, vars);
 
-export default function SiteFooter() {
+/** The serializable shape of a `SiteUpdated` stamp. */
+export interface SiteUpdatedStamp {
+  /** The committed stamp verbatim, for `<time dateTime>`. */
+  iso: string;
+  /** The same stamp with the date and minute separated by one space. */
+  display: string;
+}
+
+export interface SiteFooterProps {
+  /**
+   * Calendar year resolved by `BaseLayout.astro` at build time. Never a
+   * client clock read: a visitor in a different year must still see the year
+   * the site was built for.
+   */
+  year: number;
+  /** The validated build-time stamp, passed as a serializable prop. */
+  siteUpdated: SiteUpdatedStamp;
+}
+
+export default function SiteFooter({ year, siteUpdated }: SiteFooterProps) {
   const t = useT();
   // `false` on the server AND on the first client render, so SSR and the
   // hydration render agree; flipped after mount to adopt the store locale.
@@ -33,16 +60,21 @@ export default function SiteFooter() {
   }, []);
 
   const tr = mounted ? t : defaultTranslate;
-  const year = new Date().getFullYear();
 
   return (
-    <footer className="site-footer">
-      <div className="site-footer__inner container">
-        <p className="site-footer__copy">
+    <footer
+      className="site-footer border-t border-border/40 py-6"
+      data-site-footer=""
+    >
+      <div className="mx-auto flex w-full max-w-(--container) flex-col gap-3 px-[clamp(var(--space-4),4vw,var(--space-6))] sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <p className="m-0 max-w-none text-sm text-muted-foreground">
           © {year} {tr("home.title")} · {tr("footer.rights")}
         </p>
-        <p className="site-footer__updated">
-          <span>{tr("footer.updated")}</span>{" "}
+
+        <Separator className="bg-border/40 sm:hidden" />
+
+        <p className="m-0 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-muted-foreground tabular-nums">
+          <span>{tr("footer.updated")}</span>
           <time dateTime={siteUpdated.iso}>{siteUpdated.display}</time>
         </p>
       </div>
