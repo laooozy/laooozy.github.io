@@ -83,7 +83,6 @@ const zhHans = {
     body: "你要找的页面不存在，或已经被移动了。",
     backHome: "回到首页",
   },
-  button: { viewAll: "查看全部" },
   a11y: {
     skipToContent: "跳至主要内容",
     primaryNav: "主菜单",

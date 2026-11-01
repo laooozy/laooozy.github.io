@@ -61,7 +61,6 @@ const FIXED_KEYS = [
   "a11y.menu",
   "a11y.scrollToTop",
   "a11y.scrollToBottom",
-  "button.viewAll",
   "blog.heading",
   "blog.empty",
   "blog.readTime",

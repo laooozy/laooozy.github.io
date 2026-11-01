@@ -83,7 +83,6 @@ const zhHant = {
     body: "你好像來到了甚麼都沒有的地方呢。",
     backHome: "回到首頁",
   },
-  button: { viewAll: "查看全部" },
   a11y: {
     skipToContent: "跳至主要內容",
     primaryNav: "主選單",

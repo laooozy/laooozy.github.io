@@ -10,8 +10,8 @@ import { isInteractiveTag, useLayoutElement } from "./use-layout-element";
 
 export interface ContainerOwnProps {
   /**
-   * Content-column cap. `default` is the 72rem page column, `narrow` the
-   * 46rem prose wall, `wide` the 84rem full-bleed grid.
+   * Content-column cap. `default` is the 72rem page column and `narrow` the
+   * 46rem prose wall.
    */
   size?: ContainerSize;
 }

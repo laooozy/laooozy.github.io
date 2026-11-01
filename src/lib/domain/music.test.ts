@@ -12,7 +12,6 @@ import {
   parseMusicPayload,
   type Song,
   SongSchema,
-  stripTopicSuffix,
 } from "./music";
 
 /** Four songs, two artists, one organisation, fixed order. */
@@ -160,16 +159,6 @@ describe("parseMusicPayload", () => {
         songs: Array.from({ length: 5001 }, () => songs[0]),
       }),
     ).toThrow();
-  });
-});
-
-describe("stripTopicSuffix", () => {
-  it("removes one trailing ' - Topic'", () => {
-    expect(stripTopicSuffix("Some Artist - Topic")).toBe("Some Artist");
-  });
-
-  it("leaves other text untouched", () => {
-    expect(stripTopicSuffix("Some Artist")).toBe("Some Artist");
   });
 });
 

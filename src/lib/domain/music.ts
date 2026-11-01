@@ -66,12 +66,6 @@ export function parseMusicPayload(raw: unknown): MusicPayload {
   return MusicPayloadSchema.parse(raw);
 }
 
-/** Remove one trailing `" - Topic"`; no other trimming. */
-export function stripTopicSuffix(artist: string): string {
-  const suffix = " - Topic";
-  return artist.endsWith(suffix) ? artist.slice(0, -suffix.length) : artist;
-}
-
 /** Unique artists by `artistId`, sorted by name with plain code-unit order. */
 export function collectArtists(songs: Song[]): { id: string; name: string }[] {
   const byId = new Map<string, string>();

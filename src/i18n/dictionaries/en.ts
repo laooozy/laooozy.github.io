@@ -83,7 +83,6 @@ const en = {
     body: "The page you're looking for doesn't exist or may have moved.",
     backHome: "Back to home",
   },
-  button: { viewAll: "View all" },
   a11y: {
     skipToContent: "Skip to main content",
     primaryNav: "Primary",

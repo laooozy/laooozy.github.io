@@ -92,7 +92,6 @@ export type GridMin = keyof typeof GRID_MIN_CLASSES;
 export const CONTAINER_SIZE_CLASSES = {
   default: "max-w-(--container)",
   narrow: "max-w-(--container-narrow)",
-  wide: "max-w-[84rem]",
 } as const;
 
 export type ContainerSize = keyof typeof CONTAINER_SIZE_CLASSES;
