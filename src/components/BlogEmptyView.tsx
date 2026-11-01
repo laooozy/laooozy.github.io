@@ -13,8 +13,8 @@
 import Card from "@/components/Card";
 import Cluster from "@/components/layout/Cluster";
 import Stack from "@/components/layout/Stack";
-import Heading from "@/components/ui/Heading";
-import Text from "@/components/ui/Text";
+import Heading from "@/components/shared/typography/Heading";
+import Text from "@/components/shared/typography/Text";
 
 export interface BlogEmptyViewProps {
   /** Panel heading, e.g. `Blog`. */

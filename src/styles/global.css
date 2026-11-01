@@ -116,34 +116,41 @@ body::before {
   }
 }
 
-h1,
-h2,
-h3,
-h4 {
-  margin: 0 0 var(--space-4);
-  font-family: var(--font-display);
-  font-weight: 600;
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-display);
-  text-wrap: balance;
-}
+/*
+ * Base element typography lives in `@layer base` so the Tailwind utilities on
+ * the shared typography primitives can override it. Unlayered rules would
+ * outrank every `@layer` and silently win over `text-*`, `m-0` and `font-*`.
+ */
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0 0 var(--space-4);
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-display);
+    text-wrap: balance;
+  }
 
-h1 {
-  font-size: var(--text-4xl);
-}
+  h1 {
+    font-size: var(--text-4xl);
+  }
 
-h2 {
-  font-size: var(--text-3xl);
-}
+  h2 {
+    font-size: var(--text-3xl);
+  }
 
-h3 {
-  font-size: var(--text-2xl);
-}
+  h3 {
+    font-size: var(--text-2xl);
+  }
 
-p {
-  margin: 0 0 var(--space-4);
-  max-width: var(--measure);
-  text-wrap: pretty;
+  p {
+    margin: 0 0 var(--space-4);
+    max-width: var(--measure);
+    text-wrap: pretty;
+  }
 }
 
 ul,
@@ -830,65 +837,6 @@ html:not([data-locale]) [data-l="zh-hant"] {
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-.text {
-  margin: 0;
-}
-
-.text--xs {
-  font-size: var(--text-xs);
-}
-
-.text--sm {
-  font-size: var(--text-sm);
-}
-
-.text--base {
-  font-size: var(--text-base);
-}
-
-.text--lg {
-  font-size: var(--text-lg);
-}
-
-.text--xl {
-  font-size: var(--text-xl);
-}
-
-.text--muted {
-  color: var(--text-muted);
-}
-
-.text--measure {
-  max-width: var(--measure);
-  text-wrap: pretty;
-}
-
-.heading {
-  margin: 0;
-}
-
-.heading--muted {
-  color: var(--text-muted);
-}
-
-.heading--md {
-  font-size: var(--text-xl);
-}
-
-.heading--lg {
-  font-size: var(--text-2xl);
-}
-
-.heading--xl {
-  font-size: var(--text-3xl);
-}
-
-.heading--hero {
-  font-size: var(--text-hero);
-  font-weight: 700;
-  letter-spacing: var(--tracking-display);
 }
 
 .chip {
