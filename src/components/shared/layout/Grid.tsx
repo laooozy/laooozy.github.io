@@ -22,7 +22,7 @@ export interface GridOwnProps {
   /** Force an exact column count instead of the auto-fit track. */
   columns?: Columns;
   /**
-   * Rendered item count, exposed as `data-count` for the `.grid--cards`
+   * Rendered item count, exposed as `data-count` for the `card-grid`
    * card-row recipes (LatestPosts and the home About grid).
    */
   count?: number;

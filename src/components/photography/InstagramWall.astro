@@ -36,8 +36,8 @@
  * wrapper label (`aria-label`) and the CSS constrains every embed descendant to
  * the figure width; this is the documented Meta limitation allowed by the plan.
  *
- * The cards reuse the project's `card` surface directly rather than the shared
- * React `Card` component: each card is one external anchor, so it needs
+ * The cards reuse the project's `card-surface` utility directly rather than the
+ * shared React `Card` component: each card is one external anchor, so it needs
  * `target`/`rel` on that anchor, which the hook-free `Card` does not forward.
  */
 import { CONTACT } from "../../lib/site";
@@ -70,7 +70,10 @@ function ordinal(position: number): string {
 ---
 
 {instagramPosts.length > 0 ? (
-  <div class="photo-index" data-ig-wall>
+  <div
+    class="photo-index grid min-w-0 max-w-full gap-[var(--space-6)]"
+    data-ig-wall
+  >
     {/*
         Click-to-load consent gate. `client:idle` keeps it off the critical path;
         it injects embed.js only on click and toggles the layers below through
@@ -91,26 +94,36 @@ function ordinal(position: number): string {
         the consent gate uses to retire this list once the real embeds load; it
         never removes the list on a load failure.
       */}
-    <ol class="photo-index__list" data-ig-gate>
+    <ol
+      class="photo-index__list m-0 grid list-none grid-cols-1 gap-[var(--space-4)] p-0 [&[hidden]]:hidden md:grid-cols-2 md:gap-[var(--space-5)]"
+      data-ig-gate
+    >
       {instagramPosts.map((url, position) => (
-        <li class="photo-index__item">
+        <li class="photo-index__item min-w-0">
           <a
-            class="card card--interactive photo-index__card"
+            class="card-surface card-interactive photo-index__card group grid h-full min-h-[13rem] min-w-0 grid-rows-[auto_1fr_auto] gap-[var(--space-5)] overflow-hidden md:min-h-[16rem]"
             href={url}
             target="_blank"
             rel="noopener"
           >
-            <span class="photo-index__number" aria-hidden="true">
+            <span
+              class="photo-index__number font-heading text-[length:var(--text-4xl)] font-semibold tracking-[var(--tracking-display)] text-[var(--accent)] tabular-nums leading-none"
+              aria-hidden="true"
+            >
               {ordinal(position + 1)}
             </span>
-            <span class="photo-index__body">
-              <span class="photo-index__handle">{igHandle}</span>
-              <span class="photo-index__path">{postPath(url)}</span>
+            <span class="photo-index__body flex min-w-0 flex-col justify-end gap-[var(--space-2)]">
+              <span class="photo-index__handle font-mono text-[length:var(--text-sm)] tracking-[var(--tracking-wide)] text-[var(--text-muted)]">
+                {igHandle}
+              </span>
+              <span class="photo-index__path font-heading text-[length:var(--text-2xl)] font-semibold leading-[var(--leading-tight)] tracking-[var(--tracking-tight)] text-[var(--text)] [overflow-wrap:anywhere]">
+                {postPath(url)}
+              </span>
             </span>
-            <span class="photo-index__action">
+            <span class="photo-index__action inline-flex items-center gap-[var(--space-2)] text-[length:var(--text-sm)] font-semibold text-[var(--accent-text)]">
               在 Instagram 觀看
               <svg
-                class="photo-index__arrow"
+                class="photo-index__arrow size-4 transition-transform duration-[var(--dur-fast)] ease-brand group-hover:translate-x-[2px] group-hover:-translate-y-[2px] group-focus-visible:translate-x-[2px] group-focus-visible:-translate-y-[2px]"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -136,7 +149,7 @@ function ordinal(position: number): string {
         the third-party markup out of the search index.
       */}
     <div
-      class="ig-embeds photo-wall grid min-w-0 grid-cols-1 gap-5 md:grid-cols-2"
+      class="ig-embeds photo-wall grid min-w-0 max-w-full grid-cols-1 items-start gap-5 [&[hidden]]:hidden md:grid-cols-2"
       data-ig-embeds
       data-pagefind-ignore
       hidden
@@ -144,21 +157,24 @@ function ordinal(position: number): string {
       {embeds.map((embed) =>
         embed.html ? (
           <figure
-            class="ig-embed"
+            class="ig-embed embed-frame relative isolate m-0 w-full min-w-0 max-w-full overflow-hidden rounded-[var(--radius-lg)] border border-[var(--glass-border)] bg-[var(--surface)] [background-image:var(--card-bg)] shadow-[var(--card-inset)]"
             role="group"
             aria-label={`Instagram post: ${embed.url}`}
             set:html={embed.html}
           />
         ) : (
           <a
-            class="ig-fallback"
+            class="ig-fallback flex min-h-[12rem] flex-col items-center justify-center gap-[var(--space-3)] rounded-[var(--radius-lg)] border border-[var(--glass-border)] bg-[var(--surface)] p-[var(--space-6)] text-center text-[var(--text)] no-underline shadow-[var(--card-inset)] [background-image:var(--card-bg)] transition-[border-color,background-color] duration-[var(--dur-base)] ease-brand hover:border-[var(--glass-border-strong)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)] focus-visible:border-[var(--glass-border-strong)] focus-visible:bg-[var(--surface-hover)] focus-visible:text-[var(--text)]"
             href={embed.url}
             target="_blank"
             rel="noopener"
             aria-label={`在 Instagram 觀看 ${igHandle} 的貼文 ${postPath(embed.url)}`}
             data-embed-failed={embed.failed ? "" : undefined}
           >
-            <span class="ig-fallback__glyph" aria-hidden="true">
+            <span
+              class="ig-fallback__glyph grid size-10 place-items-center rounded-[var(--radius-pill)] bg-[var(--accent-surface)] text-[var(--accent)] [&_svg]:size-[1.1rem]"
+              aria-hidden="true"
+            >
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -171,17 +187,29 @@ function ordinal(position: number): string {
                 <path d="M9 7h8v8" />
               </svg>
             </span>
-            <span class="ig-fallback__label">在 Instagram 觀看</span>
+            <span class="ig-fallback__label text-[length:var(--text-sm)] font-medium text-[var(--text-muted)]">
+              在 Instagram 觀看
+            </span>
           </a>
         ),
       )}
     </div>
   </div>
 ) : (
-  <a class="photo-empty" href={igHref} target="_blank" rel="noopener">
-    <span class="photo-empty__label">在 Instagram 看更多</span>
-    <span class="photo-empty__handle">{igHandle}</span>
-    <span class="photo-empty__arrow" aria-hidden="true">
+  <a
+    class="photo-empty flex flex-wrap items-center gap-[var(--space-3)] rounded-[var(--radius-lg)] border border-[var(--glass-border)] bg-[var(--surface)] p-[var(--space-6)] text-[var(--text)] no-underline shadow-[var(--card-inset)] [background-image:var(--card-bg)] transition-[border-color,background-color] duration-[var(--dur-base)] ease-brand hover:border-[var(--glass-border-strong)] hover:bg-[var(--surface-hover)]"
+    href={igHref}
+    target="_blank"
+    rel="noopener"
+  >
+    <span class="photo-empty__label font-semibold">在 Instagram 看更多</span>
+    <span class="photo-empty__handle font-mono text-[length:var(--text-sm)] text-[var(--text-muted)]">
+      {igHandle}
+    </span>
+    <span
+      class="photo-empty__arrow ms-auto text-[var(--accent)]"
+      aria-hidden="true"
+    >
       ↗
     </span>
   </a>

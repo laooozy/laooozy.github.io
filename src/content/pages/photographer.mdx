@@ -18,7 +18,7 @@ import { CONTACT } from "../../lib/site";
 
 <Section
   id="work"
-  className="reveal"
+  className="reveal motion-safe:animate-rise target:animate-none"
   heading="追蹤我的作品"
   lead="作品資訊，主要放在 Instagram。"
 >
@@ -29,7 +29,6 @@ import { CONTACT } from "../../lib/site";
       <Cta
         variant="photo"
         external
-        className="photo-cta"
         href={`https://instagram.com/${CONTACT.photoIg}`}
         label="在 Instagram 看更多"
       />
@@ -42,10 +41,12 @@ import { CONTACT } from "../../lib/site";
 Placeholder awaiting the owner's copy. The section stays hidden while its
 body is empty; add real Markdown children below and it appears on rebuild.
 
-  <Grid min="16rem" gap={6} className="photo-approach">
-    <div class="photo-approach__item">
-      <h3 class="photo-approach__title">傾向保留原始構圖</h3>
-      <p class="text text--muted">
+  <Grid min="16rem" gap={6}>
+    <div class="border-t border-[color-mix(in_oklab,var(--glass-border)_45%,transparent)] pt-[var(--space-4)]">
+      <h3 class="mt-0 mb-[var(--space-2)] text-[length:var(--text-lg)]">
+        傾向保留原始構圖
+      </h3>
+      <p class="text-[var(--text-muted)]">
         「我的拍攝方式」這段內容還沒決定，之後會補上。
       </p>
     </div>
@@ -53,7 +54,7 @@ body is empty; add real Markdown children below and it appears on rebuild.
 */}
 <Section
   id="approach"
-  className="reveal"
+  className="reveal motion-safe:animate-rise-2 target:animate-none"
   heading="我的拍攝方式"
   hidden="empty"
 ></Section>
@@ -62,11 +63,11 @@ body is empty; add real Markdown children below and it appears on rebuild.
 Placeholder awaiting the owner's copy. The section stays hidden while its
 body is empty; add real Markdown children below and it appears on rebuild.
 
-  <div class="card photo-commission">
+  <div class="card-surface max-w-[var(--container-narrow)]">
     <Stack gap={5}>
-      <p class="text text--muted">內容待補</p>
-      <ul class="photo-commission__list">
-        <li class="photo-commission__item">
+      <p class="text-[var(--text-muted)]">內容待補</p>
+      <ul class="grid list-none gap-[var(--space-3)] p-0">
+        <li class="relative ps-[var(--space-5)] text-[var(--text)] before:absolute before:top-[0.65em] before:start-0 before:size-[0.4rem] before:rounded-[var(--radius-pill)] before:bg-[var(--accent)] before:content-['']">
           「委託與合作」這段內容還沒決定，之後會補上。
         </li>
       </ul>
@@ -83,7 +84,7 @@ body is empty; add real Markdown children below and it appears on rebuild.
 */}
 <Section
   id="commission"
-  className="reveal"
+  className="reveal motion-safe:animate-rise-3 target:animate-none"
   heading="委託與合作"
   hidden="empty"
 ></Section>

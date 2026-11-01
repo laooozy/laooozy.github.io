@@ -30,7 +30,7 @@ export default function PhotographyMasthead({
   return (
     <header
       className={cn(
-        "photo-masthead relative flex flex-col items-start gap-[var(--space-5)] pb-[clamp(var(--space-2),3vw,var(--space-6))] [&>*]:relative [&>*]:z-[1]",
+        "photo-masthead relative flex flex-col items-start gap-[var(--space-5)] pb-[clamp(var(--space-2),3vw,var(--space-6))] [&>*]:relative [&>*]:z-[1] motion-safe:[&>*]:animate-rise motion-safe:[&>*:nth-child(2)]:animate-rise-2 motion-safe:[&>*:nth-child(3)]:animate-rise-3",
         className,
       )}
     >

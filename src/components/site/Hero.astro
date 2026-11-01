@@ -34,8 +34,13 @@ interface Props {
 const { title, tagline, meta = [], className } = Astro.props;
 ---
 
-<header class:list={["hero", className]}>
-  <div class="hero__main">
+<header
+  class:list={[
+    "hero relative grid min-w-0 gap-[var(--space-8)] pb-[clamp(var(--space-4),3vw,var(--space-6))] lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:items-center lg:gap-[var(--space-10)]",
+    className,
+  ]}
+>
+  <div class="hero__main relative z-[1] flex min-w-0 flex-col items-start gap-[var(--space-5)] motion-safe:[&>*]:animate-rise motion-safe:[&>*:nth-child(2)]:animate-rise-2 motion-safe:[&>*:nth-child(3)]:animate-rise-3 motion-safe:[&>*:nth-child(4)]:animate-rise-4">
     <NowTicker />
     <HeroView title={title} lead={tagline}>
       <slot />

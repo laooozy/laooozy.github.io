@@ -37,7 +37,7 @@ export default function InterestCard({
   return (
     <div
       className={cn(
-        "card interest",
+        "interest card-surface",
         id ? `interest--${id}` : undefined,
         className,
       )}
@@ -48,7 +48,15 @@ export default function InterestCard({
       >
         {title}
       </Heading>
-      <Stack gap={3}>{children}</Stack>
+      <Stack
+        gap={3}
+        className={cn(
+          "[&>ol]:m-0 [&>p]:m-0 [&>p]:text-[var(--text-muted)] [&>p:has(+ul)]:text-[length:var(--text-sm)] [&>ul]:m-0 [&>ul]:grid [&>ul]:list-none [&>ul]:gap-[var(--space-1)] [&>ul>li]:text-[length:var(--text-sm)] [&>ul>li]:text-[var(--text-muted)]",
+          id === "runner" && "[&>p]:text-[length:var(--text-sm)]",
+        )}
+      >
+        {children}
+      </Stack>
     </div>
   );
 }

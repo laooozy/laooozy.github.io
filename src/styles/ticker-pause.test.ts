@@ -1,41 +1,35 @@
 /**
- * Regression guard for the "now" ticker pause selectors.
+ * Regression guard for the "now" ticker pause behaviour.
  *
  * The explicit Play button must be able to resume the marquee while that
- * button itself keeps focus or hover — so the pause rules must NOT target the
- * whole `.now-ticker` (`:hover` / `:focus-within`). They must still pause on
- * the ticker line (the viewport) and on a ticker item's keyboard focus.
- *
- * CSS is a source-level contract here: the shipped stylesheet is the behaviour,
- * and no DOM/jsdom harness can resolve these cascade selectors faithfully.
+ * button itself keeps focus or hover — so the pause must live on the track
+ * (line hover, item keyboard focus, explicit paused state), never on the whole
+ * `.now-ticker` (`:hover` / `:focus-within`). The marquee is authored as
+ * Tailwind utility classes in `NowTickerClient.tsx`; this test reads that
+ * source because no DOM/jsdom harness resolves the cascade faithfully.
  */
 import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
-const css = readFileSync(new URL("./global.css", import.meta.url), "utf8");
-
-function pausedSelectors(): string[] {
-  const match = /([^{}]+)\{\s*animation-play-state:\s*paused;\s*\}/.exec(css);
-  if (!match) throw new Error("No animation-play-state: paused rule found");
-  return match[1]
-    .split(",")
-    .map((selector) => selector.replace(/\s+/g, " ").trim())
-    .filter(Boolean);
-}
+const source = readFileSync(
+  new URL("../components/site/NowTickerClient.tsx", import.meta.url),
+  "utf8",
+);
 
 describe("now ticker pause selectors", () => {
-  it("pauses only on the ticker viewport, item focus, or explicit state", () => {
-    expect(pausedSelectors()).toEqual([
-      ".now-ticker.is-running .now-ticker__viewport:hover .now-ticker__track",
-      ".now-ticker.is-running:has(.now-ticker__item:focus-visible) .now-ticker__track",
-      '.now-ticker[data-paused="true"] .now-ticker__track',
-    ]);
+  it("pauses only on the ticker line, item focus, or explicit state", () => {
+    expect(source).toContain("hover:[animation-play-state:paused]");
+    expect(source).toContain(
+      "has-[:focus-visible]:[animation-play-state:paused]",
+    );
+    expect(source).toContain(
+      'running && paused && "[animation-play-state:paused]"',
+    );
   });
 
   it("never pauses from the toggle's own hover or focus", () => {
-    const selectors = pausedSelectors().join(", ");
-    expect(selectors).not.toMatch(/\.now-ticker\.is-running:hover/);
-    expect(selectors).not.toContain(":focus-within");
+    expect(source).not.toContain(":focus-within");
+    expect(source).not.toMatch(/now-ticker[^"]*:hover/);
   });
 });

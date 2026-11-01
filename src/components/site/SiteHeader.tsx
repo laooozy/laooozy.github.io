@@ -174,7 +174,7 @@ export default function SiteHeader({
         {t("a11y.skipToContent")}
       </a>
       <header
-        className="site-header sticky top-0 z-[var(--z-sticky)] border-b border-border/55 bg-background/72 py-3 backdrop-blur-[var(--glass-blur)] transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] will-change-transform data-[hidden]:-translate-y-full min-[622px]:py-4"
+        className="site-header sticky top-0 z-[var(--z-sticky)] border-b border-border/55 bg-background/72 py-3 backdrop-blur-[var(--glass-blur)] transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] will-change-transform data-[hidden]:-translate-y-full motion-reduce:transform-none motion-reduce:transition-none motion-reduce:data-[hidden]:transform-none min-[622px]:py-4"
         data-site-header=""
         onPointerDown={onHeaderPointerDown}
       >

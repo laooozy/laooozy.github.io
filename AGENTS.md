@@ -152,8 +152,9 @@ file and the code disagree, fix the code or this file in the same change.
   `src/styles/global.css` (`@theme`): `2xs` 20rem, `xs` 24rem, `sm` 40rem,
   `md` 48rem, `lg` 64rem and `xl` 80rem. Use `min-width` variants
   (`2xs:`, `xs:`, `sm:`, `md:`, `lg:`, `xl:`). Do not add desktop-first
-  `max-width` overrides except the existing compact-header rule in
-  `BaseLayout.astro`.
+  `max-width` overrides except the compact-header switch in
+  `src/styles/tokens.css` (`max-width: 621px`), mirrored by `max-[621px]:`
+  utilities in `LanguageSwitcher.tsx`.
 - **No horizontal overflow.** At every tested width
   `document.documentElement.scrollWidth` MUST be less than or equal to
   `clientWidth`. Fix the offending element; never hide it with `overflow-x:

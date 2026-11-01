@@ -68,7 +68,7 @@ describe("layout primitives", () => {
     );
   });
 
-  it("renders data-count for the .grid--cards recipes", () => {
+  it("renders data-count for the card-grid recipe", () => {
     const html = renderToStaticMarkup(
       <Grid count={5} gap={5} className="grid--cards">
         card

@@ -46,7 +46,7 @@ export default function SiteFooter({ year, siteUpdated }: SiteFooterProps) {
 
   return (
     <footer
-      className="site-footer border-t border-border/40 py-6"
+      className="site-footer relative z-[var(--z-base)] border-t border-border/40 py-6"
       data-site-footer=""
     >
       <div className="mx-auto flex w-full max-w-(--container) flex-col gap-3 px-[clamp(var(--space-4),4vw,var(--space-6))] sm:flex-row sm:items-center sm:justify-between sm:gap-4">

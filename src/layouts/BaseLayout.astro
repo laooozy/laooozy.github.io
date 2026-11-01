@@ -1,6 +1,5 @@
 ---
 import "../styles/global.css";
-import "../styles/pages.css";
 // The two above-the-fold faces: Sora 600 (headings) and Inter 400 (body copy).
 // Vite returns the hashed asset URL, so the preload always matches the file the
 // Fontsource CSS loads — no hard-coded path and no duplicate download.
@@ -166,7 +165,7 @@ if (!themeColor) {
      */}
     <main
       id="main"
-      class="site-main"
+      class="site-main relative z-[var(--z-base)] flex-1 pt-[clamp(var(--space-8),8vw,var(--space-11))] pb-[max(clamp(var(--space-8),8vw,var(--space-11)),calc(44px+3*var(--space-4)))]"
       tabindex="-1"
       data-pagefind-body={pagefindIgnore ? undefined : ""}
       data-pagefind-ignore={pagefindIgnore ? "" : undefined}
@@ -202,81 +201,3 @@ if (!themeColor) {
     </script>
   </body>
 </html>
-
-<style is:global>
-  /*
-   * Global (not scoped): the header, nav and footer markup now lives in the
-   * hydrated React islands `SiteHeader`/`SiteFooter`, whose elements do not
-   * receive Astro's `data-astro-cid-*` scope attribute. The selectors are
-   * class-scoped and unique to the chrome, so making them global preserves the
-   * exact look without changing any class or value.
-   *
-   * Sticky (not fixed) so the header keeps its own place in the flow: the
-   * document reserves its height and there is zero layout shift when it
-   * slides away. Hiding is a GPU-composited transform, never a height change.
-   */
-  /*
-   * The header's layout, surface, nav and disclosure are authored with
-   * Tailwind utilities inside `SiteHeader.tsx`; this rule keeps only the
-   * scroll-hide contract, which is driven by the `data-hidden` attribute the
-   * DOM adapter toggles. `will-change` and the transition stay here so the
-   * compositor-only transform keeps working even before hydration.
-   */
-  .site-header {
-    position: sticky;
-    top: 0;
-    z-index: var(--z-sticky);
-    transform: translateY(0);
-    will-change: transform;
-    transition: transform var(--dur-base) var(--ease-out);
-  }
-
-  .site-header[data-hidden] {
-    transform: translateY(-100%);
-  }
-
-  /*
-   * Background atmosphere: the canvas is created by `attachAtmosphere` (a
-   * client module) and its presentation lives in `src/styles/atmosphere.css`
-   * at `--z-ambient`, below the `--z-base` content. This layout only mounts the
-   * client module; it owns no atmosphere CSS.
-   */
-  /*
-   * The footer's layout, rule and spacing are authored with Tailwind utilities
-   * inside `SiteFooter.tsx`. This rule keeps only the stacking contract that
-   * lifts both shells above the atmosphere canvas.
-   */
-  .site-main,
-  .site-footer {
-    position: relative;
-    z-index: var(--z-base);
-  }
-
-  .site-main {
-    flex: 1;
-    padding-block: clamp(var(--space-8), 8vw, var(--space-11));
-    /*
-     * Reserve the fixed back-to-top control's bottom-right band (44px tall,
-     * one gutter inset from the safe-area edge, plus breathing room) so the
-     * final row/card always has clear space below it instead of relying on
-     * luck. `max()` keeps the existing rhythm on tall viewports.
-     */
-    padding-block-end: max(
-      clamp(var(--space-8), 8vw, var(--space-11)),
-      calc(44px + 3 * var(--space-4))
-    );
-  }
-
-  /*
-   * Reduced motion: the bar never hides and never animates — it simply stays
-   * put. The rule also matches the hidden state so it always wins over
-   * `.site-header[data-hidden]` regardless of script timing.
-   */
-  @media (prefers-reduced-motion: reduce) {
-    .site-header,
-    .site-header[data-hidden] {
-      transform: none;
-      transition: none;
-    }
-  }
-</style>

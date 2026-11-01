@@ -18,9 +18,9 @@ const { entry, Content } = await renderPage("photographer");
 ---
 
 <BaseLayout title={entry.data.title} description={entry.data.description}>
-  <div class="photography" lang="zh-Hant">
+  <div class="photography grid gap-[var(--space-5)]" lang="zh-Hant">
     <BackLink />
-    <div class="photography__body">
+    <div class="photography__body grid min-w-0 gap-[clamp(var(--space-8),6vw,var(--space-10))]">
       <Content />
     </div>
   </div>

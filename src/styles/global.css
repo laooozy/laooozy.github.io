@@ -162,27 +162,34 @@ body::before {
     max-width: var(--measure);
     text-wrap: pretty;
   }
+
+  /*
+   * Default link ink lives in BASE, not unlayered: an unlayered `a { color }`
+   * outranks every `@layer utilities` rule, so a component could never set its
+   * own link colour with a utility (the old black-label workaround for the
+   * photography CTA). In the base layer a component utility wins and a plain
+   * anchor still inherits the brand link treatment.
+   */
+  a {
+    color: var(--accent-text);
+    text-decoration-color: color-mix(
+      in oklab,
+      var(--accent-text) 45%,
+      transparent
+    );
+    text-underline-offset: 0.2em;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  a:hover {
+    color: var(--text);
+  }
 }
 
 ul,
 ol {
   margin: 0;
   padding: 0;
-}
-
-a {
-  color: var(--accent-text);
-  text-decoration-color: color-mix(
-    in oklab,
-    var(--accent-text) 45%,
-    transparent
-  );
-  text-underline-offset: 0.2em;
-  transition: color var(--dur-fast) var(--ease-out);
-}
-
-a:hover {
-  color: var(--text);
 }
 
 code,
@@ -377,6 +384,18 @@ html:not([data-locale]) [data-l="zh-hant"] {
   --animate-marquee: marquee var(--dur-marquee) linear infinite;
   --animate-shimmer: shimmer var(--dur-shimmer) linear infinite;
 
+  /* Entrance orchestrations. Each duration step is its own named animation so
+   * a child can select its stagger with a utility class; `animation-delay`
+   * cannot reliably override the shorthand from a later utility. */
+  --animate-rise: rise var(--dur-slow) var(--ease-out) both;
+  --animate-rise-2: rise var(--dur-slow) var(--ease-out) 60ms both;
+  --animate-rise-3: rise var(--dur-slow) var(--ease-out) 120ms both;
+  --animate-rise-4: rise var(--dur-slow) var(--ease-out) 180ms both;
+  --animate-fade-in: fade-in var(--dur-slow) var(--ease-out) 120ms both;
+  --animate-hero-pulse: hero-pulse 2.4s var(--ease-out) infinite;
+  --animate-now-ticker: now-ticker-scroll var(--dur-marquee) linear infinite;
+  --animate-skeleton-sweep: ig-skeleton-sweep var(--dur-shimmer) linear infinite;
+
   @keyframes marquee {
     from {
       transform: translate3d(0, 0, 0);
@@ -394,6 +413,63 @@ html:not([data-locale]) [data-l="zh-hant"] {
 
     to {
       background-position: -80% 0;
+    }
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes hero-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 var(--accent-surface);
+    }
+
+    50% {
+      box-shadow: 0 0 0 6px transparent;
+    }
+  }
+
+  @keyframes now-ticker-scroll {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  @keyframes ig-skeleton-sweep {
+    from {
+      background-position:
+        180% 0,
+        0 0;
+    }
+
+    to {
+      background-position:
+        -80% 0,
+        0 0;
     }
   }
 }
@@ -777,64 +853,73 @@ html:not([data-locale]) [data-l="zh-hant"] {
 
 /* Stack, Grid and Cluster are Tailwind-only React primitives in
    `src/components/shared/layout/**`; they own their own display, track and gap
-   utilities. The `.stack` / `.cluster` class names survive only as CSS hooks
-   that page styles can target (e.g. `.interest > .stack > p`). */
+   utilities. Their class names survive only as inert hooks that pages and E2E
+   tests can target. */
 
 /*
- * Card grids with a known item count (`data-count` is the rendered count,
- * capped at 4). The desktop row is exact — four cards make four columns, not
- * three plus a hollow orphan — and steps down to two columns, then one, as
- * the viewport narrows. A single card (the one-post LatestPosts case) widens
- * to a readable feature on desktop instead of sitting as a lonely 26rem tile.
+ * Card grid with a known item count (`data-count` is the rendered count, capped
+ * at 4). This is a reusable layout recipe rather than a page selector: one
+ * column on phones, two from `sm`, and the exact desktop row from `xl` (four
+ * cards make four columns, not three plus a hollow orphan). A single card (the
+ * one-post LatestPosts case) widens to a readable feature on desktop. Three
+ * cards on the two-column step centre their odd last card instead of hanging it
+ * at the left edge.
  */
-.grid--cards[data-count="1"] {
-  grid-template-columns: minmax(0, 26rem);
+@utility card-grid {
+  grid-template-columns: minmax(0, 1fr);
+
+  &[data-count="1"] {
+    grid-template-columns: minmax(0, 26rem);
+  }
+
+  @media (min-width: 40rem) {
+    &[data-count="2"],
+    &[data-count="3"],
+    &[data-count="4"] {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    &[data-count="3"] > :last-child {
+      grid-column: 1 / -1;
+      justify-self: center;
+      inline-size: calc(50% - var(--space-5) / 2);
+    }
+  }
+
+  @media (min-width: 80rem) {
+    &[data-count="1"] {
+      grid-template-columns: minmax(0, 48rem);
+    }
+
+    &[data-count="2"] {
+      grid-template-columns: repeat(2, minmax(0, 26rem));
+    }
+
+    &[data-count="3"] {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+
+      & > :last-child {
+        grid-column: auto;
+        justify-self: stretch;
+        inline-size: auto;
+      }
+    }
+
+    &[data-count="4"] {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
 }
 
-.grid--cards[data-count="2"],
-.grid--cards[data-count="3"],
-.grid--cards[data-count="4"] {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-@media (min-width: 75rem) {
-  .grid--cards[data-count="1"] {
-    grid-template-columns: minmax(0, 48rem);
-  }
-
-  .grid--cards[data-count="2"] {
-    grid-template-columns: repeat(2, minmax(0, 26rem));
-  }
-
-  .grid--cards[data-count="3"] {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .grid--cards[data-count="4"] {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-/* Three cards on a two-column grid: the odd card is centred at one column
-   wide instead of hanging alone at the left edge. */
-@media (min-width: 40rem) and (max-width: 74.99rem) {
-  .grid--cards[data-count="3"] > :last-child {
-    grid-column: 1 / -1;
-    justify-self: center;
-    inline-size: calc(50% - var(--space-5) / 2);
-  }
-}
-
-@media (max-width: 39.99rem) {
-  .grid--cards[data-count] {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.card {
+/*
+ * Reusable card surface. The padding starts at the phone step and grows at
+ * `sm`, so the recipe is authored mobile-first instead of overriding a desktop
+ * value down. Components keep their own semantic hooks (`interest`,
+ * `photo-index__card`) beside this utility.
+ */
+@utility card-surface {
   position: relative;
-  display: block;
-  padding: var(--space-6);
+  padding: var(--space-5);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   background-color: var(--surface);
@@ -848,420 +933,103 @@ html:not([data-locale]) [data-l="zh-hant"] {
     border-color var(--dur-base) var(--ease-out),
     box-shadow var(--dur-base) var(--ease-out),
     transform var(--dur-base) var(--ease-out);
-}
 
-.card--interactive:hover,
-.card--interactive:focus-visible {
-  border-color: var(--glass-border-strong);
-  box-shadow: var(--card-inset), var(--shadow-lift);
-  transform: translateY(-3px);
-}
+  @media (min-width: 40rem) {
+    padding: var(--space-6);
+  }
 
-.card--interactive:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .card,
-  .card--interactive:hover,
-  .card--interactive:focus-visible {
+  @media (prefers-reduced-motion: reduce) {
     transition: none;
-    transform: none;
-  }
-}
-
-/* Below 30rem the container leaves ~288px; space-6 padding would cut the card
-   content to 224px, so the card tightens to space-5 and keeps a 240px inner. */
-@media (max-width: 29.99rem) {
-  .card {
-    padding: var(--space-5);
-  }
-}
-
-.separator {
-  border: 0;
-  background: color-mix(in oklab, var(--glass-border) 45%, transparent);
-}
-
-.separator--horizontal {
-  width: 100%;
-  height: 1px;
-  margin: 0;
-}
-
-.separator--vertical {
-  width: 1px;
-  align-self: stretch;
-  min-height: 1em;
-}
-
-/* Feature styles that cannot live in React: Hero, BlogPagination, BlogFilters
-   and PostCard were extracted from scoped <style> blocks when they moved to
-   React (PostRow merged into PostCard as variant="row"). */
-.hero {
-  position: relative;
-  display: grid;
-  gap: var(--space-8);
-  padding-bottom: clamp(var(--space-4), 3vw, var(--space-6));
-  /* A grid/flex item defaults to min-width:auto; the marquee's nowrap track
-     would otherwise widen the whole hero past the viewport. */
-  min-width: 0;
-}
-
-/* The masthead's local aurora glow is gone: it is replaced by the single fixed
-   ambient layer (`body::before`). Keeping both would have doubled the purple
-   wash behind the hero. The children stay layered above the ambient wash. */
-.hero__main,
-.hero__meta {
-  position: relative;
-  z-index: 1;
-}
-
-.hero__main {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-5);
-  min-width: 0;
-}
-
-.hero__status {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  margin: 0;
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-}
-
-.hero__dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: var(--radius-pill);
-  background: var(--accent);
-  box-shadow: 0 0 12px -2px var(--accent);
-}
-
-.hero__status-label {
-  font-weight: 600;
-  color: var(--accent-text);
-}
-
-/* "Now" ticker (title of the fixed-chrome status row).
- *
- * Base state = a plain readable line. `NowTickerClient` adds `.is-running`
- * after hydration only for 2+ items and when the visitor has not asked for
- * reduced motion; that class is what turns the line into a CSS marquee. No
- * JavaScript animation loop is involved. The second track copy is aria-hidden
- * and its links are tabIndex -1, so the marquee never adds a duplicate tab
- * stop. Hovering the ticker line, focusing an item link, or pressing the pause
- * button freezes the same CSS animation; the toggle's own hover/focus never
- * does, so Play can resume in place. Under reduced motion the class never
- * lands, and the rule below is a belt-and-braces override. */
-.now-ticker {
-  max-width: 100%;
-}
-
-.now-ticker.is-running {
-  display: flex;
-  flex-wrap: nowrap;
-  width: 100%;
-  max-width: 40rem;
-}
-
-.now-ticker__viewport {
-  min-width: 0;
-}
-
-.now-ticker.is-running .now-ticker__viewport {
-  flex: 1 1 auto;
-  overflow: hidden;
-  -webkit-mask-image: linear-gradient(
-    90deg,
-    transparent,
-    #000 6%,
-    #000 94%,
-    transparent
-  );
-  mask-image: linear-gradient(
-    90deg,
-    transparent,
-    #000 6%,
-    #000 94%,
-    transparent
-  );
-}
-
-.now-ticker__track {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  min-width: 0;
-}
-
-.now-ticker__group {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.now-ticker__item {
-  color: var(--text);
-  text-decoration: none;
-}
-
-.now-ticker__sep {
-  color: var(--text-muted);
-}
-
-a.now-ticker__item:hover,
-a.now-ticker__item:focus-visible {
-  color: var(--accent-text);
-  text-decoration: underline;
-}
-
-.now-ticker.is-running .now-ticker__track,
-.now-ticker.is-running .now-ticker__group {
-  flex-wrap: nowrap;
-  width: max-content;
-}
-
-.now-ticker.is-running .now-ticker__track {
-  gap: 0;
-  animation: now-ticker-scroll var(--dur-marquee) linear infinite;
-  will-change: transform;
-}
-
-/* Trailing space is part of the group, so translating the two equal groups by
- * -50% loops with no seam. */
-.now-ticker.is-running .now-ticker__group {
-  padding-right: var(--space-2);
-}
-
-.now-ticker.is-running .now-ticker__viewport:hover .now-ticker__track,
-.now-ticker.is-running:has(.now-ticker__item:focus-visible) .now-ticker__track,
-.now-ticker[data-paused="true"] .now-ticker__track {
-  animation-play-state: paused;
-}
-
-.now-ticker__toggle {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  margin: 0;
-  padding: 0;
-  border: 1px solid var(--control-border);
-  border-radius: var(--radius-pill);
-  background: var(--surface);
-  color: var(--text-muted);
-  cursor: pointer;
-  transition:
-    color var(--dur-fast) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out),
-    background-color var(--dur-fast) var(--ease-out);
-}
-
-.now-ticker__toggle:hover {
-  color: var(--text);
-  border-color: var(--control-border-strong);
-  background: var(--surface-hover);
-}
-
-.now-ticker__toggle:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-@keyframes now-ticker-scroll {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(-50%, 0, 0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .now-ticker.is-running .now-ticker__viewport {
-    overflow: visible;
-    -webkit-mask-image: none;
-    mask-image: none;
-  }
-
-  .now-ticker.is-running .now-ticker__track {
-    animation: none;
-  }
-
-  .now-ticker.is-running .now-ticker__track,
-  .now-ticker.is-running .now-ticker__group {
-    flex-wrap: wrap;
-    width: auto;
-  }
-
-  .now-ticker__group[aria-hidden="true"] {
-    display: none;
-  }
-}
-
-.hero__meta {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  border-top: 1px solid
-    color-mix(in oklab, var(--glass-border) 45%, transparent);
-}
-
-.hero__meta-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-5);
-  padding-block: var(--space-4);
-  border-bottom: 1px solid
-    color-mix(in oklab, var(--glass-border) 25%, transparent);
-}
-
-.hero__meta-row dt {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-}
-
-.hero__meta-row dd {
-  margin: 0;
-  font-size: var(--text-base);
-  font-weight: 500;
-  color: var(--text);
-  text-align: right;
-}
-
-@media (min-width: 60rem) {
-  .hero {
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-    gap: var(--space-10);
-    align-items: center;
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .hero__main > * {
-    animation: hero-rise var(--dur-slow) var(--ease-out) both;
-  }
-
-  .hero__main > *:nth-child(2) {
-    animation-delay: 60ms;
-  }
-
-  .hero__main > *:nth-child(3) {
-    animation-delay: 120ms;
-  }
-
-  .hero__main > *:nth-child(4) {
-    animation-delay: 180ms;
-  }
-
-  .hero__meta {
-    animation: hero-fade var(--dur-slow) var(--ease-out) 120ms both;
-  }
-
-  .hero__dot {
-    animation: hero-pulse 2.4s var(--ease-out) infinite;
-  }
-}
-
-@keyframes hero-rise {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes hero-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes hero-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 var(--accent-surface);
-  }
-  50% {
-    box-shadow: 0 0 0 6px transparent;
   }
 }
 
 /*
- * Entrance reveal — an ENHANCEMENT over an already-visible default.
- *
- * The base state is fully visible (`opacity: 1`, no transform) and the
- * animation is declared ONLY inside `prefers-reduced-motion: no-preference`.
- * Under reduced motion this media query never matches, so no element is ever
- * left at `opacity: 0` — the block simply renders visible from the first frame.
- * A bare `.reveal{opacity:0}` outside the guard would blank the page for those
- * users and is deliberately avoided.
- *
- * Scope: the `.reveal` class is applied only to the home page's major blocks
- * (see `src/content/pages/home.mdx`) — never to every `.section` on the site. The Photography page's
- * counterpart lives in `pages.css`. Reuses the existing timing tokens and the
- * existing `hero-rise`/`photo-rise` motion shape, so there is no second motion
- * language. `both` holds the start frame through each block's delay and the end
- * frame once the animation settles.
+ * Interaction layer for a card that is itself a link. `:focus-visible` only
+ * repeats the site-wide focus ring; the lift is the hover/focus affordance and
+ * is disabled under reduced motion.
  */
-@media (prefers-reduced-motion: no-preference) {
-  .home .reveal {
-    animation: reveal-rise var(--dur-slow) var(--ease-out) both;
+@utility card-interactive {
+  &:hover,
+  &:focus-visible {
+    border-color: var(--glass-border-strong);
+    box-shadow: var(--card-inset), var(--shadow-lift);
+    transform: translateY(-3px);
   }
 
-  .home .reveal:nth-of-type(2) {
-    animation-delay: 60ms;
-  }
-
-  .home .reveal:nth-of-type(3) {
-    animation-delay: 120ms;
-  }
-
-  .home .reveal:nth-of-type(4) {
-    animation-delay: 180ms;
-  }
-
-  /*
-   * A fragment target is scrolled into view while its entrance reveal is still
-   * translated 12px; that shift would eat into the header space reserved by
-   * `scroll-padding-top`. Keep the target itself still on arrival (the other
-   * blocks keep their reveal).
-   */
-  html .reveal:target {
-    animation: none;
+  @media (prefers-reduced-motion: reduce) {
+    &:hover,
+    &:focus-visible {
+      transform: none;
+    }
   }
 }
 
-@keyframes reveal-rise {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
+/*
+ * Instagram oEmbed frame. Meta's blockquote arrives with LIGHT inline styles
+ * (`background:#FFF`, `min-width:326px`) that only `!important` can override,
+ * and its `iframe` is created at runtime by embed.js, so these descendants
+ * cannot be written as Tailwind utilities on our own elements. Everything that
+ * IS ours lives in the component class string; this utility owns only the
+ * third-party frame plus the dark loading skeleton (`::after`) that covers the
+ * light placeholder until the real iframe replaces it.
+ */
+@utility embed-frame {
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: inherit;
+    background-image:
+      linear-gradient(
+        100deg,
+        transparent 35%,
+        var(--surface-strong) 50%,
+        transparent 65%
+      ),
+      linear-gradient(var(--bg-elevated), var(--bg-elevated));
+    background-size:
+      220% 100%,
+      100% 100%;
+    animation: ig-skeleton-sweep var(--dur-shimmer) linear infinite;
+    pointer-events: none;
   }
-  to {
-    opacity: 1;
-    transform: none;
+
+  &:has(iframe)::after {
+    display: none;
+  }
+
+  & blockquote.instagram-media {
+    position: relative;
+    z-index: 1;
+    background: var(--surface) !important;
+    background-image: var(--card-bg) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--card-inset) !important;
+    color: var(--text) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  & blockquote.instagram-media a {
+    color: var(--text-muted) !important;
+  }
+
+  & iframe {
+    display: block;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    border: 0;
   }
 }
+
+/* Hero, NowTicker, HeroMeta and the entrance orchestration are authored with
+   Tailwind utilities in their owning components. Only the keyframes live here
+   (declared in `@theme`) because a CSS animation must be global. */
 
 /*
  * Print.

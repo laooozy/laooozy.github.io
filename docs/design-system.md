@@ -53,8 +53,9 @@ bar cannot drift from the page canvas.
 ### `global.css` bridges shadcn names
 
 [global.css](../src/styles/global.css) is the one CSS entry. It imports
-`tokens.css`, the seven Fontsource faces, Tailwind, `tw-animate-css`,
-`shadcn/tailwind.css`, and wires the Typography plugin. It then contains:
+`tokens.css`, `atmosphere.css`, the seven Fontsource faces, Tailwind,
+`tw-animate-css`, `shadcn/tailwind.css`, and wires the Typography plugin. It
+then contains:
 
 1. A `@theme inline` block that maps shadcn colour names (`--color-background`,
    `--color-primary`, and so on) to the semantic variables, plus
@@ -148,9 +149,12 @@ Breakpoints are declared once in the `@theme` block of `global.css`:
 | `xl`  | 80rem / 1280px | Wide desktop          |
 
 Use `min-width` variants (`2xs:`, `xs:`, `sm:`, `md:`, `lg:`, `xl:`). Author
-and review at 320 and 390 first, then enhance upward. The one existing
-desktop-first override is the compact-header rule in `BaseLayout`; do not add
-more.
+and review at 320 and 390 first, then enhance upward. The only desktop-first
+`max-width` rule is the compact-header switch: `@media (max-width: 621px)` in
+[tokens.css](../src/styles/tokens.css) moves `--header-height`, mirrored by
+`max-[621px]:` utilities in
+[LanguageSwitcher.tsx](../src/components/site/LanguageSwitcher.tsx). Do not add
+another.
 
 ### Test matrix
 
@@ -252,17 +256,24 @@ primitives use it, and brand components should too instead of a pile of
 conditional class strings. Prettier is configured with
 `tailwindFunctions: ["cn", "cva"]`, so classes inside both calls are sorted.
 
-Five brand utilities are declared with `@utility` in `global.css`:
+The brand utilities are declared with `@utility` in `global.css`:
 
-| Utility      | Effect                                                                                                              |
-| :----------- | :------------------------------------------------------------------------------------------------------------------ |
-| `glass`      | Translucent card: `--surface`, `--card-bg`, `--glass-border`, `--glass-glow`, `backdrop-filter: blur(--glass-blur)` |
-| `surface`    | Opaque elevated surface: `--bg-elevated`, `--glass-border`, `--card-inset`                                          |
-| `measure`    | `max-width: var(--measure)` plus `text-wrap: pretty`                                                                |
-| `cjk-label`  | `word-break: keep-all` and `overflow-wrap: anywhere` for short CJK labels; never on long prose                      |
-| `focus-ring` | The 2px accent outline with a 3px offset                                                                            |
+| Utility            | Effect                                                                                                              |
+| :----------------- | :------------------------------------------------------------------------------------------------------------------ |
+| `glass`            | Translucent card: `--surface`, `--card-bg`, `--glass-border`, `--glass-glow`, `backdrop-filter: blur(--glass-blur)` |
+| `surface`          | Opaque elevated surface: `--bg-elevated`, `--glass-border`, `--card-inset`                                          |
+| `card-surface`     | The card recipe: `--surface` plus `--card-bg`, glass border, inset highlight, mobile-first padding, blur            |
+| `card-interactive` | Hover/focus lift and border for a card that is itself a link; lift is disabled under reduced motion                 |
+| `card-grid`        | The `data-count` card row: one column, two from `sm`, exact 1/2/3/4 tracks from `xl`                                |
+| `embed-frame`      | Third-party Instagram frame: dark loading skeleton (`::after`) and `!important` oEmbed/iframe overrides             |
+| `measure`          | `max-width: var(--measure)` plus `text-wrap: pretty`                                                                |
+| `cjk-label`        | `word-break: keep-all` and `overflow-wrap: anywhere` for short CJK labels; never on long prose                      |
+| `focus-ring`       | The 2px accent outline with a 3px offset                                                                            |
 
 `glass` and `surface` are alternatives, not layers. Do not stack both.
+`card-surface` and `card-interactive` compose (surface first), and
+`embed-frame` is only for the third-party oEmbed block whose inline styles the
+site cannot reach.
 
 ### Component recipe
 
@@ -469,7 +480,7 @@ external or generated at build time.
 
 Do:
 
-- Use design tokens and the five brand utilities.
+- Use design tokens and the documented brand utilities.
 - Use `cva` for variants and `cn` for class merging.
 - Compose the generated shadcn primitives and the shared kit.
 - Design at 320 and 390 first, then enhance with `min-width` variants.
@@ -485,7 +496,8 @@ Do not:
 - Add a second colour system, a second UI library or a Radix package.
 - Hand-edit generated files under `src/components/ui/`.
 - Redeclare `--radius-*` or `--text-*` in `@theme`.
-- Add a desktop-first `max-width` override, except the existing compact header.
+- Add a desktop-first `max-width` override, except the compact-header switch in
+  `tokens.css` / `LanguageSwitcher`.
 - Hide horizontal overflow on `html` or `body`.
 - Put page copy in `src/i18n`, `src/data` or a React page component.
 - Add locale-prefixed routes or per-locale page folders.

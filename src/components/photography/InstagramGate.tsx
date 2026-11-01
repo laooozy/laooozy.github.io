@@ -76,7 +76,7 @@ export default function InstagramGate({
     setState("loading");
     /*
      * Reveal before injecting so Meta's library finds the blockquotes in
-     * layout when it processes them; the dark skeleton in `pages.css` covers
+     * layout when it processes them; the `embed-frame` skeleton covers
      * the light placeholder until the real iframe arrives. A failed load
      * hides the layer again below, so nothing half-rendered is left behind.
      */

@@ -22,10 +22,15 @@ import { useClientDeps } from "@/components/shared/ClientDepsContext";
 import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
 import { langAttr } from "@/i18n";
 import type { NowItem } from "@/lib/domain/now";
+import { cn } from "@/lib/utils";
 
 interface NowTickerClientProps {
   items: readonly NowItem[];
 }
+
+const ITEM_CLASS = cn(
+  "now-ticker__item text-[var(--text)] no-underline hover:text-[var(--accent-text)] hover:underline focus-visible:text-[var(--accent-text)] focus-visible:underline",
+);
 
 function NowTickerItem({
   item,
@@ -34,12 +39,10 @@ function NowTickerItem({
   item: NowItem;
   duplicate: boolean;
 }) {
-  const className = "now-ticker__item";
-
   if (item.href) {
     return (
       <a
-        className={className}
+        className={ITEM_CLASS}
         href={item.href}
         tabIndex={duplicate ? -1 : undefined}
         draggable={false}
@@ -49,7 +52,7 @@ function NowTickerItem({
     );
   }
 
-  return <span className={className}>{item.text}</span>;
+  return <span className={ITEM_CLASS}>{item.text}</span>;
 }
 
 function NowTickerItems({
@@ -64,7 +67,10 @@ function NowTickerItems({
       {items.map((item, index) => (
         <Fragment key={`${index}-${item.text}`}>
           {index > 0 && (
-            <span className="now-ticker__sep" aria-hidden="true">
+            <span
+              className="now-ticker__sep text-[var(--text-muted)]"
+              aria-hidden="true"
+            >
               ·
             </span>
           )}
@@ -74,6 +80,10 @@ function NowTickerItems({
     </>
   );
 }
+
+const GROUP_CLASS =
+  "now-ticker__group flex flex-wrap items-center gap-[var(--space-2)]";
+const RUNNING_GROUP_CLASS = "w-max flex-nowrap pr-[var(--space-2)]";
 
 export default function NowTickerClient({ items }: NowTickerClientProps) {
   const deps = useClientDeps();
@@ -91,21 +101,52 @@ export default function NowTickerClient({ items }: NowTickerClientProps) {
 
   return (
     <div
-      className={`hero__status now-ticker${running ? "is-running" : ""}`}
+      className={cn(
+        "hero__status now-ticker m-0 max-w-full items-center gap-[var(--space-2)] text-[length:var(--text-sm)] text-[var(--text-muted)]",
+        running
+          ? "is-running flex w-full max-w-[40rem] flex-nowrap"
+          : "inline-flex flex-wrap",
+      )}
       data-paused={paused ? "true" : "false"}
     >
-      <span className="hero__dot" aria-hidden="true" />
-      <span className="hero__status-label" lang={langAttr[locale]}>
+      <span
+        className="hero__dot size-2 rounded-[var(--radius-pill)] bg-[var(--accent)] shadow-[0_0_12px_-2px_var(--accent)] motion-safe:animate-hero-pulse"
+        aria-hidden="true"
+      />
+      <span
+        className="hero__status-label font-semibold text-[var(--accent-text)]"
+        lang={langAttr[locale]}
+      >
         {label}
       </span>
 
-      <div className="now-ticker__viewport">
-        <div className="now-ticker__track">
-          <div className="now-ticker__group">
+      <div
+        className={cn(
+          "now-ticker__viewport min-w-0",
+          running &&
+            "flex-auto overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_6%,black_94%,transparent)] [-webkit-mask-image:linear-gradient(90deg,transparent,black_6%,black_94%,transparent)]",
+        )}
+      >
+        <div
+          className={cn(
+            "now-ticker__track flex min-w-0 items-center gap-[var(--space-2)]",
+            running &&
+              "w-max flex-nowrap gap-0 will-change-transform hover:[animation-play-state:paused] has-[:focus-visible]:[animation-play-state:paused] motion-safe:animate-now-ticker",
+            running && paused && "[animation-play-state:paused]",
+          )}
+        >
+          <div className={cn(GROUP_CLASS, running && RUNNING_GROUP_CLASS)}>
             <NowTickerItems items={items} duplicate={false} />
           </div>
           {running && (
-            <div className="now-ticker__group" aria-hidden="true">
+            <div
+              className={cn(
+                GROUP_CLASS,
+                RUNNING_GROUP_CLASS,
+                "motion-reduce:hidden",
+              )}
+              aria-hidden="true"
+            >
               <NowTickerItems items={items} duplicate />
             </div>
           )}
@@ -115,7 +156,7 @@ export default function NowTickerClient({ items }: NowTickerClientProps) {
       {running && (
         <button
           type="button"
-          className="now-ticker__toggle"
+          className="now-ticker__toggle m-0 inline-flex size-11 flex-none cursor-pointer items-center justify-center rounded-[var(--radius-pill)] border border-[var(--control-border)] bg-[var(--surface)] p-0 text-[var(--text-muted)] transition-[color,border-color,background-color] duration-[var(--dur-fast)] ease-brand hover:border-[var(--control-border-strong)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           aria-label={toggleLabel}
           aria-pressed={paused}
           lang={langAttr[locale]}
