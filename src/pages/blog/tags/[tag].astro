@@ -9,7 +9,6 @@
  */
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import BlogList from "../../../components/blog/BlogList";
-import SearchModal from "../../../components/site/SearchModal";
 import { useTranslations } from "../../../i18n/ui";
 import {
   blogArchivePath,
@@ -55,7 +54,5 @@ const heading = { kind: "tag", tag } as const;
     heading={heading}
     tags={tags}
     periods={periods}
-  >
-    {allPosts.length > 0 && <SearchModal client:idle />}
-  </BlogList>
+  />
 </BaseLayout>

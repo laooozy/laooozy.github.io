@@ -9,7 +9,6 @@
  */
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import BlogList from "../../components/blog/BlogList";
-import SearchModal from "../../components/site/SearchModal";
 import { useTranslations } from "../../i18n/ui";
 import {
   blogArchivePath,
@@ -64,7 +63,5 @@ const pagination = {
     tags={tags}
     periods={periods}
     pagination={pagination}
-  >
-    {allPosts.length > 0 && <SearchModal client:idle />}
-  </BlogList>
+  />
 </BaseLayout>

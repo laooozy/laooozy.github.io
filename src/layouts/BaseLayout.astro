@@ -8,6 +8,7 @@ import inter400Url from "@fontsource/inter/files/inter-latin-400-normal.woff2?ur
 import sora600Url from "@fontsource/sora/files/sora-latin-600-normal.woff2?url";
 import LanguageSwitcher from "../components/site/LanguageSwitcher";
 import ScrollControls from "../components/site/ScrollControls";
+import SearchCommand from "../components/site/SearchCommand";
 import SiteFooter from "../components/site/SiteFooter";
 import SiteHeader from "../components/site/SiteHeader";
 import Container from "../components/shared/layout/Container";
@@ -140,6 +141,14 @@ if (!themeColor) {
     <SiteHeader client:load currentPath={Astro.url.pathname}>
       <LanguageSwitcher client:idle />
     </SiteHeader>
+
+    {/*
+     * The global ⌘K palette is a SIBLING island, never a child of the header:
+     * the header owns only the trigger, and this island lazy-loads the dialog
+     * chunk on first open. Mounted once here so every route shares one trigger
+     * state and one palette.
+     */}
+    <SearchCommand client:idle />
 
     {/*
      * `tabindex="-1"` makes the skip link's target programmatically
