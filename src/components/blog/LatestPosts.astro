@@ -37,12 +37,13 @@ const posts = (await getAllPosts())
         dateLabel={formatPostDate(post.date, defaultLang)}
         datetime={post.date}
         tags={post.tags}
+        readLabel={t(defaultLang, "blog.readPost")}
       />
     ))}
   </Grid>
 ) : (
   <BlogEmptyView
-    heading={t(defaultLang, "nav.blog")}
+    heading={t(defaultLang, "blog.heading")}
     message={t(defaultLang, "blog.empty")}
     homeLabel={t(defaultLang, "notFound.backHome")}
     secondaryLabel={t(defaultLang, "nav.photography")}

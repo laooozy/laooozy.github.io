@@ -60,6 +60,7 @@ const FIXED_KEYS = [
   "blog.heading",
   "blog.empty",
   "blog.readTime",
+  "blog.readPost",
   "blog.backToIndex",
   "blog.tagged",
   "blog.allPosts",

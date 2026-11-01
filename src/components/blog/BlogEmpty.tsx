@@ -30,7 +30,7 @@ export default function BlogEmpty() {
 
   return (
     <BlogEmptyView
-      heading={tr("nav.blog")}
+      heading={tr("blog.heading")}
       message={tr("blog.empty")}
       homeLabel={tr("notFound.backHome")}
       secondaryLabel={tr("nav.photography")}

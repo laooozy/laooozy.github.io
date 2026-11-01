@@ -9,7 +9,7 @@
  *                            `<time datetime>` value
  *  - readingMinutes?: number estimated whole minutes (locale-independent)
  *  - tags?: string[]
- *  - headingLevel?: 2 | 3    default: 2 (page title is the h1); row variant only
+ *  - headingLevel?: 2 | 3    default: 3 on the card variant, 2 on the row
  *  - variant?: "card" | "row"   default: "card"
  *      card → a stacked card surface in a grid
  *      row  → a wide horizontal entry with a fixed mono meta rail
@@ -19,10 +19,9 @@
  * locale (mounted gate), so they re-render in place when the language switcher
  * changes. The markup itself lives in the pure `PostCardView`, which the
  * build-time `LatestPosts.astro` also renders — one card definition, two
- * consumers. Both variants wrap the shared `Card`, so they inherit the glass
- * surface and the interactive hover lift. Tags are NON-interactive labels
- * (`ChipRow` default `variant="tag"`), distinct from the filter controls above
- * a list.
+ * consumers. Both variants wrap the generated `Card`, carry one `Button`
+ * action and keep their tags as NON-interactive `ChipRow` labels
+ * (`variant="tag"`), distinct from the filter controls above a list.
  */
 import { useEffect, useState } from "react";
 
@@ -54,7 +53,7 @@ export default function PostCard({
   date,
   readingMinutes,
   tags = [],
-  headingLevel = 2,
+  headingLevel,
   variant = "card",
   className,
 }: PostCardProps) {
@@ -76,6 +75,7 @@ export default function PostCard({
     readingMinutes === undefined
       ? undefined
       : tr("blog.readTime", { minutes: readingMinutes });
+  const readLabel = tr("blog.readPost");
 
   return (
     <PostCardView
@@ -85,6 +85,7 @@ export default function PostCard({
       dateLabel={dateLabel}
       datetime={date}
       readingTime={readingTime}
+      readLabel={readLabel}
       tags={tags}
       headingLevel={headingLevel}
       variant={variant}

@@ -5,8 +5,8 @@
  * wrapper (`BlogEmpty.tsx`) supplies the locale-reactive labels, and the
  * build-time `mdx/LatestPosts.astro` renders it directly with the default-locale
  * labels (server-only, no hydration). The panel is the shared `EmptyState`
- * primitive so every zero-result surface shares one anatomy; keep the copy and
- * links here, never duplicate them in a consumer.
+ * primitive (generated shadcn `Empty`) so every zero-result surface shares one
+ * anatomy; keep the copy and links here, never duplicate them in a consumer.
  *
  * Every label is a plain string prop so this stays purely presentational: no
  * hooks, no store, no adapters.
@@ -14,11 +14,12 @@
 import Cluster from "@/components/shared/layout/Cluster";
 import EmptyState from "@/components/shared/state/EmptyState";
 import Heading from "@/components/shared/typography/Heading";
+import { Button } from "@/components/ui/button";
 
 export interface BlogEmptyViewProps {
-  /** Panel heading, e.g. `Blog`. */
+  /** Panel heading, e.g. `最新文章`. */
   heading: string;
-  /** One-line explanation, e.g. `No posts yet.` */
+  /** One-line explanation, e.g. `這裡還沒有文章。` */
   message: string;
   /** Home action label. */
   homeLabel: string;
@@ -36,28 +37,31 @@ export default function BlogEmptyView({
 }: BlogEmptyViewProps) {
   return (
     <EmptyState
-      className={["blog-empty", className].filter(Boolean).join(" ")}
+      data-blog-empty
+      className={className}
       title={
-        <Heading level={2} className="blog-empty__title">
+        <Heading level={2} className="text-[length:var(--text-xl)]">
           {heading}
         </Heading>
       }
       description={message}
-      contentClassName="blog-empty__content"
       action={
-        <Cluster gap={2} className="blog-empty__actions">
-          <a className="link-arrow blog-empty__action" href="/">
-            {homeLabel}
-            <span className="link-arrow__arrow" aria-hidden="true">
-              →
-            </span>
-          </a>
-          <a className="link-arrow blog-empty__action" href="/photographer/">
-            {secondaryLabel}
-            <span className="link-arrow__arrow" aria-hidden="true">
-              →
-            </span>
-          </a>
+        <Cluster gap={2} className="flex-wrap justify-center">
+          <Button
+            size="lg"
+            className="min-h-11 rounded-full px-4"
+            render={
+              <a href="/">
+                <span className="text-primary-foreground">{homeLabel}</span>
+              </a>
+            }
+          />
+          <Button
+            variant="outline"
+            size="lg"
+            className="min-h-11 rounded-full px-4"
+            render={<a href="/photographer/">{secondaryLabel}</a>}
+          />
         </Cluster>
       }
     />

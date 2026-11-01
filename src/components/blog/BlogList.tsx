@@ -4,16 +4,17 @@
  *
  * Composition (all from the reusable kit):
  *  - a masthead (`Heading` level 1),
- *  - the filter tray (`BlogFilters`),
- *  - the post list — one `PostCard` (variant="row") per post, a wide glass
- *    entry with a mono date rail,
- *  - `BlogPagination` when the set spans more than one page.
+ *  - the filter tray (`BlogFilters`) whenever EITHER tags or periods exist,
+ *  - the post list — one `PostCard` (variant="row") per post,
+ *  - `BlogPagination` when the set spans more than one page,
+ *  - `BlogEmpty` when the filtered set has no posts.
  *
  * Every label is re-derived per active locale on the client (mounted gate,
  * mirroring the hydrated chrome): the masthead from a locale-independent
  * descriptor, the period chips from their raw `YYYY`/`YYYY-MM` keys, and each
- * post's date and reading time inside `PostCard`. Paging links are locale-free.
- * Search is global chrome (`SearchCommand` in the layout), not a listing child.
+ * post's date, reading time and action inside `PostCard`. Paging links are
+ * locale-free. Search is global chrome (`SearchCommand` in the layout), not a
+ * listing child.
  */
 import { useEffect, useState } from "react";
 
@@ -104,22 +105,30 @@ export default function BlogList({
     active: item.active,
   }));
 
+  const showFilters = tagLinks.length > 0 || periodLinks.length > 0;
+
   return (
-    <section className="blog-index" aria-labelledby="blog-heading">
-      <header className="blog-index__header">
-        <Heading level={1} id="blog-heading" className="blog-index__title">
+    <section
+      className="grid gap-(--space-6) lg:gap-(--space-8)"
+      aria-labelledby="blog-heading"
+      data-blog-listing
+    >
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <Heading
+          level={1}
+          id="blog-heading"
+          className="text-[length:var(--text-page-title)]"
+        >
           {title}
         </Heading>
       </header>
 
-      {tagLinks.length > 0 && (
-        <BlogFilters tags={tagLinks} periods={periodLinks} />
-      )}
+      {showFilters && <BlogFilters tags={tagLinks} periods={periodLinks} />}
 
       {posts.length > 0 ? (
-        <ul className="blog-list">
+        <ul className="m-0 grid list-none gap-(--space-4) p-0">
           {posts.map((post) => (
-            <li key={post.href}>
+            <li key={post.href} className="min-w-0">
               <PostCard
                 variant="row"
                 href={post.href}

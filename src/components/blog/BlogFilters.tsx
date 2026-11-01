@@ -1,30 +1,36 @@
 /**
  * BlogFilters — the filter tray for every blog listing.
  *
- * Two control groups:
- *  - By tag: an "All posts" reset chip (filled while the index is unfiltered)
- *    followed by every tag. Tags are the primary browsing axis, so this group
- *    leads.
- *  - By date: the year (and month) archives present in the set.
+ * Three groups, in reading order:
+ *  - the "All posts" reset, always present so a period-only listing can still
+ *    clear its filter;
+ *  - by tag, only when the post set actually has tags;
+ *  - by date, only when it has periods.
  *
- * Every chip here is a CONTROL (`ChipRow variant="filter"`): outlined at rest,
- * tinted on hover, solid-accent when `active` — so a filter can never be
- * mistaken for a post's tag label. A `Separator` closes the tray and divides it
- * from the post list below.
+ * The generated `ToggleGroup` is used as a link toolbar: every item renders as
+ * an anchor via Base UI's `render` escape hatch, so the filters stay ordinary
+ * URLs (no client state, no JS-only controls) and still share one focus /
+ * pressed-data contract. `role`/`aria-pressed` are cleared on the anchor so it
+ * keeps native link semantics; the active item carries `aria-current="page"`.
+ *
+ * The tray renders when EITHER source exists: a set with no tags but dated
+ * posts still shows the period filters (and the reset). A `Separator` closes
+ * the tray and divides it from the post list below.
  *
  * Labels come from `useT`, bound to the store's active locale, so they re-render
- * in place when the language switcher changes (mounted gate, mirroring
- * the hydrated chrome). `href`s are locale-free, so the reset always lands on
- * the single `/blog/` index.
+ * in place when the language switcher changes (mounted gate, mirroring the
+ * hydrated chrome). `href`s are locale-free, so the reset always lands on the
+ * single `/blog/` index.
  */
 import { useEffect, useState } from "react";
 
-import ChipRow from "@/components/shared/ChipRow";
 import type { FilterLink } from "@/components/shared/types";
 import { Separator } from "@/components/ui/separator";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
 import { blogIndexPath } from "@/lib/domain/posts";
+import { cn } from "@/lib/utils";
 
 const defaultTranslate: Translate = (key, vars) =>
   translate(defaultLang, key, vars);
@@ -33,6 +39,76 @@ interface BlogFiltersProps {
   tags?: FilterLink[];
   periods?: FilterLink[];
   className?: string;
+}
+
+const FILTER_CLASSES = cn(
+  "h-9 rounded-full border px-3 text-sm font-medium transition-colors",
+  "pointer-coarse:min-h-11 pointer-coarse:min-w-11",
+  "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
+);
+
+const FILTER_ACTIVE_CLASSES =
+  "border-primary bg-primary text-primary-foreground hover:bg-primary/80";
+
+const FILTER_IDLE_CLASSES = cn(
+  "border-(--control-border) bg-background text-foreground",
+  "hover:border-(--control-border-strong) hover:bg-muted",
+);
+
+const GROUP_LABEL_CLASSES =
+  "min-w-[4.5rem] font-mono text-[length:var(--text-xs)] tracking-[var(--tracking-wide)] text-muted-foreground uppercase";
+
+interface FilterGroupProps {
+  items: FilterLink[];
+  label?: string;
+  ariaLabel: string;
+  kind: "all" | "tag" | "period";
+}
+
+/** One link toolbar; active links keep `aria-current` and a pressed data hook. */
+function FilterGroup({ items, label, ariaLabel, kind }: FilterGroupProps) {
+  if (items.length === 0) return null;
+  const activeValue = items.find((item) => item.active)?.href;
+
+  return (
+    <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
+      {label && <span className={GROUP_LABEL_CLASSES}>{label}</span>}
+      <ToggleGroup
+        aria-label={ariaLabel}
+        defaultValue={activeValue ? [activeValue] : []}
+        className="flex flex-wrap items-center gap-2"
+      >
+        {items.map((item) => (
+          <ToggleGroupItem
+            key={item.href}
+            value={item.href}
+            nativeButton={false}
+            role={undefined}
+            aria-pressed={undefined}
+            className={cn(
+              FILTER_CLASSES,
+              item.active ? FILTER_ACTIVE_CLASSES : FILTER_IDLE_CLASSES,
+            )}
+            render={
+              <a
+                href={item.href}
+                aria-current={item.active ? "page" : undefined}
+                data-blog-filter={kind}
+              >
+                <span
+                  className={
+                    item.active ? "text-primary-foreground" : "text-foreground"
+                  }
+                >
+                  {item.label}
+                </span>
+              </a>
+            }
+          />
+        ))}
+      </ToggleGroup>
+    </div>
+  );
 }
 
 export default function BlogFilters({
@@ -53,31 +129,47 @@ export default function BlogFilters({
   const noneActive =
     !tags.some((item) => item.active) && !periods.some((item) => item.active);
 
-  const tagItems: FilterLink[] = [
-    { label: tr("blog.allPosts"), href: blogIndexPath(), active: noneActive },
-    ...tags,
-  ];
+  const allItem: FilterLink = {
+    label: tr("blog.allPosts"),
+    href: blogIndexPath(),
+    active: noneActive,
+  };
+
+  const showTags = tags.length > 0;
+  const showPeriods = periods.length > 0;
+
+  if (!showTags && !showPeriods) return null;
 
   return (
     <nav
-      className={["blog-filters", className].filter(Boolean).join(" ")}
+      className={cn("grid gap-(--space-4)", className)}
       aria-label={tr("blog.filters")}
+      data-blog-filters
     >
-      <div className="blog-filters__groups">
-        {tagItems.length > 1 && (
-          <div className="blog-filters__group">
-            <span className="blog-filters__label">{tr("blog.byTag")}</span>
-            <ChipRow variant="filter" items={tagItems} gap={2} />
-          </div>
+      <div className="grid gap-3 sm:flex sm:flex-wrap sm:items-center sm:gap-x-6 sm:gap-y-3">
+        <FilterGroup
+          items={[allItem]}
+          ariaLabel={tr("blog.allPosts")}
+          kind="all"
+        />
+        {showTags && (
+          <FilterGroup
+            items={tags}
+            label={tr("blog.byTag")}
+            ariaLabel={tr("blog.byTag")}
+            kind="tag"
+          />
         )}
-        {periods.length > 0 && (
-          <div className="blog-filters__group">
-            <span className="blog-filters__label">{tr("blog.byDate")}</span>
-            <ChipRow variant="filter" items={periods} gap={2} />
-          </div>
+        {showPeriods && (
+          <FilterGroup
+            items={periods}
+            label={tr("blog.byDate")}
+            ariaLabel={tr("blog.byDate")}
+            kind="period"
+          />
         )}
       </div>
-      <Separator className="blog-filters__rule" />
+      <Separator />
     </nav>
   );
 }
