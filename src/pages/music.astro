@@ -9,15 +9,11 @@
  * the `MusicLibrary` island mounted from the MDX, so the route stays free of
  * network I/O and client state.
  */
-import { getEntry, render } from "astro:content";
 import BackLink from "../components/site/BackLink.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { renderPage } from "../lib/io/pages";
 
-const entry = await getEntry("pages", "music");
-if (!entry) {
-  throw new Error("Missing pages entry: src/content/pages/music.mdx");
-}
-const { Content } = await render(entry);
+const { entry, Content } = await renderPage("music");
 ---
 
 <BaseLayout title={entry.data.title} description={entry.data.description}>

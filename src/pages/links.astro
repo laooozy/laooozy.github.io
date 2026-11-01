@@ -11,19 +11,15 @@
  * client state. The authored intro and link copy stay zh-hant, like every other
  * page body.
  */
-import { getEntry } from "astro:content";
-
 import LinksList from "../components/links/LinksList";
 import BackLink from "../components/site/BackLink.astro";
 import T from "../components/site/T";
 import { getTranslations } from "../i18n";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { parseLinksMarkdown } from "../lib/domain/links";
+import { getLinksEntry } from "../lib/io/pages";
 
-const entry = await getEntry("links", "index");
-if (!entry) {
-  throw new Error("Missing links entry: src/content/links/index.md");
-}
+const entry = await getLinksEntry();
 const { intro, links } = parseLinksMarkdown(entry.body ?? "");
 const t = getTranslations("zh-hant");
 ---

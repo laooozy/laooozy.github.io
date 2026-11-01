@@ -9,14 +9,10 @@
  * `lang="zh-Hant"` because page content stays zh-hant while the fixed chrome
  * is trilingual.
  */
-import { getEntry, render } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { renderPage } from "../lib/io/pages";
 
-const entry = await getEntry("pages", "home");
-if (!entry) {
-  throw new Error("Missing home entry: src/content/pages/home.mdx");
-}
-const { Content } = await render(entry);
+const { entry, Content } = await renderPage("home");
 ---
 
 <BaseLayout title={entry.data.title} description={entry.data.description}>

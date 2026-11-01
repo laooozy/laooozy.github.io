@@ -10,15 +10,11 @@
  * resolved by `InstagramWall.astro`, not here, so the route stays free of
  * network I/O.
  */
-import { getEntry, render } from "astro:content";
 import BackLink from "../components/site/BackLink.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { renderPage } from "../lib/io/pages";
 
-const entry = await getEntry("pages", "photographer");
-if (!entry) {
-  throw new Error("Missing pages entry: src/content/pages/photographer.mdx");
-}
-const { Content } = await render(entry);
+const { entry, Content } = await renderPage("photographer");
 ---
 
 <BaseLayout title={entry.data.title} description={entry.data.description}>

@@ -10,7 +10,6 @@
  * time, tags) is the hydrated `PostHeader` React island, so it re-renders with
  * the client locale.
  */
-import { render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PostHeader from "../../components/blog/PostHeader";
 import {
@@ -18,6 +17,7 @@ import {
   postDateString,
   type Post,
 } from "../../lib/domain/posts";
+import { renderPost } from "../../lib/io/pages";
 import { getAllPosts } from "../../lib/io/posts";
 
 export async function getStaticPaths() {
@@ -26,7 +26,7 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props as { post: Post };
-const { Content } = await render(post);
+const Content = await renderPost(post);
 const readingMinutes = estimateReadingTime(post.body);
 ---
 
