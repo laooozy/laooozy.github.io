@@ -71,16 +71,6 @@
   font-size: var(--text-sm);
 }
 
-.interest__chips {
-  margin-top: var(--space-4);
-}
-
-.section__more {
-  font-size: var(--text-sm);
-  font-weight: 500;
-  text-decoration: none;
-}
-
 /* ---------------------------------------------------------------- *
  * Photography page
  * ---------------------------------------------------------------- */

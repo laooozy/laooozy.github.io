@@ -710,8 +710,8 @@ html:not([data-locale]) [data-l="zh-hant"] {
  * Card grids with a known item count (`data-count` is the rendered count,
  * capped at 4). The desktop row is exact — four cards make four columns, not
  * three plus a hollow orphan — and steps down to two columns, then one, as
- * the viewport narrows. A one- or two-card grid is width-capped so a single
- * LatestPosts card reads as a card instead of a full-width banner.
+ * the viewport narrows. A single card (the one-post LatestPosts case) widens
+ * to a readable feature on desktop instead of sitting as a lonely 26rem tile.
  */
 .grid--cards[data-count="1"] {
   grid-template-columns: minmax(0, 26rem);
@@ -723,12 +723,11 @@ html:not([data-locale]) [data-l="zh-hant"] {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-/* Five cards on a two-column grid while the desktop recipe below cannot fit. */
-.grid--cards[data-count="5"] {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
 @media (min-width: 75rem) {
+  .grid--cards[data-count="1"] {
+    grid-template-columns: minmax(0, 48rem);
+  }
+
   .grid--cards[data-count="2"] {
     grid-template-columns: repeat(2, minmax(0, 26rem));
   }
@@ -740,38 +739,12 @@ html:not([data-locale]) [data-l="zh-hant"] {
   .grid--cards[data-count="4"] {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
-
-  /*
-   * Five cards read 3+2 centred: a six-track row of three spans plus the
-   * fourth and fifth offset inward, so the short row has no edge orphan.
-   */
-  .grid--cards[data-count="5"] {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-
-  .grid--cards[data-count="5"] > * {
-    grid-column: span 2;
-  }
-
-  .grid--cards[data-count="5"] > :nth-child(4) {
-    grid-column: 2 / span 2;
-  }
-
-  .grid--cards[data-count="5"] > :nth-child(5) {
-    grid-column: 4 / span 2;
-  }
 }
 
 /* Three cards on a two-column grid: the odd card is centred at one column
    wide instead of hanging alone at the left edge. */
 @media (min-width: 40rem) and (max-width: 74.99rem) {
   .grid--cards[data-count="3"] > :last-child {
-    grid-column: 1 / -1;
-    justify-self: center;
-    inline-size: calc(50% - var(--space-5) / 2);
-  }
-
-  .grid--cards[data-count="5"] > :last-child {
     grid-column: 1 / -1;
     justify-self: center;
     inline-size: calc(50% - var(--space-5) / 2);

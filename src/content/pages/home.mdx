@@ -1,12 +1,13 @@
-import ContactRow from "../../components/mdx/ContactRow.astro";
+import { createElement } from "react";
+
+import LatestPosts from "../../components/blog/LatestPosts.astro";
 import Chips from "../../components/mdx/Chips.astro";
-import Cta from "../../components/mdx/Cta.astro";
-import Grid from "../../components/mdx/Grid.astro";
-import Hero from "../../components/mdx/Hero.astro";
-import InterestCard from "../../components/mdx/InterestCard.astro";
-import LatestPosts from "../../components/mdx/LatestPosts.astro";
-import Section from "../../components/mdx/Section.astro";
-import Stack from "../../components/mdx/Stack.astro";
+import ContactRow from "../../components/shared/ContactRow";
+import Cta from "../../components/shared/Cta";
+import InterestCard from "../../components/shared/InterestCard";
+import Stack from "../../components/shared/layout/Stack";
+import Section from "../../components/shared/Section";
+import Hero from "../../components/site/Hero.astro";
 import { contactIdentity } from "../../i18n";
 
 <Hero
@@ -27,18 +28,21 @@ import { contactIdentity } from "../../i18n";
   heading="關於我"
   lead="Hi，我是 laooozy，歡迎來到我的網站。"
 >
-  {/* `count` is the FIVE visible About cards: Running, Photography, Music,
-      Gaming and Vtuber. */}
-  <Grid className="grid--cards" count={5} gap={5}>
-    <InterestCard id="runner" title="Running">
-      有空會去跑步，起步通常會跑 6-10 公里左右 <br/>
-      狀態不好的時候會跑 3-5 公里，狀態好的時候會跑 10-15 公里<br/>
-      
-      主要練有氧能力<br/>
-      ~~菜鳥一名而已~~<br/>
-    </InterestCard>
-
-    <InterestCard id="photography" title="Photography">
+  {/*
+    An asymmetric bento: Photography is the feature card (two columns from the
+    small breakpoint), the rest are content-sized so a short card never inherits
+    a tall neighbour's empty space. `items-start` is load-bearing — without it
+    every card stretches to its row's tallest sibling.
+  */}
+  <div
+    data-home-bento
+    className="grid grid-cols-1 items-start gap-(--space-5) md:grid-cols-2 lg:grid-cols-3"
+  >
+    <InterestCard
+      id="photography"
+      title="Photography"
+      className="md:col-span-2"
+    >
       我現在喜歡上了拍照
 
       目前裝備:
@@ -52,6 +56,14 @@ import { contactIdentity } from "../../i18n";
       <Cta href="/photographer/" label="看看我的攝影子版介紹" />
     </InterestCard>
 
+    <InterestCard id="runner" title="Running">
+      有空會去跑步，起步通常會跑 6-10 公里左右 <br/>
+      狀態不好的時候會跑 3-5 公里，狀態好的時候會跑 10-15 公里<br/>
+      
+      主要練有氧能力<br/>
+      ~~菜鳥一名而已~~<br/>
+    </InterestCard>
+
     <InterestCard id="music" title="Music" hidden="empty">
       喜歡聽J-Pop，下面是我的歌單，請閱！！！
 
@@ -61,40 +73,49 @@ import { contactIdentity } from "../../i18n";
     <InterestCard id="games" title="Gaming">
       大多是和朋友一起玩的多人遊戲吧
 
-      <div class="interest__chips">
-        <Chips
-          items={[
-            { label: "Barotrauma" },
-            { label: "CS2" },
-            { label: "Dying Light 2" },
-            { label: "GTFO" },
-            { label: "L4D2" },
-            { label: "RE9" },
-            { label: "Ready or Not" },
-            { label: "Slay the Spire 1 and 2" },
-            { label: "Sons of the Forest" },
-            { label: "Stellaris" },
-          ]}
-        />
-      </div>
+      <Chips
+        className="mt-(--space-4)"
+        items={[
+          { label: "Barotrauma" },
+          { label: "CS2" },
+          { label: "Dying Light 2" },
+          { label: "GTFO" },
+          { label: "L4D2" },
+          { label: "RE9" },
+          { label: "Ready or Not" },
+          { label: "Slay the Spire 1 and 2" },
+          { label: "Sons of the Forest" },
+          { label: "Stellaris" },
+        ]}
+      />
     </InterestCard>
 
     <InterestCard id="vtuber" title="Vtuber">
       很棒！
 
-      <div class="interest__chips">
-        <Chips items={[{ label: "Gura" }, { label: "Laplus" }]} />
-      </div>
+      <Chips
+        className="mt-(--space-4)"
+        items={[{ label: "Gura" }, { label: "Laplus" }]}
+      />
     </InterestCard>
-
-  </Grid>
+  </div>
 </Section>
 
-<Section id="blog" className="reveal" heading="最新文章">
-  <a slot="actions" class="section__more" href="/blog/">
-    查看全部 <span aria-hidden="true">→</span>
-  </a>
-
+<Section
+  id="blog"
+  className="reveal"
+  heading="最新文章"
+  actions={createElement(
+    "a",
+    {
+      className:
+        "inline-flex min-h-11 items-center gap-1 text-sm font-medium text-muted-foreground no-underline transition-colors hover:text-foreground",
+      href: "/blog/",
+    },
+    "查看全部 ",
+    createElement("span", { "aria-hidden": "true" }, "→"),
+  )}
+>
   <LatestPosts />
 </Section>
 
@@ -114,13 +135,13 @@ import { contactIdentity } from "../../i18n";
     <ContactRow
       label="Instagram（攝影）"
       ariaLabel="Instagram 攝影帳號"
-      href="https://instagram.com/acg.laooozy"
-      value="@acg.laooozy"
+      href="https://instagram.com/acg.laoozy"
+      value="@acg.laoozy"
     />
     <ContactRow
       label="Email"
-      href="mailto:laooozy@outlook.com"
-      value="laooozy@outlook.com"
+      href="mailto:laoozy@outlook.com"
+      value="laoozy@outlook.com"
     />
   </Stack>
 </Section>
