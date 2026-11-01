@@ -1,15 +1,15 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
-import sitemap from '@astrojs/sitemap';
-import { SITE_INDEXABLE } from './src/lib/seo.ts';
+import mdx from "@astrojs/mdx";
+import react from "@astrojs/react";
+import sitemap from "@astrojs/sitemap";
+import tailwindcss from "@tailwindcss/vite";
+import { defineConfig } from "astro/config";
 
-import tailwindcss from '@tailwindcss/vite';
-import react from '@astrojs/react';
-import mdx from '@astrojs/mdx';
+import { SITE_INDEXABLE } from "./src/lib/seo.ts";
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://laooozy.github.io',
+  site: "https://laooozy.github.io",
   // The sitemap is only useful for an indexable site; skip it while hidden so
   // it cannot contradict the noindex meta tags. Re-enables automatically with
   // SITE_INDEXABLE in src/lib/seo.ts.

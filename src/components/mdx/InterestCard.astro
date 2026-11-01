@@ -40,17 +40,15 @@ const isHidden =
   hidden === true || (hidden === "empty" && bodyHtml.trim() === "");
 ---
 
-{
-  !isHidden && (
-    <div class:list={["card", "interest", id && `interest--${id}`, className]}>
-      <h3 class="interest__label">{title}</h3>
+{!isHidden && (
+  <div class:list={["card", "interest", id && `interest--${id}`, className]}>
+    <h3 class="interest__label">{title}</h3>
 
-      <Stack gap={3}>
-        <slot />
-      </Stack>
-    </div>
-  )
-}
+    <Stack gap={3}>
+      <slot />
+    </Stack>
+  </div>
+)}
 
 <style is:global>
   /*

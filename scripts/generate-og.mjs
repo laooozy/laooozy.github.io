@@ -1,13 +1,18 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+
 import sharp from "sharp";
 
 const WIDTH = 1200;
 const HEIGHT = 630;
 const BRAND = "laooozy";
 const DOMAIN = "laooozy.github.io";
-const PUBLIC_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "public");
+const PUBLIC_DIR = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "public",
+);
 
 function buildSvg() {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}" role="img" aria-label="${BRAND}">

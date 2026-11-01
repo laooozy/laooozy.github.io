@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
-import Chip from "./ui/Chip";
+
 import type { ChipItem } from "./types";
+import Chip from "./ui/Chip";
 
 /**
  * ChipRow — a wrapping row of Chips.

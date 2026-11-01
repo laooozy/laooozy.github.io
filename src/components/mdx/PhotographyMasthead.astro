@@ -26,11 +26,7 @@ const { title, intro, className } = Astro.props;
   <h1 class="heading heading--hero photo-masthead__title">{title}</h1>
 
   <Stack gap={4} className="photo-masthead__intro">
-    {
-      intro && (
-        <p class="text text--xl text--muted text--measure">{intro}</p>
-      )
-    }
+    {intro && <p class="text text--xl text--muted text--measure">{intro}</p>}
     <slot />
   </Stack>
 </header>

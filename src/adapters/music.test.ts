@@ -7,14 +7,15 @@
  * non-ok status is `"http"`, an empty or truncated body is `"decode"` (never a
  * raw `SyntaxError`), and a well-formed but off-schema body is `"invalid"`.
  */
-import { afterEach, describe, expect, it, vi } from "vitest";
 import { gzipSync } from "node:zlib";
 
+import { afterEach, describe, expect, it, vi } from "vitest";
+
 import {
-  MusicFetchError,
   fakeMusic,
   fakeMusicError,
   musicAdapter,
+  MusicFetchError,
 } from "@/adapters/music";
 import type { MusicPayload } from "@/lib/domain/music";
 

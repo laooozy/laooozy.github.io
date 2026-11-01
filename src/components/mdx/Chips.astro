@@ -28,52 +28,44 @@ interface Props {
   className?: string;
 }
 
-const {
-  items,
-  variant = "tag",
-  ariaLabel,
-  gap = 2,
-  className,
-} = Astro.props;
+const { items, variant = "tag", ariaLabel, gap = 2, className } = Astro.props;
 ---
 
-{
-  items.length > 0 && (
-    <ul
-      class:list={["chip-row", className]}
-      style={{ "--chip-row-gap": `var(--space-${gap})` }}
-      aria-label={ariaLabel}
-    >
-      {items.map((item) => (
-        <li>
-          {item.href ? (
-            <a
-              class:list={[
-                "chip",
-                `chip--${variant}`,
-                item.active && "is-active",
-              ]}
-              href={item.href}
-              aria-current={item.active ? "page" : undefined}
-            >
-              {item.label}
-            </a>
-          ) : variant === "filter" ? (
-            <button
-              class:list={["chip", "chip--filter", item.active && "is-active"]}
-              type="button"
-              aria-pressed={item.active ? "true" : undefined}
-            >
-              {item.label}
-            </button>
-          ) : (
-            <span class:list={["chip", "chip--tag", item.active && "is-active"]}>
-              {item.label}
-            </span>
-          )}
-        </li>
-      ))}
-    </ul>
-  )
-}
+{items.length > 0 && (
+  <ul
+    class:list={["chip-row", className]}
+    style={{ "--chip-row-gap": `var(--space-${gap})` }}
+    aria-label={ariaLabel}
+  >
+    {items.map((item) => (
+      <li>
+        {item.href ? (
+          <a
+            class:list={[
+              "chip",
+              `chip--${variant}`,
+              item.active && "is-active",
+            ]}
+            href={item.href}
+            aria-current={item.active ? "page" : undefined}
+          >
+            {item.label}
+          </a>
+        ) : variant === "filter" ? (
+          <button
+            class:list={["chip", "chip--filter", item.active && "is-active"]}
+            type="button"
+            aria-pressed={item.active ? "true" : undefined}
+          >
+            {item.label}
+          </button>
+        ) : (
+          <span class:list={["chip", "chip--tag", item.active && "is-active"]}>
+            {item.label}
+          </span>
+        )}
+      </li>
+    ))}
+  </ul>
+)}
 <slot />

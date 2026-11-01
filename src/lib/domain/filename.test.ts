@@ -3,6 +3,7 @@
  * in the assertions' subject. Every case drives `parsePostFilename` directly.
  */
 import { describe, expect, it } from "vitest";
+
 import { parsePostFilename } from "./filename";
 
 /** A valid filename for `date` split into parts, with the given slug. */

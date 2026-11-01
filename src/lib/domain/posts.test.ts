@@ -6,9 +6,9 @@
  * results are byte-identical in every runner timezone (`TZ` is irrelevant).
  */
 import { describe, expect, it } from "vitest";
+
+import type { Post, PostData } from "./posts";
 import {
-  LOCALES,
-  PAGE_SIZE,
   blogArchivePath,
   blogIndexPath,
   blogPostPath,
@@ -18,12 +18,13 @@ import {
   estimateReadingTime,
   formatPeriodLabel,
   formatPostDate,
+  LOCALES,
   matchesPeriod,
+  PAGE_SIZE,
   postDateString,
   sortPosts,
   toBlogListItem,
 } from "./posts";
-import type { Post, PostData } from "./posts";
 
 /** Minimal fake post; override only the `data` fields a test cares about. */
 function makePost(

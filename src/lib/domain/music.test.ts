@@ -3,15 +3,16 @@
  * organisation / song filters. No I/O, no DOM, no `astro:content`.
  */
 import { describe, expect, it } from "vitest";
+
 import {
-  MusicPayloadSchema,
-  SongSchema,
   collectArtists,
   collectOrgs,
   filterSongs,
+  MusicPayloadSchema,
   parseMusicPayload,
-  stripTopicSuffix,
   type Song,
+  SongSchema,
+  stripTopicSuffix,
 } from "./music";
 
 /** Four songs, two artists, one organisation, fixed order. */

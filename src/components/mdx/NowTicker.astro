@@ -12,6 +12,4 @@ import NowTickerClient from "../NowTickerClient";
 import { nowItems } from "../../lib/io/now";
 ---
 
-{
-  nowItems.length > 0 && <NowTickerClient client:load items={nowItems} />
-}
+{nowItems.length > 0 && <NowTickerClient client:load items={nowItems} />}

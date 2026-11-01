@@ -43,36 +43,32 @@ const isHidden =
   hidden === true || (hidden === "empty" && bodyHtml.trim() === "");
 ---
 
-{
-  !isHidden && (
-    <section
-      id={id}
-      class:list={["section", className]}
-      aria-labelledby={heading && headingId ? headingId : undefined}
-    >
-      {
-        (heading || hasActions) && (
-          <div class="section__head">
-            {heading && (
-              <h2 id={headingId} class="section__title">
-                {heading}
-              </h2>
-            )}
-            {hasActions && (
-              <div class="section__actions">
-                <slot name="actions" />
-              </div>
-            )}
+{!isHidden && (
+  <section
+    id={id}
+    class:list={["section", className]}
+    aria-labelledby={heading && headingId ? headingId : undefined}
+  >
+    {(heading || hasActions) && (
+      <div class="section__head">
+        {heading && (
+          <h2 id={headingId} class="section__title">
+            {heading}
+          </h2>
+        )}
+        {hasActions && (
+          <div class="section__actions">
+            <slot name="actions" />
           </div>
-        )
-      }
-      {lead && <p class="section__lead">{lead}</p>}
-      <div class="section__body">
-        <slot />
+        )}
       </div>
-    </section>
-  )
-}
+    )}
+    {lead && <p class="section__lead">{lead}</p>}
+    <div class="section__body">
+      <slot />
+    </div>
+  </section>
+)}
 
 <style is:global>
   /*

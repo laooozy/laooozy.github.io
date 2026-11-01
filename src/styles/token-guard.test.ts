@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 const TOKENS_CSS_URL = new URL("./tokens.css", import.meta.url);

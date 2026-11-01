@@ -31,7 +31,7 @@ import { musicAdapter } from "@/adapters/music";
 import { pagefindAdapter } from "@/adapters/pagefind";
 import { localStorageAdapter } from "@/adapters/storage";
 import type { ClientDeps } from "@/hooks/deps";
-import { resolveLocale, type Locale } from "@/i18n";
+import { type Locale, resolveLocale } from "@/i18n";
 import { appStore } from "@/store/app-store";
 
 /** Storage key the pre-paint boot persists the resolved locale under. */

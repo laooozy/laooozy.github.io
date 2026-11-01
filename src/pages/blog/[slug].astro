@@ -12,7 +12,11 @@
 import { render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PostArticle from "../../components/PostArticle";
-import { estimateReadingTime, postDateString, type Post } from "../../lib/domain/posts";
+import {
+  estimateReadingTime,
+  postDateString,
+  type Post,
+} from "../../lib/domain/posts";
 import { getAllPosts } from "../../lib/io/posts";
 
 export async function getStaticPaths() {
@@ -26,190 +30,190 @@ const readingMinutes = estimateReadingTime(post.body);
 ---
 
 <BaseLayout
-	title={post.data.title}
-	description={post.data.description}
-	ogType="article"
+  title={post.data.title}
+  description={post.data.description}
+  ogType="article"
 >
-	{/*
-	 * ONE article landmark: the hydrated chrome (back link, title, meta, tags)
-	 * and the Markdown body share the same `<article>`, so assistive tech sees a
-	 * complete post rather than a chrome-only article followed by loose body
-	 * content. Only the body, title and tags are zh-hant (`lang="zh-Hant"`); the
-	 * back link / date / reading time inherit the chrome locale from `<html>`.
-	 */}
-	<article class="post">
-		<PostArticle
-			client:load
-			title={post.data.title}
-			date={postDateString(post)}
-			tags={post.data.tags}
-			readingMinutes={readingMinutes}
-		/>
-		<div class="post__body" lang="zh-Hant">
-			<Content />
-		</div>
-	</article>
+  {/*
+   * ONE article landmark: the hydrated chrome (back link, title, meta, tags)
+   * and the Markdown body share the same `<article>`, so assistive tech sees a
+   * complete post rather than a chrome-only article followed by loose body
+   * content. Only the body, title and tags are zh-hant (`lang="zh-Hant"`); the
+   * back link / date / reading time inherit the chrome locale from `<html>`.
+   */}
+  <article class="post">
+    <PostArticle
+      client:load
+      title={post.data.title}
+      date={postDateString(post)}
+      tags={post.data.tags}
+      readingMinutes={readingMinutes}
+    />
+    <div class="post__body" lang="zh-Hant">
+      <Content />
+    </div>
+  </article>
 </BaseLayout>
 
 <style>
-	/*
-	 * Markdown body only. The chrome styles are global (see `global.css`) because
-	 * the chrome is a React island; these rules stay scoped — `.post__body` is
-	 * rendered here, and `:global()` reaches the Markdown children it holds.
-	 */
-	.post__body {
-		padding-top: var(--space-6);
-		max-width: var(--measure);
-		color: var(--text);
-		font-size: var(--text-lg);
-		line-height: var(--leading-relaxed);
-	}
+  /*
+   * Markdown body only. The chrome styles are global (see `global.css`) because
+   * the chrome is a React island; these rules stay scoped — `.post__body` is
+   * rendered here, and `:global()` reaches the Markdown children it holds.
+   */
+  .post__body {
+    padding-top: var(--space-6);
+    max-width: var(--measure);
+    color: var(--text);
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+  }
 
-	.post__body :global(h2) {
-		margin: var(--space-9) 0 var(--space-3);
-		font-size: var(--text-2xl);
-		line-height: var(--leading-tight);
-	}
+  .post__body :global(h2) {
+    margin: var(--space-9) 0 var(--space-3);
+    font-size: var(--text-2xl);
+    line-height: var(--leading-tight);
+  }
 
-	.post__body :global(h3) {
-		margin: var(--space-7) 0 var(--space-2);
-		font-size: var(--text-xl);
-	}
+  .post__body :global(h3) {
+    margin: var(--space-7) 0 var(--space-2);
+    font-size: var(--text-xl);
+  }
 
-	/*
-	 * h4–h6 continue the same display scale one step at a time (xl → lg → base →
-	 * sm) and tighten the top margin as the level drops, so a sub-heading never
-	 * floats as far from its text as an h2 does. The global base styles only set
-	 * the display family for h1–h4; h5/h6 need it stated here.
-	 */
-	.post__body :global(h4) {
-		margin: var(--space-5) 0 var(--space-2);
-		font-size: var(--text-lg);
-		line-height: var(--leading-snug);
-	}
+  /*
+   * h4–h6 continue the same display scale one step at a time (xl → lg → base →
+   * sm) and tighten the top margin as the level drops, so a sub-heading never
+   * floats as far from its text as an h2 does. The global base styles only set
+   * the display family for h1–h4; h5/h6 need it stated here.
+   */
+  .post__body :global(h4) {
+    margin: var(--space-5) 0 var(--space-2);
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+  }
 
-	.post__body :global(h5) {
-		margin: var(--space-4) 0 var(--space-2);
-		font-family: var(--font-display);
-		font-size: var(--text-base);
-		font-weight: 600;
-		line-height: var(--leading-snug);
-		letter-spacing: var(--tracking-display);
-		text-wrap: balance;
-	}
+  .post__body :global(h5) {
+    margin: var(--space-4) 0 var(--space-2);
+    font-family: var(--font-display);
+    font-size: var(--text-base);
+    font-weight: 600;
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-display);
+    text-wrap: balance;
+  }
 
-	.post__body :global(h6) {
-		margin: var(--space-4) 0 var(--space-1);
-		font-family: var(--font-display);
-		font-size: var(--text-sm);
-		font-weight: 600;
-		line-height: var(--leading-snug);
-		letter-spacing: var(--tracking-wide);
-		color: var(--text-muted);
-		text-wrap: balance;
-	}
+  .post__body :global(h6) {
+    margin: var(--space-4) 0 var(--space-1);
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-wide);
+    color: var(--text-muted);
+    text-wrap: balance;
+  }
 
-	.post__body :global(p) {
-		margin: 0 0 var(--space-4);
-	}
+  .post__body :global(p) {
+    margin: 0 0 var(--space-4);
+  }
 
-	.post__body :global(ul),
-	.post__body :global(ol) {
-		margin: 0 0 var(--space-4);
-		padding-inline-start: var(--space-6);
-	}
+  .post__body :global(ul),
+  .post__body :global(ol) {
+    margin: 0 0 var(--space-4);
+    padding-inline-start: var(--space-6);
+  }
 
-	.post__body :global(li) {
-		margin-bottom: var(--space-2);
-	}
+  .post__body :global(li) {
+    margin-bottom: var(--space-2);
+  }
 
-	.post__body :global(a) {
-		color: var(--accent-text);
-	}
+  .post__body :global(a) {
+    color: var(--accent-text);
+  }
 
-	.post__body :global(strong) {
-		font-weight: 600;
-		color: var(--text);
-	}
+  .post__body :global(strong) {
+    font-weight: 600;
+    color: var(--text);
+  }
 
-	.post__body :global(blockquote) {
-		margin: var(--space-5) 0;
-		padding-inline-start: var(--space-5);
-		border-inline-start: 1px solid var(--glass-border-strong);
-		color: var(--text-muted);
-	}
+  .post__body :global(blockquote) {
+    margin: var(--space-5) 0;
+    padding-inline-start: var(--space-5);
+    border-inline-start: 1px solid var(--glass-border-strong);
+    color: var(--text-muted);
+  }
 
-	.post__body :global(hr) {
-		height: 1px;
-		margin: var(--space-8) 0;
-		border: 0;
-		background: color-mix(in oklab, var(--glass-border) 45%, transparent);
-	}
+  .post__body :global(hr) {
+    height: 1px;
+    margin: var(--space-8) 0;
+    border: 0;
+    background: color-mix(in oklab, var(--glass-border) 45%, transparent);
+  }
 
-	/*
-	 * A Markdown table is its own horizontal scroll container: `display: block`
-	 * turns the table into a block box whose wider internal table can scroll,
-	 * so a wide table never widens the page at 320px. No JS wrapper.
-	 */
-	.post__body :global(table) {
-		display: block;
-		max-width: 100%;
-		overflow-x: auto;
-		margin: 0 0 var(--space-4);
-		border-collapse: collapse;
-		font-size: var(--text-base);
-	}
+  /*
+   * A Markdown table is its own horizontal scroll container: `display: block`
+   * turns the table into a block box whose wider internal table can scroll,
+   * so a wide table never widens the page at 320px. No JS wrapper.
+   */
+  .post__body :global(table) {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    margin: 0 0 var(--space-4);
+    border-collapse: collapse;
+    font-size: var(--text-base);
+  }
 
-	.post__body :global(th),
-	.post__body :global(td) {
-		padding: var(--space-2) var(--space-3);
-		border-bottom: 1px solid var(--glass-border);
-		text-align: start;
-		vertical-align: top;
-	}
+  .post__body :global(th),
+  .post__body :global(td) {
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--glass-border);
+    text-align: start;
+    vertical-align: top;
+  }
 
-	.post__body :global(th) {
-		font-family: var(--font-display);
-		font-weight: 600;
-		color: var(--text);
-	}
+  .post__body :global(th) {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--text);
+  }
 
-	/* Paper has no scrollbar: let a table fit the page and wrap instead. */
-	@media print {
-		.post__body :global(table) {
-			display: table;
-			width: 100%;
-			overflow: visible;
-		}
+  /* Paper has no scrollbar: let a table fit the page and wrap instead. */
+  @media print {
+    .post__body :global(table) {
+      display: table;
+      width: 100%;
+      overflow: visible;
+    }
 
-		.post__body :global(th),
-		.post__body :global(td) {
-			overflow-wrap: anywhere;
-		}
-	}
+    .post__body :global(th),
+    .post__body :global(td) {
+      overflow-wrap: anywhere;
+    }
+  }
 
-	.post__body :global(code) {
-		font-family: var(--font-mono);
-		font-size: 0.9em;
-	}
+  .post__body :global(code) {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
 
-	.post__body :global(pre) {
-		overflow-x: auto;
-		padding: var(--space-4);
-		border: 1px solid var(--glass-border);
-		border-radius: var(--radius-md);
-		background: var(--surface);
-	}
+  .post__body :global(pre) {
+    overflow-x: auto;
+    padding: var(--space-4);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+  }
 
-	.post__body :global(img) {
-		border-radius: var(--radius-md);
-	}
+  .post__body :global(img) {
+    border-radius: var(--radius-md);
+  }
 
-	.post__body > :global(:first-child) {
-		margin-top: 0;
-	}
+  .post__body > :global(:first-child) {
+    margin-top: 0;
+  }
 
-	.post__body > :global(:last-child) {
-		margin-bottom: 0;
-	}
+  .post__body > :global(:last-child) {
+    margin-bottom: 0;
+  }
 </style>

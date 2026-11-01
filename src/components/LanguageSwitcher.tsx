@@ -24,7 +24,7 @@
  * `[data-l]` spans toggled by the same CSS), so it is mismatch-free as well.
  */
 
-import { ChevronDown, Check, Globe } from "lucide-react";
+import { Check, ChevronDown, Globe } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";

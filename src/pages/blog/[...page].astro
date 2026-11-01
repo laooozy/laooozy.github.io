@@ -23,7 +23,11 @@ import { getAllPosts } from "../../lib/io/posts";
 
 const locale = "zh-hant" as const;
 
-export async function getStaticPaths({ paginate }: { paginate: import("astro").PaginateFunction }) {
+export async function getStaticPaths({
+  paginate,
+}: {
+  paginate: import("astro").PaginateFunction;
+}) {
   const posts = await getAllPosts();
   return paginate(posts, { pageSize: PAGE_SIZE });
 }
@@ -53,14 +57,14 @@ const pagination = {
 ---
 
 <BaseLayout title={t.blog.heading}>
-	<BlogList
-		client:load
-		posts={posts}
-		heading={heading}
-		tags={tags}
-		periods={periods}
-		pagination={pagination}
-	>
-		{allPosts.length > 0 && <SearchModal client:idle />}
-	</BlogList>
+  <BlogList
+    client:load
+    posts={posts}
+    heading={heading}
+    tags={tags}
+    periods={periods}
+    pagination={pagination}
+  >
+    {allPosts.length > 0 && <SearchModal client:idle />}
+  </BlogList>
 </BaseLayout>

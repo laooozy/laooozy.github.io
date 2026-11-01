@@ -26,12 +26,12 @@ import BlogEmpty from "@/components/BlogEmpty";
 import BlogFilters from "@/components/BlogFilters";
 import BlogPagination from "@/components/BlogPagination";
 import PostCard from "@/components/PostCard";
-import Heading from "@/components/ui/Heading";
 import type { FilterLink, Pagination } from "@/components/types";
+import Heading from "@/components/ui/Heading";
 import { useLocale } from "@/hooks/useLocale";
-import { useT, type Translate } from "@/hooks/useT";
+import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
-import { formatPeriodLabel, type BlogListItem } from "@/lib/domain/posts";
+import { type BlogListItem, formatPeriodLabel } from "@/lib/domain/posts";
 
 const defaultTranslate: Translate = (key, vars) =>
   translate(defaultLang, key, vars);

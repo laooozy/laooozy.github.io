@@ -12,8 +12,8 @@
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { memoryStorageAdapter } from "@/adapters/storage";
 import type { StoragePort } from "@/adapters/storage";
+import { memoryStorageAdapter } from "@/adapters/storage";
 
 const originalLocalStorage = Object.getOwnPropertyDescriptor(
   globalThis,

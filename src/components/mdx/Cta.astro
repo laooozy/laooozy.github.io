@@ -44,23 +44,13 @@ const rel = external ? "noopener" : undefined;
   target={target}
   rel={rel}
 >
-  {
-    isPhoto ? (
-      label ? (
-        <span>{label}</span>
-      ) : (
-        <slot />
-      )
-    ) : label ? (
-      label
-    ) : (
-      <slot />
-    )
-  }
+  {isPhoto ? label ? <span>{label}</span> : <slot /> : label ? label : <slot />}
   <span
     class={isPhoto ? "photo-cta__arrow" : "link-arrow__arrow"}
-    aria-hidden="true">→</span
+    aria-hidden="true"
   >
+    →
+  </span>
 </a>
 
 <style is:global>

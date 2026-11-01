@@ -19,35 +19,29 @@ import BlogEmptyView from "../BlogEmptyView";
 import PostCardView from "../PostCardView";
 import Grid from "./Grid.astro";
 
-const posts = (await getAllPosts()).slice(0, 4).map((post) =>
-  toBlogListItem(post),
-);
+const posts = (await getAllPosts())
+  .slice(0, 4)
+  .map((post) => toBlogListItem(post));
 ---
 
-{
-  posts.length > 0 ? (
-    <Grid
-      className="grid--cards"
-      count={Math.min(posts.length, 4)}
-      gap={5}
-    >
-      {posts.map((post) => (
-        <PostCardView
-          href={post.href}
-          title={post.title}
-          description={post.description}
-          dateLabel={formatPostDate(post.date, defaultLang)}
-          datetime={post.date}
-          tags={post.tags}
-        />
-      ))}
-    </Grid>
-  ) : (
-    <BlogEmptyView
-      heading={t(defaultLang, "nav.blog")}
-      message={t(defaultLang, "blog.empty")}
-      homeLabel={t(defaultLang, "notFound.backHome")}
-      secondaryLabel={t(defaultLang, "nav.photography")}
-    />
-  )
-}
+{posts.length > 0 ? (
+  <Grid className="grid--cards" count={Math.min(posts.length, 4)} gap={5}>
+    {posts.map((post) => (
+      <PostCardView
+        href={post.href}
+        title={post.title}
+        description={post.description}
+        dateLabel={formatPostDate(post.date, defaultLang)}
+        datetime={post.date}
+        tags={post.tags}
+      />
+    ))}
+  </Grid>
+) : (
+  <BlogEmptyView
+    heading={t(defaultLang, "nav.blog")}
+    message={t(defaultLang, "blog.empty")}
+    homeLabel={t(defaultLang, "notFound.backHome")}
+    secondaryLabel={t(defaultLang, "nav.photography")}
+  />
+)}

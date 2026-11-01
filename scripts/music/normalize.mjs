@@ -7,7 +7,7 @@
  * in sync when either changes.
  */
 
-import { gzipSync, gunzipSync } from "node:zlib";
+import { gunzipSync, gzipSync } from "node:zlib";
 
 const PRIVATE_OR_DELETED = /^\[(Private|Deleted) video\]$/;
 const TOPIC_SUFFIX = " - Topic";
@@ -102,10 +102,11 @@ export function normalizePlaylist(raw, organizations, { now } = {}) {
       typeof entry.uploader_id === "string" ? entry.uploader_id : "";
 
     const rawArtist = channel || uploader;
-    const org = resolveOrg(organizations ?? {}, channelId, [
-      channel,
-      uploader,
-    ].filter(Boolean));
+    const org = resolveOrg(
+      organizations ?? {},
+      channelId,
+      [channel, uploader].filter(Boolean),
+    );
 
     songs.push({
       id,

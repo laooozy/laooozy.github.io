@@ -7,8 +7,8 @@
  * `/404.html` out of the search index while every content route stays in.
  */
 import { getContainerRenderer } from "@astrojs/react/container-renderer";
-import { loadRenderers } from "astro:container";
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
+import { loadRenderers } from "astro:container";
 import { describe, expect, it } from "vitest";
 
 import BaseLayout from "./BaseLayout.astro";

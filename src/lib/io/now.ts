@@ -8,6 +8,6 @@
  */
 
 import rawNow from "../../data/now.json";
-import { parseNowItems, type NowItem } from "../domain/now";
+import { type NowItem, parseNowItems } from "../domain/now";
 
 export const nowItems: readonly NowItem[] = parseNowItems(rawNow);

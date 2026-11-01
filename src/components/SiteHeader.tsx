@@ -37,11 +37,11 @@
  */
 
 import { Menu, X } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useStore } from "zustand";
 
 import { clientDeps } from "@/client/bootstrap";
-import { useT, type Translate } from "@/hooks/useT";
+import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
 
 // Nav always targets the HOME page's sections, so from `/blog/` or any sub-page

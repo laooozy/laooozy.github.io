@@ -115,7 +115,9 @@ describe("fetch.mjs failure contract", () => {
     expect(result.status).toBe(0);
     expect(existsSync(outFile)).toBe(true);
 
-    const payload = JSON.parse(gunzipSync(readFileSync(outFile)).toString("utf8"));
+    const payload = JSON.parse(
+      gunzipSync(readFileSync(outFile)).toString("utf8"),
+    );
     expect(payload.songs).toHaveLength(1);
     expect(payload.organisations.kamitsubaki).toBe("Kamitsubaki 神椿");
   });

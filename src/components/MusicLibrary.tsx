@@ -24,7 +24,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";
 import { useLocale } from "@/hooks/useLocale";
-import { useT, type Translate } from "@/hooks/useT";
+import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, langAttr, t as translate } from "@/i18n";
 import {
   collectArtists,
@@ -33,6 +33,7 @@ import {
   type MusicPayload,
   type Song,
 } from "@/lib/domain/music";
+
 import playlist from "../../scripts/music/playlist.json";
 
 /** The build-time locale every SSR render is emitted in. Stable, no deps. */

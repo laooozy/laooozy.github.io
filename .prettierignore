@@ -1,0 +1,25 @@
+# Dependencies and build output
+node_modules/
+dist/
+.astro/
+.music-out/
+
+# Tool state and evidence (never committed)
+.omo/
+.codegraph/
+.playwright-cli/
+.playwright-mcp/
+playwright-report/
+test-results/
+
+# Authored MDX prose: Prettier 3.9 rewrites `{/* */}` comments into invalid MDX
+src/content/**/*.mdx
+
+# Lockfile is owned by bun
+bun.lock
+
+# Static, binary and generated assets
+public/
+
+# Unshipped design artifact
+void-base.html

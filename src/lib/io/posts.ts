@@ -6,7 +6,8 @@
  * pure domain module (`../domain/posts`).
  */
 import { getCollection } from "astro:content";
-import { sortPosts, type Post } from "../domain/posts";
+
+import { type Post, sortPosts } from "../domain/posts";
 
 /**
  * Per-build memo of the in-flight collection promise. A module-level binding

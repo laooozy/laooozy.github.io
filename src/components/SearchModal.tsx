@@ -24,7 +24,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";
 import { useSearch } from "@/hooks/useSearch";
-import { useT, type Translate } from "@/hooks/useT";
+import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
 
 /** The build-time locale every SSR render is emitted in. Stable, no deps. */

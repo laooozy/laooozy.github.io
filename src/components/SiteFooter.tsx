@@ -15,7 +15,7 @@
 import { useEffect, useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";
-import { useT, type Translate } from "@/hooks/useT";
+import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
 import { siteUpdated } from "@/lib/io/site-updated";
 

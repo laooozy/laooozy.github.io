@@ -27,7 +27,9 @@ const RAW = {
       channel_id: "UCfoo00000000000000000",
       uploader: "Foo",
       uploader_id: "foo",
-      thumbnails: [{ url: "https://i.ytimg.com/vi/aaaaaaaaa01/hqdefault.jpg?sqp=signed" }],
+      thumbnails: [
+        { url: "https://i.ytimg.com/vi/aaaaaaaaa01/hqdefault.jpg?sqp=signed" },
+      ],
     },
     {
       id: "aaaaaaaaa01",
@@ -96,11 +98,11 @@ describe("normalizePlaylist", () => {
   it("emits unsigned https thumbnails and per-playlist watch urls", () => {
     const [first] = payload().songs;
 
-    expect(first.thumb).toBe("https://i.ytimg.com/vi/aaaaaaaaa01/mqdefault.jpg");
-    expect(first.thumb).not.toContain("sqp=");
-    expect(first.url).toBe(
-      "https://www.youtube.com/watch?v=aaaaaaaaa01",
+    expect(first.thumb).toBe(
+      "https://i.ytimg.com/vi/aaaaaaaaa01/mqdefault.jpg",
     );
+    expect(first.thumb).not.toContain("sqp=");
+    expect(first.url).toBe("https://www.youtube.com/watch?v=aaaaaaaaa01");
   });
 
   it("builds the payload envelope with the organisation label map", () => {

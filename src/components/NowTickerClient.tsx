@@ -20,7 +20,7 @@ import { Fragment, useEffect, useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";
 import { useLocale } from "@/hooks/useLocale";
-import { useT, type Translate } from "@/hooks/useT";
+import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, langAttr, t as translate } from "@/i18n";
 import type { NowItem } from "@/lib/domain/now";
 
@@ -102,7 +102,7 @@ export default function NowTickerClient({ items }: NowTickerClientProps) {
 
   return (
     <div
-      className={`hero__status now-ticker${running ? " is-running" : ""}`}
+      className={`hero__status now-ticker${running ? "is-running" : ""}`}
       data-paused={paused ? "true" : "false"}
     >
       <span className="hero__dot" aria-hidden="true" />

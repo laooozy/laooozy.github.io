@@ -114,10 +114,10 @@ Never ship placeholder copy. When a section or card has no real copy yet, keep
 the placeholder in an MDX comment and mark the component `hidden="empty"`:
 
 ```mdx
-{/*
+{/_
 Placeholder awaiting the owner's copy (was: 內容待補).
 Replace this comment with real Markdown and the card appears on rebuild.
-*/}
+_/}
 
 <InterestCard id="runner" title="Runner" hidden="empty"></InterestCard>
 ```

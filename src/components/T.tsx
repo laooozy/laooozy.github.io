@@ -1,5 +1,6 @@
 import type { JSX } from "react";
-import { langAttr, t, type Locale } from "@/i18n";
+
+import { langAttr, type Locale, t } from "@/i18n";
 
 /**
  * Static all-locale translation component.

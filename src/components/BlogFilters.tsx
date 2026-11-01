@@ -21,9 +21,9 @@ import { useEffect, useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";
 import ChipRow from "@/components/ChipRow";
-import Separator from "@/components/ui/Separator";
 import type { FilterLink } from "@/components/types";
-import { useT, type Translate } from "@/hooks/useT";
+import Separator from "@/components/ui/Separator";
+import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
 import { blogIndexPath } from "@/lib/domain/posts";
 
