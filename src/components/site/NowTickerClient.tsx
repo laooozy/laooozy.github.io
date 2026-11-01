@@ -9,7 +9,7 @@
  * the 44px pause/play toggle. The animation itself is pure CSS; this component
  * never starts an animation frame loop.
  *
- * Hydration safety mirrors `PostArticle`: the static build emits the default
+ * Hydration safety mirrors `PostHeader`: the static build emits the default
  * locale, so the first client render keeps the default label until `mounted`
  * flips and the store locale can be read. Item text stays zh-hant, which the
  * route wrapper already marks `lang="zh-Hant"`.

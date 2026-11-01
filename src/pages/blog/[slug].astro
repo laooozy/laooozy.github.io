@@ -7,12 +7,12 @@
  * The Markdown body is rendered here with Astro's `render()` and wrapped in
  * `prose prose-invert prose-brand` (Tailwind Typography plus the brand layer in
  * `global.css`); the surrounding chrome (back link, title, date / reading
- * time, tags) is the hydrated `PostArticle` React island, so it re-renders with
+ * time, tags) is the hydrated `PostHeader` React island, so it re-renders with
  * the client locale.
  */
 import { render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import PostArticle from "../../components/blog/PostArticle";
+import PostHeader from "../../components/blog/PostHeader";
 import {
   estimateReadingTime,
   postDateString,
@@ -42,24 +42,19 @@ const readingMinutes = estimateReadingTime(post.body);
    * content. Only the body, title and tags are zh-hant (`lang="zh-Hant"`); the
    * back link / date / reading time inherit the chrome locale from `<html>`.
    */}
-  <article class="post">
-    <PostArticle
+  <article
+    class="mx-auto max-w-(--container-narrow)"
+    aria-labelledby="post-title"
+  >
+    <PostHeader
       client:load
       title={post.data.title}
       date={postDateString(post)}
       tags={post.data.tags}
       readingMinutes={readingMinutes}
     />
-    <div class="post__prose prose prose-invert prose-brand" lang="zh-Hant">
+    <div class="prose prose-invert prose-brand pt-(--space-6)" lang="zh-Hant">
       <Content />
     </div>
   </article>
 </BaseLayout>
-
-<style>
-  /* Only the article body's distance from the chrome; all typography comes
-     from the shared `.prose-brand` layer in `global.css`. */
-  .post__prose {
-    padding-top: var(--space-6);
-  }
-</style>
