@@ -146,7 +146,12 @@ test("the global search trigger is labelled and opens the search dialog", async 
   const trigger = page.locator(SEARCH_TRIGGER);
   await expect(trigger).toBeVisible();
   await expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
-  await expect(trigger).toHaveAttribute("aria-label", "搜尋");
+  // The visible ⌘K hint is part of the accessible name on purpose.
+  await expect(trigger).toHaveAccessibleName(/搜尋/);
+  await expect(trigger).toHaveAttribute(
+    "aria-keyshortcuts",
+    "Meta+K Control+K",
+  );
 
   await trigger.click();
   await expect(page.getByRole("dialog")).toBeVisible();

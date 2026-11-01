@@ -67,8 +67,17 @@ test.describe("global palette", () => {
     for (const route of ["/", "/photographer/", "/music/", "/links/"]) {
       await page.goto(route);
       await waitForIsland(page, "SearchCommand");
-      await page.keyboard.press("Control+K");
-      await expect(page.locator(DIALOG), `Ctrl K on ${route}`).toBeVisible();
+
+      // The island marker clears before React's passive effects flush, so the
+      // global keydown listener can land a beat later under parallel load.
+      // Re-pressing while open is harmless: `openSearch` is idempotent.
+      await expect(async () => {
+        await page.keyboard.press("Control+K");
+        await expect(page.locator(DIALOG), `Ctrl K on ${route}`).toBeVisible({
+          timeout: 1_000,
+        });
+      }).toPass({ timeout: 10_000 });
+
       await expect(page.locator(DIALOG)).toContainText("快速前往");
       await page.keyboard.press("Escape");
       await expect(page.locator(DIALOG)).toBeHidden();
@@ -207,6 +216,12 @@ test.describe("mobile 390", () => {
     expect(box?.height ?? 0).toBeGreaterThanOrEqual(843);
 
     await expectNoHorizontalOverflow(page, "search dialog @ 390px");
+
+    // The zoom-in animation scales the popup (and the input with it) for its
+    // first 100ms; wait for the settled 44px floor before measuring.
+    await expect
+      .poll(async () => (await page.locator(INPUT).boundingBox())?.height ?? 0)
+      .toBeGreaterThanOrEqual(44);
 
     await expectTouchTarget(page, INPUT, "search input");
     await expectMinimumFontSize(page, INPUT, 16, "search input");

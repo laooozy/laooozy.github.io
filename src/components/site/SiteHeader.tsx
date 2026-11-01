@@ -235,7 +235,12 @@ export default function SiteHeader({
                 "gap-2 px-2 text-muted-foreground hover:bg-[var(--surface-hover)] hover:text-foreground pointer-coarse:min-h-11 pointer-coarse:min-w-11 " +
                 FOCUS_RING
               }
-              aria-label={tr("search.trigger")}
+              // The visible shortcut is part of the label: axe's
+              // label-content-name-mismatch requires every visible string to
+              // appear in the accessible name, and screen readers announcing
+              // the accelerator is useful, not noise.
+              aria-label={`${tr("search.trigger")} ⌘K`}
+              aria-keyshortcuts="Meta+K Control+K"
               aria-haspopup="dialog"
               data-search-trigger=""
               onClick={openSearch}
