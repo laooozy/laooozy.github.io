@@ -11,9 +11,9 @@
  * component: no hooks, no store, no adapters.
  */
 import Card from "@/components/Card";
-import ChipRow from "@/components/ChipRow";
 import Cluster from "@/components/layout/Cluster";
 import Stack from "@/components/layout/Stack";
+import ChipRow from "@/components/shared/ChipRow";
 import Heading from "@/components/shared/typography/Heading";
 import Text from "@/components/shared/typography/Text";
 

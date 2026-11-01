@@ -102,7 +102,7 @@ language switcher) stays a React island and is **not** part of this kit.
 | `Grid.astro`                | `.grid` with `--grid-gap` / `--grid-template`                                     | same auto-fit formula as React |
 | `Stack.astro`               | `.stack` with `--stack-gap` / `--stack-align`                                     | 1D vertical flow               |
 | `Cluster.astro`             | `.cluster` with gap/align/justify custom properties                               | wrapping row                   |
-| `Chips.astro`               | `ul.chip-row` + `chip chip--<variant>`                                            | tag or filter chips            |
+| `Chips.astro`               | shared `ChipRow` rendered at build time (shadcn Badge/Button)                     | static, no hydration           |
 | `Cta.astro`                 | `a.link-arrow` or `a.photo-cta`                                                   | arrow glyph included           |
 | `ContactRow.astro`          | `li.contact__item` + `contact__label` / `contact__link`                           | wrap in `Stack as="ul"`        |
 | `LatestPosts.astro`         | `.grid` of build-time `post-card` entries, or the empty copy                      | build-time, no hydration       |

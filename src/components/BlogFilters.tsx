@@ -20,7 +20,7 @@
 import { useEffect, useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";
-import ChipRow from "@/components/ChipRow";
+import ChipRow from "@/components/shared/ChipRow";
 import type { FilterLink } from "@/components/types";
 import { Separator } from "@/components/ui/separator";
 import { type Translate, useT } from "@/hooks/useT";

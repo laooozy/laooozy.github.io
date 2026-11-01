@@ -829,82 +829,6 @@ html:not([data-locale]) [data-l="zh-hant"] {
   }
 }
 
-.chip-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--chip-row-gap);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 0.2rem 0.6rem;
-  border: 1px solid transparent;
-  border-radius: var(--radius-pill);
-  font-size: var(--text-xs);
-  line-height: 1.6;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.chip--tag {
-  background: var(--surface);
-  border-color: color-mix(in oklab, var(--text) 10%, transparent);
-  color: var(--text-muted);
-}
-
-/*
- * A tag that is ALSO a link (a post page's "tagged" nav) still reads as a
- * quiet label: it never fills with the accent the way a filter control does.
- * Hover only lifts it toward --text, so tags and controls stay distinct.
- */
-a.chip--tag {
-  transition:
-    background-color var(--dur-fast) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out),
-    color var(--dur-fast) var(--ease-out);
-}
-
-a.chip--tag:hover,
-a.chip--tag:focus-visible {
-  background: var(--surface-hover);
-  border-color: color-mix(in oklab, var(--text) 22%, transparent);
-  color: var(--text);
-}
-
-.chip--filter {
-  padding-block: 0.35rem;
-  background: var(--surface);
-  border-color: var(--control-border);
-  color: var(--text);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    background-color var(--dur-fast) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out),
-    color var(--dur-fast) var(--ease-out);
-}
-
-.chip--filter:hover {
-  background: var(--accent-surface);
-  border-color: var(--control-border-strong);
-  color: var(--text);
-}
-
-.chip--filter.is-active,
-.chip--filter.is-active:hover {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--text-on-accent);
-  font-weight: 600;
-}
-
 .separator {
   border: 0;
   background: color-mix(in oklab, var(--glass-border) 45%, transparent);
@@ -1879,14 +1803,6 @@ a.now-ticker__item:focus-visible {
  * see task-10 evidence for the per-control measurement.
  */
 @media (max-width: 621px) {
-  .chip {
-    /* A single long tag must wrap inside the column, never overflow it. */
-    max-inline-size: 100%;
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
-
-  .chip--filter,
   .link-arrow,
   .pagination__link,
   .post__back-link,
@@ -1905,7 +1821,7 @@ a.now-ticker__item:focus-visible {
  * block settles every animated block to its final frame and repaints the dark
  * theme onto white paper (browsers do not print background graphics by
  * default, and light-on-white text would otherwise vanish). Tokens are
- * re-pointed instead of every component, so cards, chips and links all follow
+ * re-pointed instead of every component, so cards and links all follow
  * without new print-only component rules. Screen styles are untouched.
  */
 @media print {

@@ -24,8 +24,8 @@
 import { useEffect, useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";
-import ChipRow from "@/components/ChipRow";
 import Cluster from "@/components/layout/Cluster";
+import ChipRow from "@/components/shared/ChipRow";
 import { useLocale } from "@/hooks/useLocale";
 import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
