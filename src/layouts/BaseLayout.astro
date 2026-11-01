@@ -1,6 +1,11 @@
 ---
 import "../styles/global.css";
 import "../styles/pages.css";
+// The two above-the-fold faces: Sora 600 (headings) and Inter 400 (body copy).
+// Vite returns the hashed asset URL, so the preload always matches the file the
+// Fontsource CSS loads — no hard-coded path and no duplicate download.
+import inter400Url from "@fontsource/inter/files/inter-latin-400-normal.woff2?url";
+import sora600Url from "@fontsource/sora/files/sora-latin-600-normal.woff2?url";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import ScrollControls from "../components/ScrollControls";
 import SiteFooter from "../components/SiteFooter";
@@ -103,11 +108,25 @@ if (!themeColor) {
     <meta name="twitter:image" content={ogImage} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    {/*
+     * Self-hosted fonts only: no Google Fonts preconnect or stylesheet. The two
+     * critical faces are preloaded from the hashed Vite URLs so the first paint
+     * does not wait on the CSS parse; `crossorigin` is required for font
+     * preloads even on same-origin requests.
+     */}
     <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="preload"
+      href={sora600Url}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href={inter400Url}
+      as="font"
+      type="font/woff2"
+      crossorigin
     />
   </head>
   <body>
