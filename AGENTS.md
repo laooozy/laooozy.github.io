@@ -44,3 +44,51 @@ These are load-bearing. Preserve them unless a change explicitly targets the arc
 - **The footer stamp is committed.** `src/data/site-updated.json` holds `{ "updatedAt": "YYYY-MM-DDTHH:mm" }`, rewritten by `.githooks/pre-commit` and staged by that hook alone; `src/lib/io/site-updated.ts` validates it at import so a malformed stamp fails the build. Run `bun run hooks:install` ONCE per clone to point `core.hooksPath` at `.githooks`. `git commit --only` / `--pathspec` bypasses the hook, so the stamp goes stale, and is forbidden.
 - **`music_asset` is the only source of the music list.** The `/music/` page reads the payload from the orphan `music_asset` branch at runtime through the injected `MusicPort` (validated by `parseMusicPayload` in `src/lib/domain/music.ts`); do NOT commit generated playlist data to `main`, and do NOT hard-code song rows in a component.
 - **`void-base.html` is an unshipped design artifact.** It is untracked and never deployed, and its brand strings contain misspellings of the identifier. Do not copy any identifier or link from it, do not commit it, and do not delete it without the owner.
+
+> **Migration note (architecture refactor).** The in-flight plan at
+> `.omo/plans/architecture-artwork-refactor.md` supersedes the temporal guidance in
+> **Hydration policy** and **React-for-UI-library rule** above until Task 51 rewrites this
+> file. The plan moves shared layout, typography and form primitives into
+> `src/components/shared/**` as React, replaces the MDX `Grid`/`Stack`/`Cluster` twins with
+> compatibility shims, and retires the "static components stay `.astro`" split wherever the
+> new primitives apply. Follow the plan's tasks, not the stale split. The PRODUCT invariants
+> do NOT move: one URL space, client-side locale, the MDX page-content model, no Photography
+> in the nav, no hosted photos, and Instagram stays click-to-load.
+
+## Mobile-first / responsive design
+
+These rules are load-bearing for every surface, alongside the architecture invariants above.
+Task 51 may reorganize this file; this section stays the source of truth for responsive work.
+
+- **Design mobile-first.** Author and review every layout at 320 and 390 CSS px wide first,
+  then add enhancement at wider widths. The breakpoints are declared once in
+  `src/styles/global.css` (`@theme`): `2xs` 20rem (320px), `xs` 24rem (384px), `sm` 40rem
+  (640px), `md` 48rem (768px), `lg` 64rem (1024px) and `xl` 80rem (1280px). Use `min-width`
+  variants (`2xs:`, `xs:`, `sm:`, `md:`, `lg:`, `xl:`); do NOT add desktop-first `max-width`
+  overrides except the existing compact-header rule in `BaseLayout.astro`.
+- **No horizontal overflow.** At every tested width `document.documentElement.scrollWidth`
+  MUST be less than or equal to `document.documentElement.clientWidth`. Fix the offending
+  element; never silence it with `overflow-x: hidden` on `html`/`body`.
+- **Touch targets are at least 44x44.** Every interactive control must offer a hit area of at
+  least 44 by 44 CSS px under `(pointer: coarse)`, even when the visible icon is smaller
+  (for example `min-h-11 min-w-11` on the wrapper). The generated shadcn Button sizes
+  (28-36px) are too small on their own.
+- **Inputs are at least 16px.** Form controls compute to a `font-size` of at least 16px, so
+  mobile Safari does not zoom the viewport on focus.
+- **Respect safe-area insets.** Fixed or edge-pinned chrome pads with
+  `env(safe-area-inset-top|right|bottom|left, 0px)`; never assume a zero inset.
+- **No hover-only affordances.** Anything revealed or enabled on `:hover` must also be
+  reachable by keyboard focus and touch. Content and actions must never depend on hover.
+- **Test matrix.** Check every surface at 320, 390, 768, 1024 and 1440 CSS px wide. The
+  automated no-overflow gate is `tests/e2e/responsive.spec.ts`, which uses the
+  `expectNoHorizontalOverflow` helper from `tests/e2e/helpers/` at 320x800 and 390x844 on the
+  routes below; the wider widths stay a manual review matrix until Task 42 extends it.
+
+| Surface          | 320 | 390 | 768 | 1024 | 1440 |
+| :--------------- | :-- | :-- | :-- | :--- | :--- |
+| `/`              | yes | yes | yes | yes  | yes  |
+| `/blog/`         | yes | yes | yes | yes  | yes  |
+| `/photographer/` | yes | yes | yes | yes  | yes  |
+| `/music/`        | yes | yes | yes | yes  | yes  |
+| `/links/`        | yes | yes | yes | yes  | yes  |
+| `/404`           | yes | yes | yes | yes  | yes  |
