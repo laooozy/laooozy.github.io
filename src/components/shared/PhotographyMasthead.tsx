@@ -19,9 +19,7 @@ export interface PhotographyMastheadProps {
  * PhotographyMasthead — the Photography page intro.
  *
  * The identity line is the page's one `<h1>`; the intro `lead` and the authored
- * Markdown children stack under it on the shared spacing scale. The old
- * `intro` prop name is translated by the Astro shim until Tasks 25/27 migrate
- * the MDX body to the shared `lead` vocabulary.
+ * Markdown children stack under it on the shared spacing scale.
  */
 export default function PhotographyMasthead({
   title,

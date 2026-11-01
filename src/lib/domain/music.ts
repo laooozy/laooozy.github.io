@@ -1,11 +1,11 @@
 /**
  * The music page's data contract and pure filters.
  *
- * The build-time generator (todo 4) writes a normalised payload; the client
- * adapter (todo 8) validates it with `parseMusicPayload` and the page's UI
- * filters the song list with `filterSongs`. Everything here is pure: no
- * content-collection API, no DOM, no network and no display strings (labels
- * come from the payload's `organisations` map).
+ * The build-time generator writes a normalised payload; the client adapter
+ * validates it with `parseMusicPayload` and the page's UI filters the song list
+ * with `filterSongs`. Everything here is pure: no content-collection API, no
+ * DOM, no network and no display strings (labels come from the payload's
+ * `organisations` map).
  */
 
 import { z } from "zod";

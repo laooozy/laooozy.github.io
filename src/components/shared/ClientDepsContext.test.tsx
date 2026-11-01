@@ -1,8 +1,8 @@
 /**
  * Component tests for the ClientDeps context seam.
  *
- * RTL is not installed yet (task 15 owns that), so the probe components are
- * rendered to static markup. That is enough to pin the contract: a
+ * The probe components are rendered to static markup. That is enough to pin
+ * the contract: a
  * `ClientDepsProvider` overrides the composition-root singleton with an injected
  * bundle, and a tree with no provider falls back to the singleton.
  *

@@ -91,8 +91,7 @@ if (!themeColor) {
      * changes. The URL is the identity (one URL space), and the boot script
      * + lang switcher only mutate `<html lang>` / `data-locale`; a title flip
      * without a navigation would desynchronise the visible tab label from the
-     * canonical/OG metadata emitted for this URL. Keep it build-locale unless
-     * an explicit task changes the policy.
+     * canonical/OG metadata emitted for this URL. Keep it build-locale.
      */}
     <title>{pageTitle}</title>
     <link rel="canonical" href={canonical} />
@@ -140,8 +139,8 @@ if (!themeColor) {
   </head>
   <body>
     {/*
-     * Header and footer are hydrated React islands (task 32): their nav /
-     * footer labels render from the client locale store, so the chrome
+     * Header and footer are hydrated React islands: their nav / footer labels
+     * render from the client locale store, so the chrome
      * re-renders in place when the language changes — no navigation, no
      * reload. The switcher keeps its own `client:load` island, nested in the
      * header's action cluster so the layout is unchanged: language is a

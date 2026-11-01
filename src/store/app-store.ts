@@ -33,7 +33,7 @@ export type { AppActions, AppState, AppStore, SearchState } from "./types";
  */
 export function createAppStore(): StoreApi<AppStore> {
   return createStore<AppStore>()((set) => ({
-    // The pre-paint boot (a later task) hydrates this from storage/navigator;
+    // The pre-paint boot and bootstrap seed this from storage/navigator;
     // the store itself only owns the default.
     locale: DEFAULT_LOCALE,
     headerHidden: false,

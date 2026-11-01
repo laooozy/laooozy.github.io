@@ -34,7 +34,7 @@
  * and there is no mismatch.
  *
  * `LanguageSwitcher` is passed by the layout as `children` and is nested inside
- * the header's action cluster, so it keeps its own `client:idle` hydration
+ * the header's action cluster, so it keeps its own `client:load` hydration
  * island (Astro hydrates islands nested in a framework component's children).
  */
 
@@ -105,7 +105,7 @@ const MENU_LINK_CLASS =
   FOCUS_RING;
 
 interface SiteHeaderProps {
-  /** The layout nests `<LanguageSwitcher client:idle />` here. */
+  /** The layout nests `<LanguageSwitcher client:load />` here. */
   children?: ReactNode;
   /** Build-time `Astro.url.pathname`, used for `aria-current="page"`. */
   currentPath?: string;

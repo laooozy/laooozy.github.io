@@ -6,14 +6,15 @@
  *
  *   false (current) → the site is HIDDEN while it is still being built:
  *       - every page emits `<meta name="robots" content="noindex, nofollow" />`
- *         (the load-bearing part — a disallowed-but-known URL can still be
- *         indexed, so robots.txt alone is not enough);
- *       - `public/robots.txt` disallows all crawlers and drops the Sitemap line;
+ *         (the load-bearing part, because a disallowed-but-known URL can still
+ *         be indexed, so robots.txt alone is not enough);
+ *       - the generated `dist/robots.txt` disallows all crawlers and drops the
+ *         Sitemap line (`src/lib/robots.ts`);
  *       - the @astrojs/sitemap integration is skipped, so no sitemap is emitted.
  *
- *   true → the site is PUBLIC again: the noindex meta tag disappears,
- *       robots.txt is permissive again (see the comment in public/robots.txt),
- *       and the sitemap integration runs as before.
+ *   true → the site is PUBLIC again: the noindex meta tag disappears, the
+ *       generated robots.txt allows crawlers and points at the sitemap index,
+ *       and the sitemap integration runs.
  *
  * To re-enable indexing, flip this value to `true` — nothing else needs to
  * change. This file is imported by both `src/layouts/BaseLayout.astro` and

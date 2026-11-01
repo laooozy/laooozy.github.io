@@ -18,8 +18,8 @@
  * component or client module ever constructs a port or reaches for a browser
  * global.
  *
- * The store singleton is seeded here with the locale the pre-paint boot chose
- * (task 9). The boot writes its decision to `document.documentElement.dataset.locale`
+ * The store singleton is seeded here with the locale the pre-paint boot chose.
+ * The boot writes its decision to `document.documentElement.dataset.locale`
  * and persists the resolved locale to storage; we prefer the already-applied
  * root value and fall back to storage for the first run, before the boot has
  * touched the DOM.

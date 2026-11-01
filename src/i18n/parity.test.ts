@@ -44,9 +44,9 @@ const REFERENCE = DEFAULT_LOCALE;
  *
  * Content branches (the old home intro/interests/now-text keys, the photography page,
  * about and contact blocks, and the photography card copy) are deliberately absent:
- * that copy now lives in the zh-hant MDX pages. Later tasks that add fixed chrome
- * keys (`nav.photography`, `now.pause`/`now.play`, `search.error`,
- * `blog.pagination`) must add them here and to all three locales.
+ * that copy now lives in the zh-hant MDX pages. New fixed-chrome keys (for
+ * example `nav.photography`, `now.pause`/`now.play`, `search.error`,
+ * `blog.pagination`) must be added here and to all three locales.
  */
 const FIXED_KEYS = [
   "nav.about",

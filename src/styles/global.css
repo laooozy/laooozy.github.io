@@ -896,9 +896,9 @@ html:not([data-locale]) [data-l="zh-hant"] {
   min-height: 1em;
 }
 
-/* Ported features (task 12a) — presentational component styles moved out of the
-   per-component scoped <style> blocks when Hero / BlogPagination / BlogFilters /
-   PostCard became React (PostRow merged into PostCard as variant="row"). */
+/* Feature styles that cannot live in React: Hero, BlogPagination, BlogFilters
+   and PostCard were extracted from scoped <style> blocks when they moved to
+   React (PostRow merged into PostCard as variant="row"). */
 .hero {
   position: relative;
   display: grid;

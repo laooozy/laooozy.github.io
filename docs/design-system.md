@@ -2,24 +2,22 @@
 
 This page is the working map of the visual system: tokens, typography,
 primitives, utilities, responsive rules and the recipes a contributor follows.
-It describes what is in the repo today and marks the refactor work that is
-still moving.
+It describes what is in the repo today.
 
 Related reading:
 
 - [Architecture](./architecture.md) for layers, ports and component ownership.
-- [AGENTS](../AGENTS.md#mobile-first--responsive-design) for the load-bearing
+- [AGENTS](../AGENTS.md#mobile-first-responsive-design) for the load-bearing
   responsive policy.
-- [README](../README.md) for product context and content authoring.
-
-Verified against the tree at the task 7 checkpoint, after commit `abaac18`.
+- [README](../README.md) for quickstart and content authoring.
+- [Decisions](./decisions.md) for why the system is shaped this way.
 
 ## Token architecture
 
 The system is dark-only. There is no light theme and no second colour system.
 Values flow in one direction:
 
-```
+```text
 src/styles/tokens.css        raw brand primitives, unlayered :root
         |
 src/styles/global.css        single semantic :root bridge (shadcn names)
@@ -44,7 +42,7 @@ Two ownership rules are load-bearing:
   `var(--radius-md)`, and the unlayered `:root` in `tokens.css` wins over the
   theme layer, so brand and utility agree.
 - `--text-*` is also declared only here. The unlayered values beat Tailwind's
-  theme defaults, so `text-3xl` resolves to the brand 2rem, not the framework
+  theme defaults, so `text-3xl` resolves to the brand value, not the framework
   default.
 
 [token-guard.test.ts](../src/styles/token-guard.test.ts) asserts the owner and
@@ -62,9 +60,9 @@ bar cannot drift from the page canvas.
    `--color-primary`, and so on) to the semantic variables, plus
    `--font-heading` and `--font-sans`.
 2. A single `:root` bridge that points shadcn's semantic names at brand tokens:
-   `--background` is `--bg-base`, `--primary` is the brand accent, `--border` is
-   the glass border, and so on.
-3. A `@theme` block with the mobile-first breakpoints and the two animation
+   `--background` is `--bg-base`, `--primary` is the brand accent, `--border`
+   is the glass border, and so on.
+3. A `@theme` block with the mobile-first breakpoints and the animation
    entries.
 
 There is no `.dark` duplicate token block. The site is dark-only, so one
@@ -132,7 +130,9 @@ without `!important`. It:
 - switches tables to `display: table` and removes the measure under
   `@media print`, so paper has no scrollbar.
 
-The post body stays Astro-rendered. Do not move it into React to style it.
+The post body stays Astro-rendered. `Prose` in
+[typography/Prose.tsx](../src/components/shared/typography/Prose.tsx) is for
+React contexts only; do not move the Markdown body into React to style it.
 
 ## Breakpoints and responsive design
 
@@ -163,12 +163,15 @@ more.
 | `/links/`        | yes | yes | yes | yes  | yes  |
 | `/404`           | yes | yes | yes | yes  | yes  |
 
-The automated gate
-([responsive.spec.ts](../tests/e2e/responsive.spec.ts)) currently runs 320x800
-and 390x844 on those routes through
-`expectNoHorizontalOverflow`
-([overflow.ts](../tests/e2e/helpers/overflow.ts)). The wider widths remain a
-manual review matrix until the audit task extends the spec.
+The automated gates:
+
+- [responsive.spec.ts](../tests/e2e/responsive.spec.ts) asserts no horizontal
+  overflow on every route at 320x800 and 390x844.
+- [responsive-audit.spec.ts](../tests/e2e/responsive-audit.spec.ts) covers the
+  full width matrix, touch targets, input sizes, fixed-chrome placement and the
+  page-chrome gap.
+
+The wider widths stay a manual review matrix for visual judgment.
 
 ### Responsive rules
 
@@ -193,40 +196,36 @@ manual review matrix until the audit task extends the spec.
 The peer is `@base-ui/react`; the composition prop is `render`, not `asChild`.
 The icon set is `lucide-react`.
 
-The generated set in [src/components/ui](../src/components/ui) is:
+### Generated shadcn primitives
 
-| File                                            | Exports                                                                                                                                                        |
-| :---------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `button.tsx`                                    | `Button`, `buttonVariants`                                                                                                                                     |
-| `card.tsx`                                      | `Card`, `CardHeader`, `CardFooter`, `CardTitle`, `CardAction`, `CardDescription`, `CardContent`                                                                |
-| `badge.tsx`                                     | `Badge`, `badgeVariants`                                                                                                                                       |
-| `separator.tsx`                                 | `Separator`                                                                                                                                                    |
-| `input.tsx`                                     | `Input`                                                                                                                                                        |
-| `label.tsx`                                     | `Label`                                                                                                                                                        |
-| `native-select.tsx`                             | `NativeSelect`, `NativeSelectOptGroup`, `NativeSelectOption`                                                                                                   |
-| `dialog.tsx`                                    | `Dialog`, `DialogClose`, `DialogContent`, `DialogDescription`, `DialogFooter`, `DialogHeader`, `DialogOverlay`, `DialogPortal`, `DialogTitle`, `DialogTrigger` |
-| `command.tsx`                                   | `Command`, `CommandDialog`, `CommandInput`, `CommandList`, `CommandEmpty`, `CommandGroup`, `CommandItem`, `CommandShortcut`, `CommandSeparator`                |
-| `dropdown-menu.tsx`                             | `DropdownMenu`, `DropdownMenuTrigger`, `DropdownMenuContent`, `DropdownMenuItem` and the group, label, checkbox, radio, separator, shortcut and submenu parts  |
-| `skeleton.tsx`                                  | `Skeleton`                                                                                                                                                     |
-| `scroll-area.tsx`                               | `ScrollArea`, `ScrollBar`                                                                                                                                      |
-| `toggle-group.tsx`                              | `ToggleGroup`, `ToggleGroupItem`                                                                                                                               |
-| `pagination.tsx`                                | `Pagination`, `PaginationContent`, `PaginationEllipsis`, `PaginationItem`, `PaginationLink`, `PaginationNext`, `PaginationPrevious`                            |
-| `tooltip.tsx`                                   | `Tooltip`, `TooltipTrigger`, `TooltipContent`, `TooltipProvider`                                                                                               |
-| `empty.tsx`                                     | `Empty`, `EmptyHeader`, `EmptyTitle`, `EmptyDescription`, `EmptyContent`, `EmptyMedia`                                                                         |
-| `alert.tsx`                                     | `Alert`, `AlertTitle`, `AlertDescription`, `AlertAction`                                                                                                       |
-| `kbd.tsx`                                       | `Kbd`, `KbdGroup`                                                                                                                                              |
-| `collapsible.tsx`                               | `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent`                                                                                                      |
-| `spinner.tsx`                                   | `Spinner`                                                                                                                                                      |
-| `item.tsx`                                      | `Item`, `ItemMedia`, `ItemContent`, `ItemActions`, `ItemGroup`, `ItemSeparator`, `ItemTitle`, `ItemDescription`, `ItemHeader`, `ItemFooter`                    |
-| `input-group.tsx`, `textarea.tsx`, `toggle.tsx` | Registry dependencies of the requested set                                                                                                                     |
+[src/components/ui](../src/components/ui) is generated output. Do not hand-edit
+it for a brand change. The set covers:
 
-Those three extra files are part of the generated set, pulled in by the shadcn
-registry. They are not hand-written.
+| Group      | Exports                                                                                                                                                                                                                                      |
+| :--------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Actions    | `Button`, `buttonVariants`, `Toggle`, `ToggleGroup`, `ToggleGroupItem`                                                                                                                                                                       |
+| Surfaces   | `Card`, `CardHeader`, `CardFooter`, `CardTitle`, `CardAction`, `CardDescription`, `CardContent`, `Item`, `ItemGroup`, `ItemSeparator`, `ItemTitle`, `ItemDescription`                                                                        |
+| Status     | `Badge`, `badgeVariants`, `Alert`, `AlertTitle`, `AlertDescription`, `AlertAction`, `Empty`, `EmptyHeader`, `EmptyTitle`, `EmptyDescription`, `EmptyContent`, `EmptyMedia`                                                                   |
+| Forms      | `Input`, `InputGroup`, `Textarea`, `Label`, `NativeSelect`, `NativeSelectOption`, `NativeSelectOptGroup`                                                                                                                                     |
+| Overlays   | `Dialog`, `DialogTrigger`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogDescription`, `DialogFooter`, `DialogClose`, `DropdownMenu` and its parts, `Tooltip`, `TooltipTrigger`, `TooltipContent`, `TooltipProvider`, `Collapsible` |
+| Search     | `Command`, `CommandDialog`, `CommandInput`, `CommandList`, `CommandEmpty`, `CommandGroup`, `CommandItem`, `CommandShortcut`, `CommandSeparator`                                                                                              |
+| Navigation | `Pagination`, `PaginationContent`, `PaginationItem`, `PaginationLink`, `PaginationNext`, `PaginationPrevious`, `PaginationEllipsis`                                                                                                          |
+| Utility    | `Separator`, `Skeleton`, `Spinner`, `ScrollArea`, `ScrollBar`, `Kbd`, `KbdGroup`                                                                                                                                                             |
 
-Three other files in `src/components/ui/` are legacy hand-written wrappers:
-`Chip.tsx`, `Heading.tsx` and `Text.tsx`. The refactor replaces them with
-`shared/` primitives in Tasks 10 to 13. Do not treat them as generated code,
-and do not add a fourth ad-hoc wrapper beside them.
+### The shared kit
+
+[src/components/shared](../src/components/shared) is the one feature-neutral
+kit. It stays presentational: no store, no adapters, no feature hooks.
+
+| Folder          | Contents                                                                                                 |
+| :-------------- | :------------------------------------------------------------------------------------------------------- |
+| `layout/`       | `Stack`, `Cluster`, `Grid`, `Container`, the static class maps and `useLayoutElement`                    |
+| `typography/`   | `Heading`, `Text`, `Prose`, the `cva` variants                                                           |
+| `state/`        | `EmptyState`, `AlertState`, `SkeletonState`, `SpinnerState`, `TooltipState`, `Kbd`                       |
+| `compositions/` | `ChipRow`, `ContactRow`, `Cta`, `InterestCard`, `Section`, `HeroView`, `HeroMeta`, `PhotographyMasthead` |
+
+There are no MDX compatibility shims and no second implementation beside the
+kit. Page content imports these components directly.
 
 ### Working with generated primitives
 
@@ -239,29 +238,29 @@ and do not add a fourth ad-hoc wrapper beside them.
 - Keep the focus ring. The generated components carry
   `focus-visible:border-ring focus-visible:ring-ring/50`; do not override it
   with `outline-none` alone.
-- Import from the lower-case file path. The old case-colliding
-  `ui/Separator.tsx` is gone.
+- Import from the lower-case file path, matching the generated tree.
 
 ## Utilities, CVA and `cn`
 
 `cn` is the `cn` package. Generated files import it directly; application code
-may import the re-export from [src/lib/utils.ts](../src/lib/utils.ts). It
-merges conflicting Tailwind classes, which is why a caller's `className` can
-override a default without an `!important`.
+may import the re-export from [src/lib/utils.ts](../src/lib/utils.ts). It merges
+conflicting Tailwind classes, which is why a caller's `className` can override a
+default without `!important`.
 
 `class-variance-authority` (`cva`) is the variant mechanism. Generated
 primitives use it, and brand components should too instead of a pile of
-conditional class strings. Prettier is configured with `tailwindFunctions:
-["cn", "cva"]`, so classes inside both calls are sorted.
+conditional class strings. Prettier is configured with
+`tailwindFunctions: ["cn", "cva"]`, so classes inside both calls are sorted.
 
-Four brand utilities are declared with `@utility` in `global.css`:
+Five brand utilities are declared with `@utility` in `global.css`:
 
-| Utility      | Effect                                                                                                                                     |
-| :----------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
-| `glass`      | Translucent card: `--surface` background, `--card-bg` image layer, `--glass-border`, `--glass-glow`, `backdrop-filter: blur(--glass-blur)` |
-| `surface`    | Opaque elevated surface: `--bg-elevated`, `--glass-border`, `--card-inset`                                                                 |
-| `measure`    | `max-width: var(--measure)` plus `text-wrap: pretty`                                                                                       |
-| `focus-ring` | The 2px accent outline with a 3px offset                                                                                                   |
+| Utility      | Effect                                                                                                              |
+| :----------- | :------------------------------------------------------------------------------------------------------------------ |
+| `glass`      | Translucent card: `--surface`, `--card-bg`, `--glass-border`, `--glass-glow`, `backdrop-filter: blur(--glass-blur)` |
+| `surface`    | Opaque elevated surface: `--bg-elevated`, `--glass-border`, `--card-inset`                                          |
+| `measure`    | `max-width: var(--measure)` plus `text-wrap: pretty`                                                                |
+| `cjk-label`  | `word-break: keep-all` and `overflow-wrap: anywhere` for short CJK labels; never on long prose                      |
+| `focus-ring` | The 2px accent outline with a 3px offset                                                                            |
 
 `glass` and `surface` are alternatives, not layers. Do not stack both.
 
@@ -295,7 +294,7 @@ export function Notice({ className, tone, ...props }: NoticeProps) {
 Use it from another component or an island:
 
 ```tsx
-import { Notice } from "@/components/Notice";
+import { Notice } from "@/components/shared/Notice";
 
 export function Example() {
   return (
@@ -319,12 +318,6 @@ Rules for the recipe:
 6. If the component is interactive, give it a real touch target and a visible
    focus style. Do not add `onMouseEnter`-only behavior.
 7. Verify with `bun run typecheck`, `bun run lint` and `bun run build`.
-8. If it is static and needs no locale reactivity, an `.astro` component is
-   still allowed. The refactor is moving shared layout and typography to React,
-   but a static page wrapper does not need hydration.
-
-The proof for this recipe is in the task 7 evidence. A temporary component was
-created, imported by a scratch page, built, and removed.
 
 ## Recipes
 
@@ -333,37 +326,33 @@ created, imported by a scratch page, built, and removed.
 1. Create the body as an MDX entry in `src/content/pages/<slug>.mdx`. Frontmatter
    `title` and `description` are optional strings; the page collection schema is
    in [content.config.ts](../src/content.config.ts).
-2. Import every page kit component the body uses. There is no global
+2. Extend `PageId` in [src/lib/io/pages.ts](../src/lib/io/pages.ts) so
+   `renderPage()` accepts the new id.
+3. Import every shared component the body uses. There is no global
    registration, so a missing import fails the build:
 
    ```mdx
-   import Section from "../../components/mdx/Section.astro";
-   import Grid from "../../components/mdx/Grid.astro";
+   import Section from "../../components/shared/Section";
+   import Grid from "../../components/shared/layout/Grid";
+   import InterestCard from "../../components/shared/InterestCard";
 
    <Section id="about" heading="關於我" lead="A short intro.">
      <Grid min="18rem" gap={5}>
-       Normal Markdown goes here.
+       <InterestCard id="runner" title="跑步的我">
+         Normal Markdown goes here.
+       </InterestCard>
      </Grid>
    </Section>
    ```
 
-   The kit contract is [mdx/README.md](../src/components/mdx/README.md). The
-   refactor is moving those imports to `shared/`, `site/`, `blog/` and
-   `photography/`; check the plan before adding new content that depends on a
-   shim.
-
-3. Add a thin route shell in `src/pages/<slug>.astro`:
+4. Add a thin route shell in `src/pages/<slug>.astro`:
 
    ```astro
    ---
-   import { getEntry, render } from "astro:content";
    import BaseLayout from "../layouts/BaseLayout.astro";
+   import { renderPage } from "../lib/io/pages";
 
-   const entry = await getEntry("pages", "notes");
-   if (!entry) {
-     throw new Error("Missing pages entry: src/content/pages/notes.mdx");
-   }
-   const { Content } = await render(entry);
+   const { entry, Content } = await renderPage("notes");
    ---
 
    <BaseLayout title={entry.data.title} description={entry.data.description}>
@@ -376,31 +365,31 @@ created, imported by a scratch page, built, and removed.
    The `lang="zh-Hant"` wrapper is required: page content stays zh-hant even
    when the chrome locale is English.
 
-4. If the page belongs in the top nav, add it to the nav list in
-   [SiteHeader.tsx](../src/components/site/SiteHeader.tsx), add the same key to all
-   three dictionaries in [i18n/index.ts](../src/i18n/index.ts), and add it to
-   `FIXED_KEYS` in [parity.test.ts](../src/i18n/parity.test.ts). Do not add a
-   locale prefix or a second route.
-5. Run `bun run typecheck && bun run build`.
+5. If the page belongs in the top nav, add it to the nav list in
+   [SiteHeader.tsx](../src/components/site/SiteHeader.tsx), add the same key to
+   all three dictionaries in [i18n/index.ts](../src/i18n/index.ts), and add it
+   to `FIXED_KEYS` in [parity.test.ts](../src/i18n/parity.test.ts). Do not add a
+   locale prefix or a second route. Photography is not a nav item.
+
+6. Run `bun run typecheck && bun run build`.
 
 ### Add a component
 
-1. Decide where it belongs in the target map: `shared/` for feature-neutral
-   primitives, a feature folder for surface-specific UI, `ui/` only for
-   generated shadcn. Today the tree is still flat, so place it beside its
-   current peers.
+1. Decide where it belongs: `shared/` for a feature-neutral primitive, a
+   feature folder (`site/`, `blog/`, `music/`, `photography/`, `links/`) for
+   surface-specific UI, `ui/` only for generated shadcn.
 2. Write the component with the [component recipe](#component-recipe). Use
    `cva`, `cn`, tokens and the generated primitives.
 3. Import it where it renders. If it must be interactive or locale-reactive,
-   mount it from a React island and pass `ClientDeps` down; if it only needs
-   data, pass plain serializable props.
+   mount it from a React island and read `ClientDeps` through `useClientDeps()`;
+   if it only needs data, pass plain serializable props.
 4. Run `bun run typecheck`, `bun run lint`, `bun run build`.
 5. If the component is temporary, delete it and its import in the same change.
    Do not leave a probe behind.
 
 ### Add a post
 
-The full rules are in [README](../README.md#adding-a-post). The short version:
+The full rules are in [README](../README.md#content). The short version:
 
 1. Create `src/content/blog/yyyy-mm-dd_<slug>.md`. The filename date is the
    source of truth; there is no `date` frontmatter and no `slug` field.
@@ -445,9 +434,9 @@ A locale is client state, not a route. Adding one touches these files:
    matching in `resolveClientLocale`.
 2. [dictionaries/](../src/i18n/dictionaries): add the locale's chrome
    dictionary and wire it into `ui` in [index.ts](../src/i18n/index.ts).
-3. [locale-boot.ts](../src/client/locale-boot.ts): its inlined BCP-47 map and
-   accepted codes are generated from `LOCALE_CODES`, so only the navigator
-   prefix matching needs a hand edit to stay in sync with `resolveClientLocale`.
+3. [locale-boot.ts](../src/client/locale-boot.ts): its BCP-47 map and accepted
+   codes are generated from `LOCALE_CODES`. Only the navigator prefix matching
+   needs a hand edit to stay in sync with `resolveClientLocale`.
 4. [T.tsx](../src/components/site/T.tsx): it maps `LOCALE_CODES`, so the static
    `[data-l]` variants appear automatically.
 5. [parity.test.ts](../src/i18n/parity.test.ts): extend `FIXED_KEYS` and make
@@ -465,7 +454,7 @@ permission to add a new trend without a surface that needs it.
 
 | Reference                                                       | Surface it informs                                                                               | What to take                                                                                                                          |
 | :-------------------------------------------------------------- | :----------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
-| Linear, Vercel and Superhuman style command palettes            | Global search: `SearchModal` today, `SearchCommand` in the refactor                              | One keyboard-first overlay, grouped results, recent queries, empty-state quick links, Escape restores focus, `aria-live` result count |
+| Linear, Vercel and Superhuman style command palettes            | Global search: `SearchCommand`                                                                   | One keyboard-first overlay, grouped results, recent queries, empty-state quick links, Escape restores focus, `aria-live` result count |
 | Spotify style sticky list                                       | `/music/` `MusicLibrary`                                                                         | Sticky filter and list header, dense scannable rows, filter state that survives scrolling, clear artist and song hierarchy            |
 | Vercel web-interface guidelines                                 | Global chrome and forms: header, footer, language switcher, blog filters, empty and error states | Restrained surfaces, one clear hierarchy, visible focus, consistent spacing, no decorative clutter                                    |
 | Photography portfolio negative-space and image-first principles | `/photographer/` and its Instagram wall                                                          | Images lead, generous whitespace, minimal chrome, captions reachable without hover, no layout that depends on a pointer               |
@@ -479,9 +468,9 @@ external or generated at build time.
 
 Do:
 
-- Use design tokens and the four brand utilities.
+- Use design tokens and the five brand utilities.
 - Use `cva` for variants and `cn` for class merging.
-- Compose the generated shadcn primitives.
+- Compose the generated shadcn primitives and the shared kit.
 - Design at 320 and 390 first, then enhance with `min-width` variants.
 - Keep touch targets at 44px, inputs at 16px, and safe-area insets on fixed
   chrome.
@@ -510,14 +499,18 @@ bun run lint
 bun run test
 bun run build
 bun run pagefind
+bun run test:links
 bun run test:e2e
+bun run test:a11y
+bun run test:visual
+bun run size
 ```
 
-For a visual or responsive change, also run the overflow gate directly:
+For a visual change, update and review the baselines:
 
 ```sh
-bun run test:e2e -- tests/e2e/responsive.spec.ts
+bun run test:visual -- --update-snapshots
 ```
 
-The CI test job runs typecheck, format, lint and Vitest, then the build job
-runs `astro build` and Pagefind. See [CI](../.github/workflows/ci.yml).
+The full gate is in [CONTRIBUTING](../CONTRIBUTING.md) and runs in
+[CI](../.github/workflows/ci.yml).
