@@ -35,6 +35,13 @@
   --surface: oklch(1 0 0 / 0.04);
   --surface-strong: oklch(1 0 0 / 0.06);
   --surface-hover: oklch(1 0 0 / 0.07);
+  /* Two opaque steps below `--bg-elevated` in luminance. shadcn's `--muted`
+   * and `--secondary` need a real surface each; these are the brand values
+   * that used to live as raw oklch literals in global.css. */
+  --surface-muted: oklch(0.2045 0.0178 284.7156);
+  --surface-secondary: oklch(0.2273 0.0212 284.5871);
+  /* Field fill: a translucent white one step above --surface-hover. */
+  --field-bg: oklch(1 0 0 / 0.08);
   --glass-border: oklch(0.6268 0.2325 303.9004 / 0.35);
   --glass-border-strong: oklch(0.6268 0.2325 303.9004 / 0.55);
   --glass-blur: 16px;
@@ -93,6 +100,9 @@
    */
   --control-border: oklch(0.62 0.16 303.9004);
   --control-border-strong: oklch(0.72 0.16 303.9004);
+
+  /* Destructive/danger affordance (shadcn's `--destructive`). */
+  --danger: oklch(0.7106 0.1661 22.2162);
 
   /* ------------------------------------------------------------------ *
    * Colour — text (contrast measured against --bg-base; AA minimum)
@@ -188,6 +198,10 @@
   --dur-fast: 140ms;
   --dur-base: 240ms;
   --dur-slow: 420ms;
+  /* Long-running ambient loops. Kept as tokens so the Tailwind `@theme`
+   * animation entries and the existing component rules share one value. */
+  --dur-marquee: 22s;
+  --dur-shimmer: 1.6s;
 
   /* ------------------------------------------------------------------ *
    * Elevation — semantic z-index scale (never arbitrary 999)

@@ -311,6 +311,53 @@ html:not([data-locale]) [data-l="zh-hant"] {
 /*---break---
  */
 /*
+ * Brand theme extensions. Breakpoints are mobile-first `min-width` queries, so
+ * the matrix reads upward from `2xs`. The two sub-`sm` steps exist because the
+ * site is designed at 320/390 before 640; `sm`..`xl` restate Tailwind's
+ * defaults so the matrix is one readable block.
+ *
+ * Duration has no Tailwind theme namespace (utilities take bare numbers), so
+ * the brand durations stay on `--dur-*` in tokens.css and the default
+ * transition is pointed at them here.
+ */
+@theme {
+  --breakpoint-2xs: 20rem;
+  --breakpoint-xs: 24rem;
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+
+  --ease-brand: var(--ease-out);
+  --default-transition-duration: var(--dur-base);
+  --default-transition-timing-function: var(--ease-out);
+
+  --animate-marquee: marquee var(--dur-marquee) linear infinite;
+  --animate-shimmer: shimmer var(--dur-shimmer) linear infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  @keyframes shimmer {
+    from {
+      background-position: 180% 0;
+    }
+
+    to {
+      background-position: -80% 0;
+    }
+  }
+}
+/*---break---
+ */
+/*
  * Brand mapping. shadcn/ui's token names, re-pointed at the laooozy palette
  * defined in tokens.css. This site is dark-only, so ONE semantic `:root`
  * carries every shadcn token; there is no light/dark split to maintain and no
@@ -333,14 +380,14 @@ html:not([data-locale]) [data-l="zh-hant"] {
   --popover-foreground: var(--text);
   --primary: var(--accent);
   --primary-foreground: var(--text-on-accent);
-  --secondary: oklch(0.2273 0.0212 284.5871);
+  --secondary: var(--surface-secondary);
   --secondary-foreground: var(--text);
-  --muted: oklch(0.2045 0.0178 284.7156);
+  --muted: var(--surface-muted);
   --muted-foreground: var(--text-muted);
   --accent-foreground: var(--text);
-  --destructive: oklch(0.7106 0.1661 22.2162);
+  --destructive: var(--danger);
   --border: var(--glass-border);
-  --input: oklch(1 0 0 / 0.08);
+  --input: var(--field-bg);
   --ring: var(--accent);
   --chart-1: var(--accent);
   --chart-2: var(--text-muted);
@@ -368,6 +415,38 @@ html:not([data-locale]) [data-l="zh-hant"] {
   html {
     @apply font-sans;
   }
+}
+
+/*
+ * Brand utilities. Each is the same recipe the hand-written component rules
+ * use, promoted so new Tailwind-authored surfaces do not re-derive it.
+ * `glass` and `surface` are alternatives (translucent vs opaque), not layers.
+ */
+@utility glass {
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface);
+  background-image: var(--card-bg);
+  box-shadow: var(--glass-glow);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+}
+
+@utility surface {
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-elevated);
+  box-shadow: var(--card-inset);
+}
+
+@utility measure {
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+
+@utility focus-ring {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
 /* Ported primitives (task 11) — layout/UI primitive styles moved out of the
@@ -807,7 +886,7 @@ a.now-ticker__item:focus-visible {
 
 .now-ticker.is-running .now-ticker__track {
   gap: 0;
-  animation: now-ticker-scroll 22s linear infinite;
+  animation: now-ticker-scroll var(--dur-marquee) linear infinite;
   will-change: transform;
 }
 
