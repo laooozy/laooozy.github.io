@@ -44,7 +44,7 @@ const t = useTranslations("zh-hant");
     <p class="links__note" lang="zh-Hant">
       以下為本網站與相關專案的來源連結，內容以繁體中文呈現。
     </p>
-    <div class="links__body">
+    <div class="links__prose prose prose-invert prose-brand">
       <Content />
     </div>
   </article>
@@ -113,73 +113,17 @@ const t = useTranslations("zh-hant");
     color: var(--text-muted);
   }
 
-  .links__body {
+  /* Only the body's distance from the heading; the prose itself comes from
+     the shared `.prose-brand` layer. Task 27 rebuilds this list as cards. */
+  .links__prose {
     padding-top: var(--space-6);
-    color: var(--text);
-    font-size: var(--text-lg);
-    line-height: var(--leading-relaxed);
   }
 
-  .links__body :global(> p:first-child) {
-    max-width: var(--measure);
-    margin: 0 0 var(--space-6);
-    color: var(--text-muted);
-  }
-
-  .links__body :global(ul) {
-    display: grid;
-    gap: var(--space-3);
-    max-width: var(--measure);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .links__body :global(li) {
-    position: relative;
-    min-inline-size: 0;
-    padding: var(--space-4) var(--space-5);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-md);
-    background: var(--surface);
-    transition: border-color var(--dur-fast) var(--ease-out);
-  }
-
-  /*
-   * Stretched link: the row's own anchor owns a transparent overlay that
-   * covers the whole card, so the padding and the note next to the link are
-   * tappable too. The Markdown is untouched and the card look is unchanged.
-   */
-  .links__body :global(li > a::after) {
-    content: "";
-    position: absolute;
-    inset: 0;
-  }
-
-  .links__body :global(a) {
-    color: var(--accent);
-    font-weight: 500;
-    text-decoration: none;
-  }
-
-  .links__body :global(li:hover) {
-    border-color: var(--glass-border-strong);
-  }
-
-  .links__body :global(a:hover) {
-    color: var(--text);
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
-  }
-
-  /* The focus ring marks the row that is now the target, not the text box. */
-  .links__body :global(li:has(> a:focus-visible)) {
-    border-color: var(--glass-border-strong);
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
-  }
-
-  .links__body :global(li > a:focus-visible) {
-    outline: none;
+  @media (pointer: coarse) {
+    .links__prose :global(li > a) {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+    }
   }
 </style>

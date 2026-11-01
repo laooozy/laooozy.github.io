@@ -28,6 +28,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+/* Tailwind Typography generates the `prose` classes used by the article body
+ * and the links list. Without this directive the classes do not exist. */
+@plugin "@tailwindcss/typography";
 /*---break---
  */
 @custom-variant dark (&:is(.dark *));
@@ -458,6 +461,240 @@ html:not([data-locale]) [data-l="zh-hant"] {
 @utility focus-ring {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
+}
+
+/*
+ * Brand prose layer — the ONE article-body type system, layered on Tailwind
+ * Typography (`prose prose-invert`). Unlayered on purpose: unlayered rules
+ * outrank every `@layer` (including the plugin's own component layer), so the
+ * measure and the token-mapped `--tw-prose-*` variables win without
+ * `!important` and without a second reset. CJK rhythm, tables, code, images
+ * and print are restored here because the plugin assumes Latin prose.
+ */
+.prose-brand {
+  max-width: var(--measure);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+  /* Break CJK between characters, but only at a word boundary for Latin
+     tokens and URLs; never split a short compound. */
+  line-break: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+  hanging-punctuation: first allow-end;
+
+  --tw-prose-body: var(--text);
+  --tw-prose-headings: var(--text);
+  --tw-prose-lead: var(--text-muted);
+  --tw-prose-links: var(--accent-text);
+  --tw-prose-bold: var(--text);
+  --tw-prose-counters: var(--text-muted);
+  --tw-prose-bullets: var(--accent);
+  --tw-prose-hr: var(--glass-border);
+  --tw-prose-quotes: var(--text-muted);
+  --tw-prose-quote-borders: var(--glass-border-strong);
+  --tw-prose-captions: var(--text-muted);
+  --tw-prose-code: var(--text);
+  --tw-prose-pre-code: var(--text);
+  --tw-prose-pre-bg: var(--surface);
+  --tw-prose-th-borders: var(--glass-border);
+  --tw-prose-td-borders: var(--glass-border);
+}
+
+.prose-brand h1,
+.prose-brand h2,
+.prose-brand h3,
+.prose-brand h4,
+.prose-brand h5,
+.prose-brand h6 {
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: var(--tracking-display);
+  text-wrap: balance;
+}
+
+.prose-brand h2 {
+  margin: var(--space-9) 0 var(--space-3);
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+}
+
+.prose-brand h3 {
+  margin: var(--space-7) 0 var(--space-2);
+  font-size: var(--text-xl);
+  line-height: var(--leading-tight);
+}
+
+.prose-brand h4 {
+  margin: var(--space-5) 0 var(--space-2);
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+}
+
+.prose-brand h5 {
+  margin: var(--space-4) 0 var(--space-2);
+  font-size: var(--text-base);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-wide);
+}
+
+.prose-brand h6 {
+  margin: var(--space-4) 0 var(--space-1);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-muted);
+}
+
+.prose-brand p {
+  margin: 0 0 var(--space-4);
+}
+
+.prose-brand ul,
+.prose-brand ol {
+  margin: 0 0 var(--space-4);
+  padding-inline-start: var(--space-6);
+}
+
+.prose-brand li {
+  margin: 0 0 var(--space-2);
+}
+
+.prose-brand li > p {
+  margin-bottom: var(--space-2);
+}
+
+.prose-brand a {
+  color: var(--accent-text);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: color-mix(
+    in oklab,
+    var(--accent-text) 45%,
+    transparent
+  );
+  text-underline-offset: 0.2em;
+}
+
+.prose-brand a:hover {
+  color: var(--text);
+}
+
+.prose-brand strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.prose-brand blockquote {
+  margin: var(--space-5) 0;
+  padding-inline-start: var(--space-5);
+  border-inline-start: 1px solid var(--glass-border-strong);
+  color: var(--text-muted);
+  font-style: normal;
+}
+
+.prose-brand blockquote p:first-of-type::before,
+.prose-brand blockquote p:last-of-type::after {
+  content: none;
+}
+
+.prose-brand hr {
+  height: 1px;
+  margin: var(--space-8) 0;
+  border: 0;
+  background: color-mix(in oklab, var(--glass-border) 45%, transparent);
+}
+
+/*
+ * A Markdown table is its own horizontal scroll container. `display: block`
+ * turns the table into a block box; `width: max-content` sizes it to its
+ * content, and the `max-width` cap plus `overflow-x: auto` lets a wide table
+ * scroll inside the article instead of widening the page. No JS wrapper.
+ */
+.prose-brand table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0 0 var(--space-4);
+  border-collapse: collapse;
+  font-size: var(--text-base);
+}
+
+.prose-brand th,
+.prose-brand td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--glass-border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.prose-brand th {
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.prose-brand code {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+.prose-brand code::before,
+.prose-brand code::after {
+  content: none;
+}
+
+.prose-brand pre {
+  overflow-x: auto;
+  padding: var(--space-4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.prose-brand pre code {
+  font-size: 0.9em;
+}
+
+.prose-brand img {
+  border-radius: var(--radius-md);
+}
+
+.prose-brand figcaption {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.prose-brand > :first-child {
+  margin-top: 0;
+}
+
+.prose-brand > :last-child {
+  margin-bottom: 0;
+}
+
+/* Paper has no scrollbar: let a table fit the page and wrap instead. */
+@media print {
+  .prose-brand {
+    max-width: none;
+  }
+
+  .prose-brand table {
+    display: table;
+    width: 100%;
+    overflow: visible;
+  }
+
+  .prose-brand th,
+  .prose-brand td {
+    overflow-wrap: anywhere;
+  }
 }
 
 /* Ported primitives (task 11) — layout/UI primitive styles moved out of the
