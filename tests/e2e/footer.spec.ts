@@ -3,6 +3,7 @@ import { join } from "node:path";
 
 import { expect, type Page, test } from "@playwright/test";
 
+import { SITE_UPDATED_FIXTURE_STAMP } from "../../src/lib/io/site-updated-fixture";
 import { expectNoHorizontalOverflow } from "./helpers/overflow";
 
 /**
@@ -12,7 +13,9 @@ import { expectNoHorizontalOverflow } from "./helpers/overflow";
  * `BaseLayout.astro`, never computed in the island. The clock test moves the
  * page's clock a year forward before load: if the component still read
  * `new Date()` the year would drift, while a prop keeps the built value.
- * The spec also pins the committed stamp verbatim and the hydration contract.
+ * The spec also pins the stamp the build used: the committed value for a real
+ * build, or `SITE_UPDATED_FIXTURE_STAMP` under the E2E fixture build, and the
+ * hydration contract.
  */
 
 const FOOTER = "[data-site-footer]";
@@ -29,7 +32,10 @@ const rawStamp = JSON.parse(
   readFileSync(join(process.cwd(), "src/data/site-updated.json"), "utf8"),
 ) as SiteUpdatedJson;
 
-const STAMP_ISO = rawStamp.updatedAt;
+const STAMP_ISO =
+  process.env.SITE_UPDATED_FIXTURE === "1"
+    ? SITE_UPDATED_FIXTURE_STAMP
+    : rawStamp.updatedAt;
 const STAMP_DISPLAY = `${STAMP_ISO.slice(0, 10)} ${STAMP_ISO.slice(11)}`;
 const BUILD_YEAR = new Date().getFullYear();
 

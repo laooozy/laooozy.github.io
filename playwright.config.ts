@@ -28,6 +28,7 @@ const usesExternalServer = Boolean(process.env.PLAYWRIGHT_BASE_URL);
 // every spec without requiring the caller to export anything.
 if (!usesExternalServer) {
   process.env.E2E_BUILD = "1";
+  process.env.SITE_UPDATED_FIXTURE = "1";
 }
 
 export default defineConfig({
@@ -38,7 +39,26 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: [["list"]],
   timeout: 30_000,
-  expect: { timeout: 5_000 },
+  /**
+   * Visual baselines live in `tests/e2e/__screenshots__/` and are tracked.
+   * They are pinned to Linux Chromium, DPR 1 and Noto Sans CJK TC; see
+   * `tests/e2e/visual.spec.ts` for the full determinism contract. A shift of a
+   * single 4px card edge is thousands of pixels, far above the 50px budget, so
+   * `maxDiffPixels` is the binding limit (it is min'd with the 0.1% ratio).
+   */
+  snapshotPathTemplate: "{testDir}/__screenshots__/{arg}{ext}",
+  expect: {
+    timeout: 5_000,
+    toHaveScreenshot: {
+      animations: "disabled",
+      caret: "hide",
+      scale: "css",
+      // Per-channel colour tolerance (Playwright's default).
+      threshold: 0.2,
+      maxDiffPixels: 50,
+      maxDiffPixelRatio: 0.001,
+    },
+  },
   use: {
     baseURL,
     locale: "zh-Hant",
@@ -72,6 +92,7 @@ export default defineConfig({
         env: {
           ...process.env,
           INSTAGRAM_OEMBED_FIXTURE: "1",
+          SITE_UPDATED_FIXTURE: "1",
           E2E_BUILD: "1",
           HOST,
           PORT: String(PORT),

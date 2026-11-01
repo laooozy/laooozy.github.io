@@ -17,9 +17,10 @@
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "test": "vitest run",
-    "e2e:serve": "INSTAGRAM_OEMBED_FIXTURE=1 bun run build && bun run pagefind && node scripts/serve-dist.mjs",
-    "test:e2e": "playwright test --pass-with-no-tests",
+    "e2e:serve": "INSTAGRAM_OEMBED_FIXTURE=1 SITE_UPDATED_FIXTURE=1 bun run build && bun run pagefind && node scripts/serve-dist.mjs",
+    "test:e2e": "playwright test --pass-with-no-tests --grep-invert @visual",
     "test:a11y": "playwright test --pass-with-no-tests --grep @a11y",
+    "test:visual": "playwright test --grep @visual",
     "typecheck": "astro check"
   },
   "dependencies": {

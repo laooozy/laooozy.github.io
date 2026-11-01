@@ -8,9 +8,14 @@
  *
  * A malformed stamp fails the import (and therefore the build) with the bad
  * value in the message instead of rendering an empty `<time>`.
+ *
+ * `SITE_UPDATED_FIXTURE` is the E2E-only seam (set by `e2e:serve`): the stamp
+ * changes on every commit, so a screenshot baseline cannot pin the real value.
+ * Production builds never set it and always render the committed stamp.
  */
 
 import rawSiteUpdated from "../../data/site-updated.json";
+import { SITE_UPDATED_FIXTURE_STAMP } from "./site-updated-fixture";
 
 /** The one accepted stamp shape: `YYYY-MM-DDTHH:mm`, local time, no zone. */
 const STAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
@@ -69,4 +74,8 @@ export function parseSiteUpdated(raw: unknown): SiteUpdated {
 }
 
 /** The validated stamp the footer renders; imported at build time. */
-export const siteUpdated: SiteUpdated = parseSiteUpdated(rawSiteUpdated);
+export const siteUpdated: SiteUpdated = parseSiteUpdated(
+  process.env.SITE_UPDATED_FIXTURE === "1"
+    ? { updatedAt: SITE_UPDATED_FIXTURE_STAMP }
+    : rawSiteUpdated,
+);
