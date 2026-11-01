@@ -1,0 +1,23 @@
+/**
+ * Background atmosphere canvas.
+ *
+ * The `<canvas>` itself is created by `src/client/atmosphere.ts` (a client
+ * module mounted from `BaseLayout.astro`), never by a component. This file owns
+ * its presentation so the client module carries no inline `style` string and
+ * the layout carries no component CSS: one fixed, viewport-sized, fully
+ * transparent layer at the bottom of the z-scale.
+ *
+ * - `--z-ambient` (tokens.css) sits below `--z-base` content, above the
+ *   `body::before` nebula wash (same layer, painted earlier in the DOM).
+ * - `pointer-events: none` keeps clicks on the page; the canvas is decoration.
+ * - The reduced-motion policy lives in the client module: under `reduce` the
+ *   canvas is never created, so this rule simply never matches.
+ */
+[data-atmosphere] {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--z-ambient);
+  pointer-events: none;
+}

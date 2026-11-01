@@ -292,8 +292,9 @@ export function attachAtmosphere(deps: ClientDeps): () => void {
   canvas.id = ATMOSPHERE_CANVAS_ID;
   canvas.setAttribute("data-atmosphere", "");
   canvas.setAttribute("aria-hidden", "true");
-  canvas.style.cssText =
-    "position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;";
+  // Presentation (`position:fixed`, `inset:0`, `--z-ambient`,
+  // `pointer-events:none`) is owned by `src/styles/atmosphere.css`; this module
+  // only creates the element and drives the pixels.
   const context = canvas.getContext("2d");
   if (!context) return () => {};
   // Annotated as non-nullable so the hoisted draw helpers below keep the

@@ -238,22 +238,11 @@ if (!themeColor) {
   }
 
   /*
-   * Background atmosphere. The canvas is created by `attachAtmosphere` (a
-   * client module) and sits at the bottom of the page's stacking order:
-   * fixed, viewport-sized, and transparent to pointer events so every click
-   * lands on the content above it. The content is lifted to `--z-base` so the
-   * star dust and lightning read as sitting behind the page, never over it;
-   * the sticky header already clears it at `--z-sticky`.
+   * Background atmosphere: the canvas is created by `attachAtmosphere` (a
+   * client module) and its presentation lives in `src/styles/atmosphere.css`
+   * at `--z-ambient`, below the `--z-base` content. This layout only mounts the
+   * client module; it owns no atmosphere CSS.
    */
-  [data-atmosphere] {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    pointer-events: none;
-  }
-
   /*
    * The footer's layout, rule and spacing are authored with Tailwind utilities
    * inside `SiteFooter.tsx`. This rule keeps only the stacking contract that

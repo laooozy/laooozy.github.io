@@ -14,6 +14,9 @@
  * - the single semantic `:root` below maps shadcn's names to brand tokens.
  */
 @import "./tokens.css";
+/* The atmosphere canvas presentation lives beside the other global layers so
+ * `src/client/atmosphere.ts` creates the element but never styles it inline. */
+@import "./atmosphere.css";
 /* Self-hosted brand faces (static Fontsource packages). Only the weights the
  * UI actually renders are loaded: Sora 600/700 (the heading weight and the
  * wordmark/hero), Inter 400/500/600 (body copy and the medium/semibold chrome)
