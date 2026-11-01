@@ -3,9 +3,9 @@
  *
  * It renders the skip link, the brand link, the primary `<nav>`, the global
  * search trigger and the language switcher slot, taking every label (and the
- * nav's aria-label) from `useT`, which is bound to the store's active locale.
- * Because the store drives the render, switching language re-renders these
- * labels in place — no navigation, no reload.
+ * nav's aria-label) from the hydration-safe locale hook. Because the store
+ * drives the render after mount, switching language re-renders these labels in
+ * place — no navigation, no reload.
  *
  * Responsive header
  * -----------------
@@ -27,11 +27,11 @@
  * so the server HTML can only ever contain `zh-hant` chrome. The store, however,
  * is seeded from the pre-paint boot before React's first client render, so a
  * non-default visitor's first client render would differ from the SSR HTML and
- * React would log a hydration mismatch. We therefore render the default locale
- * until the `mounted` flag flips (mirroring `LanguageSwitcher`), which makes the
- * hydration render byte-identical to the server, then correct to the store
- * locale after mount. A non-default visitor sees one frame of `zh-hant` chrome
- * before it settles — the accepted first-load flash — and there is no mismatch.
+ * React would log a hydration mismatch. `useHydrationSafeT` pins the build
+ * locale until mount, which makes the hydration render byte-identical to the
+ * server, then corrects to the store locale. A non-default visitor sees one
+ * frame of `zh-hant` chrome before it settles — the accepted first-load flash —
+ * and there is no mismatch.
  *
  * `LanguageSwitcher` is passed by the layout as `children` and is nested inside
  * the header's action cluster, so it keeps its own `client:idle` hydration
@@ -51,8 +51,7 @@ import { useStore } from "zustand";
 import { useClientDeps } from "@/components/shared/ClientDepsContext";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
-import { type Translate, useT } from "@/hooks/useT";
-import { defaultLang, t as translate } from "@/i18n";
+import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
 
 // Nav always targets the HOME page's sections, so from `/blog/` or any sub-page
 // an anchor still resolves to the home hero sections. Blog is the listing index
@@ -67,10 +66,6 @@ const NAV_ITEMS = [
 ] as const;
 
 type NavItem = (typeof NAV_ITEMS)[number];
-
-/** The build-time locale every SSR render is emitted in. Stable, no deps. */
-const defaultTranslate: Translate = (key, vars) =>
-  translate(defaultLang, key, vars);
 
 /** Normalise a pathname so `/blog`, `/blog/` and `/blog` compare equal. */
 function normalisePath(path: string): string {
@@ -121,19 +116,12 @@ export default function SiteHeader({
   currentPath = "/",
 }: SiteHeaderProps) {
   const deps = useClientDeps();
-  const t = useT();
-  // `false` on the server AND on the first client render, so SSR and the
-  // hydration render agree; flipped after mount to adopt the store locale.
-  const [mounted, setMounted] = useState(false);
+  const { t } = useHydrationSafeT();
   const [menuOpen, setMenuOpen] = useState(false);
   const headerHidden = useStore(deps.store, (state) => state.headerHidden);
 
   const menuRef = useRef<HTMLDetailsElement>(null);
   const summaryRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // A navigation always lands with the disclosure closed.
   useEffect(() => {
@@ -180,12 +168,10 @@ export default function SiteHeader({
 
   const openSearch = () => deps.store.getState().openSearch();
 
-  const tr = mounted ? t : defaultTranslate;
-
   return (
     <>
       <a className="skip-link" href="#main">
-        {tr("a11y.skipToContent")}
+        {t("a11y.skipToContent")}
       </a>
       <header
         className="site-header sticky top-0 z-[var(--z-sticky)] border-b border-border/55 bg-background/72 py-3 backdrop-blur-[var(--glass-blur)] transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] will-change-transform data-[hidden]:-translate-y-full min-[622px]:py-4"
@@ -200,12 +186,12 @@ export default function SiteHeader({
             }
             href="/"
           >
-            {tr("home.title")}
+            {t("home.title")}
           </a>
 
           <nav
             className="ml-auto hidden min-[622px]:block"
-            aria-label={tr("a11y.primaryNav")}
+            aria-label={t("a11y.primaryNav")}
             data-site-nav=""
           >
             <ul className="m-0 flex list-none flex-nowrap gap-5 p-0">
@@ -218,7 +204,7 @@ export default function SiteHeader({
                       href={item.href}
                       aria-current={current ? "page" : undefined}
                     >
-                      {tr(item.key)}
+                      {t(item.key)}
                     </a>
                   </li>
                 );
@@ -239,7 +225,7 @@ export default function SiteHeader({
               // label-content-name-mismatch requires every visible string to
               // appear in the accessible name, and screen readers announcing
               // the accelerator is useful, not noise.
-              aria-label={`${tr("search.trigger")} ⌘K`}
+              aria-label={`${t("search.trigger")} ⌘K`}
               aria-keyshortcuts="Meta+K Control+K"
               aria-haspopup="dialog"
               data-search-trigger=""
@@ -247,7 +233,7 @@ export default function SiteHeader({
             >
               <Search aria-hidden="true" />
               <span className="hidden text-sm min-[622px]:inline">
-                {tr("search.trigger")}
+                {t("search.trigger")}
               </span>
               <Kbd
                 aria-hidden="true"
@@ -277,7 +263,7 @@ export default function SiteHeader({
                   FOCUS_RING
                 }
                 ref={summaryRef}
-                aria-label={tr("a11y.menu")}
+                aria-label={t("a11y.menu")}
                 aria-expanded={menuOpen}
                 aria-controls="site-menu-panel"
               >
@@ -304,7 +290,7 @@ export default function SiteHeader({
               <nav
                 id="site-menu-panel"
                 className="absolute inset-x-0 top-full z-[var(--z-dropdown)] max-h-[calc(100dvh-var(--header-height))] overflow-y-auto overscroll-contain border-b border-border/55 bg-[var(--bg-deep)] px-[clamp(var(--space-4),4vw,var(--space-6))] pt-2 pb-3"
-                aria-label={tr("a11y.primaryNav")}
+                aria-label={t("a11y.primaryNav")}
                 data-site-menu-panel=""
               >
                 <ul className="m-0 flex list-none flex-col gap-1 p-0">
@@ -318,7 +304,7 @@ export default function SiteHeader({
                           aria-current={current ? "page" : undefined}
                           onClick={() => setMenuOpen(false)}
                         >
-                          {tr(item.key)}
+                          {t(item.key)}
                         </a>
                       </li>
                     );

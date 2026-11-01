@@ -16,15 +16,14 @@
  * back action, date and reading time are fixed chrome and inherit the
  * surrounding `<html lang>` instead.
  *
- * Hydration safety mirrors `SiteHeader`/`SiteFooter`: the single URL space
- * renders every page in the DEFAULT locale at build time, while the store may
- * already hold another locale on the first client render. We render the default
- * locale until `mounted` flips, which keeps the hydration render byte-identical
- * to the SSR HTML, then correct to the store locale after mount.
+ * Hydration safety comes from `useHydrationSafeT`: the single URL space renders
+ * every page in the DEFAULT locale at build time, while the store may already
+ * hold another locale on the first client render. The hook pins the build
+ * locale until mount, keeping the hydration render byte-identical to the SSR
+ * HTML, then corrects to the store locale.
  */
 
 import { ArrowLeft } from "lucide-react";
-import { useEffect, useState } from "react";
 
 import { INTERACTIVE_TOUCH_CLASSES } from "@/components/shared/layout/classes";
 import Cluster from "@/components/shared/layout/Cluster";
@@ -32,15 +31,9 @@ import Heading from "@/components/shared/typography/Heading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useLocale } from "@/hooks/useLocale";
-import { type Translate, useT } from "@/hooks/useT";
-import { defaultLang, t as translate } from "@/i18n";
+import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
 import { blogIndexPath, blogTagPath, formatPostDate } from "@/lib/domain/posts";
 import { cn } from "@/lib/utils";
-
-/** The build-time locale every SSR render is emitted in. Stable, no deps. */
-const defaultTranslate: Translate = (key, vars) =>
-  translate(defaultLang, key, vars);
 
 /** Quiet-tag styling shared by every tag link (ChipRow's `tag` treatment). */
 const TAG_CLASSES = cn(
@@ -66,27 +59,16 @@ export default function PostHeader({
   tags = [],
   readingMinutes,
 }: PostHeaderProps) {
-  const t = useT();
-  const { locale } = useLocale();
-  // `false` on the server AND on the first client render, so SSR and the
-  // hydration render agree; flipped after mount to adopt the store locale.
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const tr = mounted ? t : defaultTranslate;
-  const activeLocale = mounted ? locale : defaultLang;
+  const { t, locale } = useHydrationSafeT();
 
   const readLabel =
     readingMinutes === undefined
       ? undefined
-      : tr("blog.readTime", { minutes: readingMinutes });
+      : t("blog.readTime", { minutes: readingMinutes });
 
   return (
     <>
-      <nav aria-label={tr("blog.backToIndex")} className="mb-(--space-5)">
+      <nav aria-label={t("blog.backToIndex")} className="mb-(--space-5)">
         <Button
           variant="ghost"
           size="sm"
@@ -94,7 +76,7 @@ export default function PostHeader({
           render={
             <a href={blogIndexPath()}>
               <ArrowLeft data-icon="inline-start" aria-hidden="true" />
-              {tr("blog.backToIndex")}
+              {t("blog.backToIndex")}
             </a>
           }
         />
@@ -116,7 +98,7 @@ export default function PostHeader({
           align="baseline"
           className="m-0 font-mono text-[length:var(--text-xs)] tracking-[var(--tracking-wide)] text-muted-foreground"
         >
-          <time dateTime={date}>{formatPostDate(date, activeLocale)}</time>
+          <time dateTime={date}>{formatPostDate(date, locale)}</time>
           {readLabel && (
             <>
               <span aria-hidden="true">·</span>
@@ -127,7 +109,7 @@ export default function PostHeader({
 
         {tags.length > 0 && (
           <nav
-            aria-label={tr("blog.tagged")}
+            aria-label={t("blog.tagged")}
             lang="zh-Hant"
             className="mt-(--space-5)"
           >

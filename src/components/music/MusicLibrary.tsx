@@ -16,9 +16,9 @@
  * their layout/paint while the DOM keeps the whole playlist addressable
  * (browser find, screen readers, and the Playwright row-count contract).
  *
- * Hydration safety mirrors `SiteFooter`: the store locale may differ from the
- * build-time locale on the first client render, so labels render in the default
- * locale until `mounted` flips. The data state starts `idle`, which renders the
+ * Hydration safety comes from `useHydrationSafeT`: the store locale may differ
+ * from the build-time locale on the first client render, so the hook pins the
+ * default locale until mount. The data state starts `idle`, which renders the
  * loading skeleton on the server AND on the first client render — never an
  * empty or error flash — so the hydration render matches the SSR HTML.
  *
@@ -52,9 +52,8 @@ import {
   NativeSelect,
   NativeSelectOption,
 } from "@/components/ui/native-select";
-import { useLocale } from "@/hooks/useLocale";
-import { type Translate, useT } from "@/hooks/useT";
-import { defaultLang, langAttr, t as translate } from "@/i18n";
+import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
+import { langAttr } from "@/i18n";
 import {
   collectArtists,
   collectOrgs,
@@ -63,10 +62,6 @@ import {
   type Song,
 } from "@/lib/domain/music";
 import { cn } from "@/lib/utils";
-
-/** The build-time locale every SSR render is emitted in. Stable, no deps. */
-const defaultTranslate: Translate = (key, vars) =>
-  translate(defaultLang, key, vars);
 
 /** Stable empty list so the memoised option derivation never re-runs. */
 const EMPTY_SONGS: readonly Song[] = [];
@@ -183,16 +178,12 @@ function FilterFields({
 
 export default function MusicLibrary() {
   const deps = useClientDeps();
-  const t = useT();
-  const { locale } = useLocale();
+  const { t, locale } = useHydrationSafeT();
   // The toolbar sticks directly under the site header while it is visible, and
   // to the viewport top once the header has scrolled away. Both are read from
   // the one store the scroll-header client writes.
   const headerHidden = useStore(deps.store, (state) => state.headerHidden);
   const errorRef = useRef<HTMLDivElement>(null);
-  // `false` on the server AND on the first client render, so the SSR HTML and
-  // the hydration render are byte-identical.
-  const [mounted, setMounted] = useState(false);
 
   const [status, setStatus] = useState<Status>("idle");
   const [payload, setPayload] = useState<MusicPayload | null>(null);
@@ -204,10 +195,6 @@ export default function MusicLibrary() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   // Bumping `attempt` re-runs the load effect (the retry button).
   const [attempt, setAttempt] = useState(0);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -233,8 +220,7 @@ export default function MusicLibrary() {
     };
   }, [attempt, deps]);
 
-  const tr = mounted ? t : defaultTranslate;
-  const lang = mounted ? langAttr[locale] : langAttr[defaultLang];
+  const lang = langAttr[locale];
 
   const songs = payload?.songs ?? EMPTY_SONGS;
   const artists = collectArtists([...songs]);
@@ -250,7 +236,7 @@ export default function MusicLibrary() {
   const isReady = status === "ready" && payload !== null;
   const activeFilterCount =
     Number(Boolean(artistId)) + Number(Boolean(organisation));
-  const countText = isReady ? tr("music.count", { count: visible.length }) : "";
+  const countText = isReady ? t("music.count", { count: visible.length }) : "";
 
   const clearFilters = () => {
     setQuery("");
@@ -280,13 +266,13 @@ export default function MusicLibrary() {
       >
         <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 md:grid-cols-[minmax(0,1fr)_15rem_15rem_auto] md:items-end">
           <div className="col-span-2 min-w-0 md:col-span-1">
-            <Field id="music-search" label={tr("music.searchLabel")}>
+            <Field id="music-search" label={t("music.searchLabel")}>
               <Input
                 id="music-search"
                 type="search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder={tr("music.searchPlaceholder")}
+                placeholder={t("music.searchPlaceholder")}
                 autoComplete="off"
                 className={CONTROL_HEIGHT}
               />
@@ -305,7 +291,7 @@ export default function MusicLibrary() {
               }
             >
               <ListFilter aria-hidden="true" />
-              <span>{tr("music.filters")}</span>
+              <span>{t("music.filters")}</span>
               {activeFilterCount > 0 && (
                 <Badge variant="secondary" className="ml-auto">
                   {activeFilterCount}
@@ -318,9 +304,9 @@ export default function MusicLibrary() {
                 <FilterFields
                   idPrefix="music-mobile"
                   labels={{
-                    artist: tr("music.artistLabel"),
-                    organisation: tr("music.organisationLabel"),
-                    all: tr("music.all"),
+                    artist: t("music.artistLabel"),
+                    organisation: t("music.organisationLabel"),
+                    all: t("music.all"),
                   }}
                   artists={artists}
                   orgs={orgs}
@@ -337,9 +323,9 @@ export default function MusicLibrary() {
             <FilterFields
               idPrefix="music-desktop"
               labels={{
-                artist: tr("music.artistLabel"),
-                organisation: tr("music.organisationLabel"),
-                all: tr("music.all"),
+                artist: t("music.artistLabel"),
+                organisation: t("music.organisationLabel"),
+                all: t("music.all"),
               }}
               artists={artists}
               orgs={orgs}
@@ -370,7 +356,7 @@ export default function MusicLibrary() {
           tabIndex={-1}
           variant="destructive"
           className="focus:outline-none"
-          description={tr("music.error")}
+          description={t("music.error")}
         >
           <div className="mt-3">
             <Cluster gap={3} align="center">
@@ -383,7 +369,7 @@ export default function MusicLibrary() {
                   errorRef.current?.focus();
                 }}
               >
-                {tr("music.retry")}
+                {t("music.retry")}
               </Button>
             </Cluster>
           </div>
@@ -392,7 +378,7 @@ export default function MusicLibrary() {
         <>
           {(status === "idle" || status === "loading") && (
             <SpinnerState
-              label={tr("music.loading")}
+              label={t("music.loading")}
               showLabel
               className="min-h-5 text-[length:var(--text-sm)] text-muted-foreground"
             />
@@ -402,7 +388,7 @@ export default function MusicLibrary() {
             <EmptyState
               media={<Music aria-hidden="true" />}
               mediaVariant="icon"
-              title={tr("music.empty")}
+              title={t("music.empty")}
               action={
                 playlistUrl !== null ? (
                   <Button
@@ -414,7 +400,7 @@ export default function MusicLibrary() {
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        {tr("music.playlistLink")}
+                        {t("music.playlistLink")}
                         <ExternalLink
                           data-icon="inline-end"
                           aria-hidden="true"
@@ -431,7 +417,7 @@ export default function MusicLibrary() {
             <EmptyState
               media={<ListFilter aria-hidden="true" />}
               mediaVariant="icon"
-              title={tr("music.noResults")}
+              title={t("music.noResults")}
               action={
                 <Button
                   type="button"
@@ -439,7 +425,7 @@ export default function MusicLibrary() {
                   className="min-h-11 px-4"
                   onClick={clearFilters}
                 >
-                  {tr("music.all")}
+                  {t("music.all")}
                 </Button>
               }
             />

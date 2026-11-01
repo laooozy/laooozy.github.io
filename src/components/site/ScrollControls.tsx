@@ -12,8 +12,8 @@
  * Position: fixed bottom-right, inset by the safe-area insets and the page
  * gutter. `BaseLayout` reserves a matching bottom band inside `<main>` so the
  * final row/card can always clear the control rather than relying on luck.
- * The label is locale-reactive via `useT` behind the same `mounted` gate as
- * `SiteHeader`/`SiteFooter`.
+ * The label is locale-reactive via the hydration-safe hook, so the first client
+ * render matches the build-locale SSR HTML.
  */
 
 import { ArrowUp } from "lucide-react";
@@ -23,13 +23,8 @@ import { useStore } from "zustand";
 import { useClientDeps } from "@/components/shared/ClientDepsContext";
 import TooltipState from "@/components/shared/state/TooltipState";
 import { Button } from "@/components/ui/button";
-import { type Translate, useT } from "@/hooks/useT";
-import { defaultLang, t as translate } from "@/i18n";
+import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
 import { cn } from "@/lib/utils";
-
-/** The build-time locale every SSR render is emitted in. Stable, no deps. */
-const defaultTranslate: Translate = (key, vars) =>
-  translate(defaultLang, key, vars);
 
 /**
  * Scroll offset (CSS px) past which the control appears. It is hidden at the
@@ -45,14 +40,9 @@ const SHOWN_CLASSES = "pointer-events-auto visible translate-y-0 opacity-100";
 
 export default function ScrollControls() {
   const deps = useClientDeps();
-  const t = useT();
+  const { t } = useHydrationSafeT();
   const menuOpen = useStore(deps.store, (state) => state.headerMenuOpen);
-  const [mounted, setMounted] = useState(false);
   const [showTop, setShowTop] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     const dom = deps.adapters.dom;
@@ -65,7 +55,6 @@ export default function ScrollControls() {
     return dom.onScroll(sync);
   }, [deps]);
 
-  const tr = mounted ? t : defaultTranslate;
   const dom = deps.adapters.dom;
   // The mobile disclosure panel overlays the control, so hide it (and take it
   // out of the Tab order) while the menu is open.
@@ -74,7 +63,7 @@ export default function ScrollControls() {
   return (
     <div className="contents">
       <TooltipState
-        content={tr("a11y.scrollToTop")}
+        content={t("a11y.scrollToTop")}
         side="top"
         align="center"
         trigger={
@@ -82,7 +71,7 @@ export default function ScrollControls() {
             type="button"
             variant="outline"
             size="icon"
-            aria-label={tr("a11y.scrollToTop")}
+            aria-label={t("a11y.scrollToTop")}
             data-back-to-top=""
             data-visible={visible ? "true" : "false"}
             tabIndex={visible ? 0 : -1}

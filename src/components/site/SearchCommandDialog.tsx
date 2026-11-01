@@ -43,12 +43,12 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
 import {
   createSearchEngine,
   type SearchEngine,
   useSearch,
 } from "@/hooks/useSearch";
-import { useT } from "@/hooks/useT";
 import type { SearchResult } from "@/store/types";
 
 type ResultGroup = "blog" | "music" | "pages";
@@ -146,7 +146,7 @@ export default function SearchCommandDialog({
   open,
 }: SearchCommandDialogProps) {
   const deps = useClientDeps();
-  const t = useT();
+  const { t } = useHydrationSafeT();
   const {
     query,
     status,

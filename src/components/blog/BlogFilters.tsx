@@ -17,23 +17,18 @@
  * posts still shows the period filters (and the reset). A `Separator` closes
  * the tray and divides it from the post list below.
  *
- * Labels come from `useT`, bound to the store's active locale, so they re-render
- * in place when the language switcher changes (mounted gate, mirroring the
- * hydrated chrome). `href`s are locale-free, so the reset always lands on the
- * single `/blog/` index.
+ * Labels come from the hydration-safe locale hook, so they re-render in place
+ * when the language switcher changes while the first client render stays
+ * byte-identical to the server HTML. `href`s are locale-free, so the reset
+ * always lands on the single `/blog/` index.
  */
-import { useEffect, useState } from "react";
 
 import type { FilterLink } from "@/components/shared/types";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { type Translate, useT } from "@/hooks/useT";
-import { defaultLang, t as translate } from "@/i18n";
+import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
 import { blogIndexPath } from "@/lib/domain/posts";
 import { cn } from "@/lib/utils";
-
-const defaultTranslate: Translate = (key, vars) =>
-  translate(defaultLang, key, vars);
 
 interface BlogFiltersProps {
   tags?: FilterLink[];
@@ -116,21 +111,14 @@ export default function BlogFilters({
   periods = [],
   className,
 }: BlogFiltersProps) {
-  const t = useT();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const tr = mounted ? t : defaultTranslate;
+  const { t } = useHydrationSafeT();
 
   // The unfiltered index: no tag and no period is active.
   const noneActive =
     !tags.some((item) => item.active) && !periods.some((item) => item.active);
 
   const allItem: FilterLink = {
-    label: tr("blog.allPosts"),
+    label: t("blog.allPosts"),
     href: blogIndexPath(),
     active: noneActive,
   };
@@ -143,28 +131,28 @@ export default function BlogFilters({
   return (
     <nav
       className={cn("grid gap-(--space-4)", className)}
-      aria-label={tr("blog.filters")}
+      aria-label={t("blog.filters")}
       data-blog-filters
     >
       <div className="grid gap-3 sm:flex sm:flex-wrap sm:items-center sm:gap-x-6 sm:gap-y-3">
         <FilterGroup
           items={[allItem]}
-          ariaLabel={tr("blog.allPosts")}
+          ariaLabel={t("blog.allPosts")}
           kind="all"
         />
         {showTags && (
           <FilterGroup
             items={tags}
-            label={tr("blog.byTag")}
-            ariaLabel={tr("blog.byTag")}
+            label={t("blog.byTag")}
+            ariaLabel={t("blog.byTag")}
             kind="tag"
           />
         )}
         {showPeriods && (
           <FilterGroup
             items={periods}
-            label={tr("blog.byDate")}
-            ariaLabel={tr("blog.byDate")}
+            label={t("blog.byDate")}
+            ariaLabel={t("blog.byDate")}
             kind="period"
           />
         )}

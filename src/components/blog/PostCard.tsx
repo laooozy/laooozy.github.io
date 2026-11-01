@@ -15,24 +15,18 @@
  *      row  → a wide horizontal entry with a fixed mono meta rail
  *  - className?: string
  *
- * The date and reading-time labels are formatted CLIENT-side from the store
- * locale (mounted gate), so they re-render in place when the language switcher
- * changes. The markup itself lives in the pure `PostCardView`, which the
- * build-time `LatestPosts.astro` also renders — one card definition, two
- * consumers. Both variants wrap the generated `Card`, carry one `Button`
- * action and keep their tags as NON-interactive `ChipRow` labels
- * (`variant="tag"`), distinct from the filter controls above a list.
+ * The date and reading-time labels are formatted CLIENT-side from the
+ * hydration-safe locale, so they re-render in place when the language switcher
+ * changes while the first client render matches the server HTML. The markup
+ * itself lives in the pure `PostCardView`, which the build-time
+ * `LatestPosts.astro` also renders — one card definition, two consumers. Both
+ * variants wrap the generated `Card`, carry one `Button` action and keep their
+ * tags as NON-interactive `ChipRow` labels (`variant="tag"`), distinct from the
+ * filter controls above a list.
  */
-import { useEffect, useState } from "react";
-
 import PostCardView from "@/components/blog/PostCardView";
-import { useLocale } from "@/hooks/useLocale";
-import { type Translate, useT } from "@/hooks/useT";
-import { defaultLang, t as translate } from "@/i18n";
+import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
 import { formatPostDate } from "@/lib/domain/posts";
-
-const defaultTranslate: Translate = (key, vars) =>
-  translate(defaultLang, key, vars);
 
 interface PostCardProps {
   href: string;
@@ -57,25 +51,14 @@ export default function PostCard({
   variant = "card",
   className,
 }: PostCardProps) {
-  const t = useT();
-  const { locale } = useLocale();
-  // `false` on the server AND on the first client render, so SSR and the
-  // hydration render agree; flipped after mount to adopt the store locale.
-  const [mounted, setMounted] = useState(false);
+  const { t, locale } = useHydrationSafeT();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const tr = mounted ? t : defaultTranslate;
-  const activeLocale = mounted ? locale : defaultLang;
-
-  const dateLabel = date ? formatPostDate(date, activeLocale) : undefined;
+  const dateLabel = date ? formatPostDate(date, locale) : undefined;
   const readingTime =
     readingMinutes === undefined
       ? undefined
-      : tr("blog.readTime", { minutes: readingMinutes });
-  const readLabel = tr("blog.readPost");
+      : t("blog.readTime", { minutes: readingMinutes });
+  const readLabel = t("blog.readPost");
 
   return (
     <PostCardView

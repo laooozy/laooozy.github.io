@@ -25,9 +25,9 @@ import {
   useClientDeps,
 } from "@/components/shared/ClientDepsContext";
 import type { ClientDeps } from "@/hooks/deps";
+import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
 import { useLocale } from "@/hooks/useLocale";
 import { useSearch } from "@/hooks/useSearch";
-import { useT } from "@/hooks/useT";
 import type { Locale } from "@/i18n";
 import type { MusicPayload } from "@/lib/domain/music";
 import { appStore } from "@/store/app-store";
@@ -94,7 +94,7 @@ function makeDeps(locale: Locale, searchOpen = false): ClientDeps {
 function LocaleProbe() {
   const deps = useClientDeps();
   const { locale } = useLocale();
-  const t = useT();
+  const { t } = useHydrationSafeT();
   return (
     <span data-locale={locale} data-store-locale={deps.store.getState().locale}>
       {t("nav.about")}
@@ -133,7 +133,9 @@ describe("ClientDepsProvider", () => {
 
     expect(html).toContain('data-locale="en"');
     expect(html).toContain('data-store-locale="en"');
-    expect(html).toContain("About");
+    // Static SSR has no mount effect, so the hydration-safe hook pins the
+    // build locale; the injected store is proven by the data attributes.
+    expect(html).toContain("關於");
   });
 
   it("honours a non-default injected locale", () => {
@@ -147,7 +149,8 @@ describe("ClientDepsProvider", () => {
 
     expect(html).toContain('data-locale="zh-hans"');
     expect(html).toContain('data-store-locale="zh-hans"');
-    expect(html).toContain("关于");
+    // Build-locale copy on the server; the store proves the injected bundle.
+    expect(html).toContain("關於");
   });
 
   it("drives useSearch from the injected store", () => {

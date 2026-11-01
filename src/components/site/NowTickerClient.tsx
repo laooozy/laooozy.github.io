@@ -9,24 +9,19 @@
  * the 44px pause/play toggle. The animation itself is pure CSS; this component
  * never starts an animation frame loop.
  *
- * Hydration safety mirrors `PostHeader`: the static build emits the default
- * locale, so the first client render keeps the default label until `mounted`
- * flips and the store locale can be read. Item text stays zh-hant, which the
- * route wrapper already marks `lang="zh-Hant"`.
+ * Hydration safety comes from `useHydrationSafeT`: the static build emits the
+ * default locale, so the first client render keeps the build-locale label and
+ * only then adopts the store locale. Item text stays zh-hant, which the route
+ * wrapper already marks `lang="zh-Hant"`.
  */
 
 import { Pause, Play } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
 
 import { useClientDeps } from "@/components/shared/ClientDepsContext";
-import { useLocale } from "@/hooks/useLocale";
-import { type Translate, useT } from "@/hooks/useT";
-import { defaultLang, langAttr, t as translate } from "@/i18n";
+import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
+import { langAttr } from "@/i18n";
 import type { NowItem } from "@/lib/domain/now";
-
-/** The build-time locale every SSR render is emitted in. Stable, no deps. */
-const defaultTranslate: Translate = (key, vars) =>
-  translate(defaultLang, key, vars);
 
 interface NowTickerClientProps {
   items: readonly NowItem[];
@@ -82,24 +77,17 @@ function NowTickerItems({
 
 export default function NowTickerClient({ items }: NowTickerClientProps) {
   const deps = useClientDeps();
-  const t = useT();
-  const { locale } = useLocale();
-  // `false` on the server AND on the first client render, so SSR and the
-  // hydration render agree; flipped after mount.
-  const [mounted, setMounted] = useState(false);
+  const { t, locale } = useHydrationSafeT();
   const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     const reduced = deps.adapters.dom.prefersReducedMotion();
     setRunning(!reduced && items.length >= 2);
   }, [deps, items.length]);
 
-  const tr = mounted ? t : defaultTranslate;
-  const activeLocale = mounted ? locale : defaultLang;
-  const label = tr("home.nowLabel");
-  const toggleLabel = paused ? tr("now.play") : tr("now.pause");
+  const label = t("home.nowLabel");
+  const toggleLabel = paused ? t("now.play") : t("now.pause");
 
   return (
     <div
@@ -107,7 +95,7 @@ export default function NowTickerClient({ items }: NowTickerClientProps) {
       data-paused={paused ? "true" : "false"}
     >
       <span className="hero__dot" aria-hidden="true" />
-      <span className="hero__status-label" lang={langAttr[activeLocale]}>
+      <span className="hero__status-label" lang={langAttr[locale]}>
         {label}
       </span>
 
@@ -130,7 +118,7 @@ export default function NowTickerClient({ items }: NowTickerClientProps) {
           className="now-ticker__toggle"
           aria-label={toggleLabel}
           aria-pressed={paused}
-          lang={langAttr[activeLocale]}
+          lang={langAttr[locale]}
           onClick={() => setPaused((value) => !value)}
         >
           {paused ? (

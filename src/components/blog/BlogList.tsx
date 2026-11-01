@@ -9,14 +9,12 @@
  *  - `BlogPagination` when the set spans more than one page,
  *  - `BlogEmpty` when the filtered set has no posts.
  *
- * Every label is re-derived per active locale on the client (mounted gate,
- * mirroring the hydrated chrome): the masthead from a locale-independent
- * descriptor, the period chips from their raw `YYYY`/`YYYY-MM` keys, and each
- * post's date, reading time and action inside `PostCard`. Paging links are
- * locale-free. Search is global chrome (`SearchCommand` in the layout), not a
- * listing child.
+ * Every label is re-derived per active locale on the client through the
+ * hydration-safe hook: the masthead from a locale-independent descriptor, the
+ * period chips from their raw `YYYY`/`YYYY-MM` keys, and each post's date,
+ * reading time and action inside `PostCard`. Paging links are locale-free.
+ * Search is global chrome (`SearchCommand` in the layout), not a listing child.
  */
-import { useEffect, useState } from "react";
 
 import BlogEmpty from "@/components/blog/BlogEmpty";
 import BlogFilters from "@/components/blog/BlogFilters";
@@ -24,13 +22,8 @@ import BlogPagination from "@/components/blog/BlogPagination";
 import PostCard from "@/components/blog/PostCard";
 import type { FilterLink, Pagination } from "@/components/shared/types";
 import Heading from "@/components/shared/typography/Heading";
-import { useLocale } from "@/hooks/useLocale";
-import { type Translate, useT } from "@/hooks/useT";
-import { defaultLang, t as translate } from "@/i18n";
+import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
 import { type BlogListItem, formatPeriodLabel } from "@/lib/domain/posts";
-
-const defaultTranslate: Translate = (key, vars) =>
-  translate(defaultLang, key, vars);
 
 /** A raw tag filter; its label is the tag itself (locale-independent). */
 export interface BlogTagLink {
@@ -69,27 +62,16 @@ export default function BlogList({
   periods = [],
   pagination,
 }: BlogListProps) {
-  const t = useT();
-  const { locale } = useLocale();
-  // `false` on the server AND on the first client render, so SSR and the
-  // hydration render agree; flipped after mount to adopt the store locale.
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const tr = mounted ? t : defaultTranslate;
-  const activeLocale = mounted ? locale : defaultLang;
+  const { t, locale } = useHydrationSafeT();
 
   const title = (() => {
     switch (heading.kind) {
       case "index":
-        return tr("blog.heading");
+        return t("blog.heading");
       case "tag":
         return `#${heading.tag}`;
       case "archive":
-        return formatPeriodLabel(heading.period, activeLocale);
+        return formatPeriodLabel(heading.period, locale);
     }
   })();
 
@@ -100,7 +82,7 @@ export default function BlogList({
   }));
 
   const periodLinks: FilterLink[] = periods.map((item) => ({
-    label: formatPeriodLabel(item.period, activeLocale),
+    label: formatPeriodLabel(item.period, locale),
     href: item.href,
     active: item.active,
   }));

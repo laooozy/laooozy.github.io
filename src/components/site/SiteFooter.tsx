@@ -1,8 +1,8 @@
 /**
  * SiteFooter — the site chrome's footer as a hydrated React island.
  *
- * It renders the copyright line and the committed update stamp, driven by
- * `useT` (store-bound locale), so the footer text re-renders in place when the
+ * It renders the copyright line and the committed update stamp, driven by the
+ * hydration-safe locale hook, so the footer text re-renders in place when the
  * language switcher changes the locale — no navigation, no reload.
  *
  * Build-time data, not a runtime clock
@@ -13,22 +13,14 @@
  * clock, so the server HTML and the client render cannot disagree about the
  * year or the stamp, even if a visitor's clock is wrong.
  *
- * Hydration safety mirrors `SiteHeader`: the build-time SSR HTML is always the
- * DEFAULT locale, while the store may already hold another locale on the first
- * client render. Rendering the default locale until `mounted` flips keeps the
- * hydration render identical to the server and eliminates the mismatch; the
- * store locale is adopted immediately after mount.
+ * Hydration safety comes from `useHydrationSafeT`: the build-time SSR HTML is
+ * always the DEFAULT locale, so the hook pins that locale until mount and only
+ * then adopts the store locale. The hydration render is identical to the
+ * server and there is no mismatch.
  */
 
-import { useEffect, useState } from "react";
-
 import { Separator } from "@/components/ui/separator";
-import { type Translate, useT } from "@/hooks/useT";
-import { defaultLang, t as translate } from "@/i18n";
-
-/** The build-time locale every SSR render is emitted in. Stable, no deps. */
-const defaultTranslate: Translate = (key, vars) =>
-  translate(defaultLang, key, vars);
+import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
 
 /** The serializable shape of a `SiteUpdated` stamp. */
 export interface SiteUpdatedStamp {
@@ -50,16 +42,7 @@ export interface SiteFooterProps {
 }
 
 export default function SiteFooter({ year, siteUpdated }: SiteFooterProps) {
-  const t = useT();
-  // `false` on the server AND on the first client render, so SSR and the
-  // hydration render agree; flipped after mount to adopt the store locale.
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const tr = mounted ? t : defaultTranslate;
+  const { t } = useHydrationSafeT();
 
   return (
     <footer
@@ -68,13 +51,13 @@ export default function SiteFooter({ year, siteUpdated }: SiteFooterProps) {
     >
       <div className="mx-auto flex w-full max-w-(--container) flex-col gap-3 px-[clamp(var(--space-4),4vw,var(--space-6))] sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <p className="m-0 max-w-none text-sm text-muted-foreground">
-          © {year} {tr("home.title")} · {tr("footer.rights")}
+          © {year} {t("home.title")} · {t("footer.rights")}
         </p>
 
         <Separator className="bg-border/40 sm:hidden" />
 
         <p className="m-0 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-muted-foreground tabular-nums">
-          <span>{tr("footer.updated")}</span>
+          <span>{t("footer.updated")}</span>
           <time dateTime={siteUpdated.iso}>{siteUpdated.display}</time>
         </p>
       </div>

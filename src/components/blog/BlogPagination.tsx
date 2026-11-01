@@ -7,12 +7,11 @@
  * visible middle label and the nav's `aria-label` is the localised "Blog
  * pagination" string.
  *
- * Labels come from `useT`, bound to the store's active locale, so they re-render
- * in place when the language switcher changes (mounted gate, mirroring the
- * hydrated chrome). `href`s are locale-free.
+ * Labels come from the hydration-safe locale hook, so they re-render in place
+ * when the language switcher changes while the first client render stays
+ * byte-identical to the server HTML. `href`s are locale-free.
  */
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
 
 import type { Pagination as PaginationState } from "@/components/shared/types";
 import {
@@ -22,11 +21,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { type Translate, useT } from "@/hooks/useT";
-import { defaultLang, t as translate } from "@/i18n";
-
-const defaultTranslate: Translate = (key, vars) =>
-  translate(defaultLang, key, vars);
+import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
 
 interface BlogPaginationProps {
   pagination: PaginationState;
@@ -59,15 +54,8 @@ export default function BlogPagination({
   pagination,
   className,
 }: BlogPaginationProps) {
-  const t = useT();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const tr = mounted ? t : defaultTranslate;
-  const status = tr("blog.pageOf", {
+  const { t } = useHydrationSafeT();
+  const status = t("blog.pageOf", {
     current: pagination.currentPage,
     last: pagination.lastPage,
   });
@@ -75,7 +63,7 @@ export default function BlogPagination({
   return (
     <Pagination
       data-blog-pagination
-      aria-label={tr("blog.pagination")}
+      aria-label={t("blog.pagination")}
       className={["mt-(--space-6)", className].filter(Boolean).join(" ")}
     >
       <PaginationContent className="w-full flex-wrap justify-between gap-2">
@@ -84,12 +72,12 @@ export default function BlogPagination({
             <PaginationPrevious
               href={pagination.url.prev}
               rel="prev"
-              text={tr("blog.prev")}
-              aria-label={tr("blog.prev")}
+              text={t("blog.prev")}
+              aria-label={t("blog.prev")}
               className={TOUCH_TARGET}
             />
           ) : (
-            <DisabledStep label={tr("blog.prev")} side="prev" />
+            <DisabledStep label={t("blog.prev")} side="prev" />
           )}
         </PaginationItem>
 
@@ -104,12 +92,12 @@ export default function BlogPagination({
             <PaginationNext
               href={pagination.url.next}
               rel="next"
-              text={tr("blog.next")}
-              aria-label={tr("blog.next")}
+              text={t("blog.next")}
+              aria-label={t("blog.next")}
               className={TOUCH_TARGET}
             />
           ) : (
-            <DisabledStep label={tr("blog.next")} side="next" />
+            <DisabledStep label={t("blog.next")} side="next" />
           )}
         </PaginationItem>
       </PaginationContent>
