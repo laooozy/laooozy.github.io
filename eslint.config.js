@@ -148,12 +148,11 @@ export default defineConfig(
 
   // Boundary rule: runtime adapter imports are valid only in the composition
   // root. Type-only imports are allowed everywhere because they erase at
-  // build time. Kept at `warn` during the migration (task 50 promotes this to
-  // `error` with `--max-warnings 0`).
+  // build time. An error, not a warning: CI runs `eslint --max-warnings 0`.
   {
     rules: {
       "no-restricted-imports": [
-        "warn",
+        "error",
         {
           patterns: [
             {
@@ -185,13 +184,13 @@ export default defineConfig(
     },
   },
 
-  // Boundary rule: components may not touch browser globals. Kept at `warn`
-  // until components are ported to ClientDeps (task 50 promotes this).
+  // Boundary rule: components may not touch browser globals. An error, not a
+  // warning: CI runs `eslint --max-warnings 0`.
   {
     files: ["src/components/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-globals": [
-        "warn",
+        "error",
         { name: "document", message: BROWSER_GLOBAL_MESSAGE },
         { name: "window", message: BROWSER_GLOBAL_MESSAGE },
         { name: "navigator", message: BROWSER_GLOBAL_MESSAGE },

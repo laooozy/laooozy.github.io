@@ -245,6 +245,10 @@ export default function SiteHeader({
 
             {children}
 
+            {/* `<details>` is interactive content per HTML; jsx-a11y's
+                aria-query table does not classify it as interactive, so the
+                Escape keydown handler is a documented false positive. */}
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
             <details
               className="site-menu group min-[622px]:hidden"
               ref={menuRef}

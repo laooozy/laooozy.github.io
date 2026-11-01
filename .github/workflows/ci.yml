@@ -7,41 +7,122 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  test:
+  quality:
+    name: Format, lint, types, unit
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - name: Cache bun install
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile
-      - run: bunx astro check
       - run: bun run format:check
       - run: bun run lint
-      - run: bunx vitest run
+      - run: bun run typecheck
+      - run: bun run test
+      - run: bun run knip
 
   build:
-    needs: [test]
+    name: Build, links, budgets
+    needs: [quality]
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - name: Cache bun install
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile
-      - run: bunx astro build
-      - run: bunx pagefind --site dist --force-language zh-hant
+      - run: bun run build
+      - run: bun run pagefind
+      - run: bun run test:links
+      - run: bun run size
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
-  deploy:
-    needs: [test, build]
+  browser:
+    name: E2E, a11y, visual
+    needs: [build]
     runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Cache bun install
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+      - run: bun install --frozen-lockfile
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+      - name: Install Chromium with system dependencies
+        run: bunx playwright install --with-deps chromium
+      - name: Install Noto CJK fonts for the visual baselines
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-cjk
+          fc-cache -f
+      - name: Build the fixture artifact and Pagefind index
+        run: bun run e2e:build
+      - name: E2E
+        env:
+          PLAYWRIGHT_SERVE_DIST: "1"
+        run: bun run test:e2e
+      - name: Accessibility
+        env:
+          PLAYWRIGHT_SERVE_DIST: "1"
+        run: bun run test:a11y
+      - name: Visual regression
+        env:
+          PLAYWRIGHT_SERVE_DIST: "1"
+        run: bun run test:visual
+      - name: Upload failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-failure-evidence
+          path: |
+            test-results
+            playwright-report
+            .omo/evidence
+          if-no-files-found: ignore
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: [build, browser]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

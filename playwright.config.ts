@@ -23,6 +23,10 @@ const PORT = 4322;
 const HOST = "127.0.0.1";
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://${HOST}:${PORT}`;
 const usesExternalServer = Boolean(process.env.PLAYWRIGHT_BASE_URL);
+// CI builds the fixture artifact once (`bun run e2e:build`) and then runs the
+// three browser gates against it, so it opts out of the per-run build. Local
+// `bun run test:e2e` keeps the self-contained build-and-serve default.
+const servesBuiltDist = process.env.PLAYWRIGHT_SERVE_DIST === "1";
 
 // Workers inherit this process environment; expose the built-artifact mode to
 // every spec without requiring the caller to export anything.
@@ -85,7 +89,11 @@ export default defineConfig({
     ? undefined
     : {
         // `bun run e2e:serve` = fixture build -> pagefind -> serve dist.
-        command: "bun run e2e:serve",
+        // `PLAYWRIGHT_SERVE_DIST=1` serves an artifact built by the caller
+        // (CI's shared `bun run e2e:build` step) without rebuilding it.
+        command: servesBuiltDist
+          ? "node scripts/serve-dist.mjs"
+          : "bun run e2e:serve",
         url: baseURL,
         reuseExistingServer: process.env.PLAYWRIGHT_REUSE_SERVER === "1",
         timeout: 240_000,
