@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 
-import { langAttr, type Locale, t } from "@/i18n";
+import { langAttr, LOCALE_CODES, t } from "@/i18n";
 
 /**
  * Static all-locale translation component.
@@ -23,8 +23,6 @@ import { langAttr, type Locale, t } from "@/i18n";
  * With no `data-locale` on `<html>` (e.g. JavaScript disabled) the CSS falls
  * back to showing `data-l="zh-hant"`, the default locale.
  */
-const LOCALES: readonly Locale[] = ["zh-hant", "zh-hans", "en"];
-
 interface TProps {
   /** Dotted dictionary key, e.g. `"nav.blog"`. */
   k: string;
@@ -35,7 +33,7 @@ interface TProps {
 export default function T({ k, as: Tag = "span" }: TProps) {
   return (
     <>
-      {LOCALES.map((locale) => (
+      {LOCALE_CODES.map((locale) => (
         <Tag key={locale} data-l={locale} lang={langAttr[locale]}>
           {t(locale, k)}
         </Tag>

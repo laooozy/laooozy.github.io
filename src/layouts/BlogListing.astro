@@ -16,7 +16,7 @@ import {
   toBlogListItem,
 } from "../lib/domain/posts";
 import { getAllPosts } from "../lib/io/posts";
-import { useTranslations } from "../i18n/ui";
+import { getTranslations } from "../i18n";
 import BaseLayout from "./BaseLayout.astro";
 
 export type BlogListingHeading =
@@ -33,7 +33,7 @@ interface Props {
 
 const locale = "zh-hant" as const;
 const { heading, posts, pagination } = Astro.props;
-const t = useTranslations(locale);
+const t = getTranslations(locale);
 const allPosts = await getAllPosts();
 
 const filters = buildListingFilters(allPosts, {

@@ -18,7 +18,7 @@
  * 2. Every literal key referenced from source (`t("…")`, `tr("…")`,
  *    `translate("locale", "…")` and `<T k="…" />`) exists in the reference
  *    dictionary. Static dictionary access (`t.home.title`) is already
- *    typechecked by `useTranslations`; this guard covers the string form that
+ *    typechecked by `getTranslations`; this guard covers the string form that
  *    the type system cannot see.
  */
 import { readdirSync, readFileSync } from "node:fs";
@@ -26,13 +26,18 @@ import { extname, join, relative } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { t, ui } from "./index";
-
-/** The three site locales. zh-hant is the default/fallback, used as reference. */
-const LOCALES = ["zh-hant", "zh-hans", "en"] as const;
+import { LOCALE_BOOT_SCRIPT } from "../client/locale-boot";
+import {
+  DEFAULT_LOCALE,
+  langAttr,
+  LOCALE_CODES,
+  resolveClientLocale,
+  t,
+  ui,
+} from "./index";
 
 /** The locale every other locale is compared against. */
-const REFERENCE: (typeof LOCALES)[number] = "zh-hant";
+const REFERENCE = DEFAULT_LOCALE;
 
 /**
  * The complete fixed-chrome key set.
@@ -162,7 +167,7 @@ function collectSourceFiles(dir: string, out: string[] = []): string[] {
 /**
  * A call to `t`, `tr` or `translate` whose FIRST string-literal argument is a
  * key: either `t("blog.empty")` or the locale-first form
- * `t(defaultLang, "blog.empty")`. The `useT` alias (`const t = useT(...)`) and
+ * `t(DEFAULT_LOCALE, "blog.empty")`. The `useT` alias (`const t = useT(...)`) and
  * the hydration-safe `tr` alias are both plain calls, so they are covered here.
  */
 const CALL_KEY_RE =
@@ -199,7 +204,7 @@ function collectReferencedKeys(): Map<string, Set<string>> {
 
 describe("i18n ui key parity", () => {
   it("ships exactly the three known locales", () => {
-    expect(Object.keys(ui).sort()).toEqual([...LOCALES].sort());
+    expect(Object.keys(ui).sort()).toEqual([...LOCALE_CODES].sort());
   });
 
   it("defines exactly the fixed-chrome key set", () => {
@@ -216,7 +221,7 @@ describe("i18n ui key parity", () => {
     const reference = collectKeyPaths(ui[REFERENCE]);
     const offenders: string[] = [];
 
-    for (const locale of LOCALES) {
+    for (const locale of LOCALE_CODES) {
       if (locale === REFERENCE) continue;
       const paths = collectKeyPaths(ui[locale]);
 
@@ -275,5 +280,102 @@ describe("search result count copy", () => {
     expect(t("zh-hans", "search.resultCount", { count: 2 })).toBe(
       "找到 2 条结果",
     );
+  });
+});
+
+/**
+ * The inline pre-paint boot is plain JS emitted into `<head>`, so it cannot
+ * import `resolveClientLocale`. These tests EXECUTE the shipped string with
+ * stub browser globals and assert it agrees with the pure resolver for a matrix
+ * of stored/navigator values — the executable gate for "generate/assert the map
+ * from `LOCALE_CODES`".
+ */
+function runLocaleBoot(
+  stored: string | null,
+  navigatorLanguage: string | null,
+  throwOnGet = false,
+): { lang: string; locale: string | undefined; written: string | null } {
+  const root: { lang: string; dataset: Record<string, string> } = {
+    lang: "",
+    dataset: {},
+  };
+  let written: string | null = null;
+
+  const windowStub = {
+    localStorage: {
+      getItem: () => {
+        if (throwOnGet) throw new Error("storage blocked");
+        return stored;
+      },
+      setItem: (_key: string, value: string) => {
+        written = value;
+      },
+    },
+  };
+  const navigatorStub = { language: navigatorLanguage ?? undefined };
+  const documentStub = { documentElement: root };
+
+  const boot = new Function(
+    "window",
+    "navigator",
+    "document",
+    LOCALE_BOOT_SCRIPT,
+  );
+  boot(windowStub, navigatorStub, documentStub);
+
+  return { lang: root.lang, locale: root.dataset.locale, written };
+}
+
+describe("pre-paint locale boot parity", () => {
+  it("emits no imports and inlines the BCP-47 map for every locale code", () => {
+    expect(LOCALE_BOOT_SCRIPT).not.toMatch(/\bimport\b|\brequire\(/);
+    for (const code of LOCALE_CODES) {
+      expect(LOCALE_BOOT_SCRIPT).toContain(`"${code}":"${langAttr[code]}"`);
+    }
+  });
+
+  it("resolves stored, navigator and fallback values exactly like resolveClientLocale", () => {
+    const storedValues = [
+      null,
+      ...LOCALE_CODES,
+      "zh-TW",
+      "toString",
+      "",
+    ] as const;
+    const navigatorValues = [
+      null,
+      "",
+      "en-US",
+      "en",
+      "zh-Hans",
+      "zh-CN",
+      "zh-SG",
+      "zh-TW",
+      "fr-FR",
+    ] as const;
+
+    for (const stored of storedValues) {
+      for (const navigatorLanguage of navigatorValues) {
+        const expected = resolveClientLocale(stored, navigatorLanguage);
+        const result = runLocaleBoot(stored, navigatorLanguage);
+
+        expect(result.locale, `stored=${stored} nav=${navigatorLanguage}`).toBe(
+          expected,
+        );
+        expect(result.lang).toBe(langAttr[expected]);
+        expect(result.written).toBe(expected);
+      }
+    }
+  });
+
+  it("falls back to the navigator hint when storage throws", () => {
+    for (const navigatorLanguage of ["zh-CN", "en-US", ""] as const) {
+      const expected = resolveClientLocale(null, navigatorLanguage);
+      const result = runLocaleBoot(null, navigatorLanguage, true);
+
+      expect(result.locale).toBe(expected);
+      expect(result.lang).toBe(langAttr[expected]);
+      expect(result.written).toBe(expected);
+    }
   });
 });

@@ -13,7 +13,7 @@
 
 import { createStore } from "zustand/vanilla";
 
-import { defaultLang } from "@/i18n";
+import { DEFAULT_LOCALE } from "@/i18n";
 import {
   normalizeRecentSearches,
   pushRecentSearch,
@@ -34,7 +34,7 @@ export type {
 export const appStore = createStore<AppStore>()((set) => ({
   // The pre-paint boot (a later task) hydrates this from storage/navigator;
   // the store itself only owns the default.
-  locale: defaultLang,
+  locale: DEFAULT_LOCALE,
   headerHidden: false,
   headerMenuOpen: false,
   search: {

@@ -40,13 +40,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLocale } from "@/hooks/useLocale";
-import { langAttr, languages, type Locale } from "@/i18n";
+import { langAttr, type Locale, LOCALE_CODES, localeNames } from "@/i18n";
 
 /** Every locale, for the CSS-toggled trigger label (order is irrelevant). */
-const ALL_LOCALES: readonly Locale[] = ["zh-hant", "zh-hans", "en"];
+const ALL_LOCALES: readonly Locale[] = LOCALE_CODES;
 
 /** Menu order, as specified: English · 繁體中文 · 簡體中文. */
-const MENU_ORDER: readonly Locale[] = ["en", "zh-hant", "zh-hans"];
+const MENU_ORDER: readonly Locale[] = [
+  "en",
+  ...LOCALE_CODES.filter((code) => code !== "en"),
+];
 
 const FOCUS_RING =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]";
@@ -114,7 +117,7 @@ export default function LanguageSwitcher() {
           <span className="max-[621px]:sr-only" data-language-label="">
             {ALL_LOCALES.map((code) => (
               <span key={code} data-l={code} lang={langAttr[code]}>
-                {languages[code]}
+                {localeNames[code]}
               </span>
             ))}
           </span>
@@ -142,7 +145,7 @@ export default function LanguageSwitcher() {
                 className={RADIO_ITEM_CLASS}
                 lang={langAttr[code]}
               >
-                <span lang={langAttr[code]}>{languages[code]}</span>
+                <span lang={langAttr[code]}>{localeNames[code]}</span>
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>

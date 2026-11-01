@@ -9,12 +9,9 @@ import { useCallback } from "react";
 import { useStore } from "zustand";
 
 import { useClientDeps } from "@/components/shared/ClientDepsContext";
-import type { Locale } from "@/i18n";
+import { type Locale, LOCALE_STORAGE_KEY } from "@/i18n";
 
 import type { ClientDeps } from "./deps";
-
-/** Storage key under which the chosen locale is persisted. */
-export const LOCALE_STORAGE_KEY = "locale";
 
 /** What `useLocale` returns. */
 export interface LocaleController {

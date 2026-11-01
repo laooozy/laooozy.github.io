@@ -15,7 +15,7 @@ import Container from "../components/shared/layout/Container";
 import { LOCALE_BOOT_SCRIPT } from "@/client/locale-boot";
 import { siteUpdated } from "../lib/io/site-updated";
 import { SITE_INDEXABLE } from "../lib/seo";
-import { langAttr, ogLocale, resolveLocale, useTranslations } from "../i18n/ui";
+import { getTranslations, langAttr, ogLocale, resolveLocale } from "../i18n";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -35,7 +35,7 @@ const {
   pagefindIgnore = false,
 } = Astro.props;
 const locale = resolveLocale(Astro.currentLocale);
-const t = useTranslations(locale);
+const t = getTranslations(locale);
 
 /*
  * The footer's copyright year is a BUILD-time value, not a runtime clock. The

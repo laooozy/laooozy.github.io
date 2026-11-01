@@ -1,14 +1,13 @@
 /**
  * Pure i18n types — no Astro, no DOM, no runtime imports.
  *
- * `Locale` is the union of the three site locale codes, kept in sync with the
- * `ui` dictionary keys in `./index.ts`. `DotPaths` derives the set of dotted
- * key paths that point at a translatable string leaf, so `t()` gets typed keys
- * without hard-coding a second key list.
+ * `Locale` is single-sourced from `LOCALE_CODES` in `./locales.ts` and
+ * re-exported here for historical importers. `DotPaths` derives the set of
+ * dotted key paths that point at a translatable string leaf, so `t()` gets
+ * typed keys without hard-coding a second key list.
  */
 
-/** The three site locales. Codes are LOWERCASE (Astro normalises locale codes). */
-export type Locale = "zh-hant" | "zh-hans" | "en";
+export type { Locale } from "./locales";
 
 /**
  * Recursively build a union of dotted paths (`"blog.pageOf"`) that resolve to a

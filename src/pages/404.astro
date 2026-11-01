@@ -1,10 +1,10 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import NotFound from "../components/site/NotFound";
-import { resolveLocale, useTranslations } from "../i18n/ui";
+import { getTranslations, resolveLocale } from "../i18n";
 
 const locale = resolveLocale(Astro.currentLocale);
-const t = useTranslations(locale);
+const t = getTranslations(locale);
 ---
 
 <BaseLayout

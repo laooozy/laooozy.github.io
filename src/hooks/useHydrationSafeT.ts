@@ -2,7 +2,7 @@
  * Hydration-safe translation hook — the single locale binding for hydrated
  * chrome.
  *
- * The build emits every page in the build locale (`defaultLang`, currently
+ * The build emits every page in the build locale (`DEFAULT_LOCALE`, currently
  * `zh-hant`), while the pre-paint boot may seed the store with another locale
  * before React's first client render. Reading the store directly on that first
  * render would make the client markup differ from the SSR HTML and React would
@@ -24,7 +24,7 @@ import { useStore } from "zustand";
 
 import { useClientDeps } from "@/components/shared/ClientDepsContext";
 import {
-  defaultLang,
+  DEFAULT_LOCALE,
   type Locale,
   t as translate,
   type TranslationKey,
@@ -54,7 +54,7 @@ export function useHydrationSafeT(): HydrationSafeTranslation {
     setIsHydrated(true);
   }, []);
 
-  const locale: Locale = isHydrated ? storeLocale : defaultLang;
+  const locale: Locale = isHydrated ? storeLocale : DEFAULT_LOCALE;
 
   const t = useCallback(
     (key: TranslationKey | (string & {}), vars?: TranslationVars) =>
