@@ -75,6 +75,26 @@ test.describe("global palette", () => {
     }
   });
 
+  test("close and reopen starts with a clean query and no stale results", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await openWithTrigger(page);
+
+    await page.locator(INPUT).fill("情報系");
+    await expect(page.locator(STATUS)).toContainText("找到 1 筆結果");
+    await expect(page.locator(ITEMS)).toHaveCount(1);
+
+    await page.keyboard.press("Escape");
+    await expect(page.locator(DIALOG)).toBeHidden();
+
+    await page.locator(HEADER_TRIGGER).click();
+    await expect(page.locator(DIALOG)).toBeVisible();
+    await expect(page.locator(INPUT)).toHaveValue("");
+    await expect(page.locator(DIALOG)).toContainText("快速前往");
+    await expect(page.locator(ITEMS)).toHaveCount(4);
+  });
+
   test("quick links never offer Photography and navigate", async ({ page }) => {
     await page.goto("/");
     await openWithTrigger(page);

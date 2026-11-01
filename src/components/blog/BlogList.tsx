@@ -3,7 +3,7 @@
  * index, tag pages, and date-archive pages, as a hydrated React island.
  *
  * Composition (all from the reusable kit):
- *  - a masthead (`Heading` level 1 + the injected search island),
+ *  - a masthead (`Heading` level 1),
  *  - the filter tray (`BlogFilters`),
  *  - the post list — one `PostCard` (variant="row") per post, a wide glass
  *    entry with a mono date rail,
@@ -13,12 +13,8 @@
  * mirroring the hydrated chrome): the masthead from a locale-independent
  * descriptor, the period chips from their raw `YYYY`/`YYYY-MM` keys, and each
  * post's date and reading time inside `PostCard`. Paging links are locale-free.
- * The search
- * island is passed in as `children` from the page so it keeps its own
- * `client:idle` hydration (Astro hydrates islands nested in a framework
- * component's children).
+ * Search is global chrome (`SearchCommand` in the layout), not a listing child.
  */
-import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 
 import BlogEmpty from "@/components/blog/BlogEmpty";
@@ -63,8 +59,6 @@ interface BlogListProps {
   tags?: BlogTagLink[];
   periods?: BlogPeriodLink[];
   pagination?: Pagination;
-  /** The search island, supplied by the page so it keeps `client:idle`. */
-  children?: ReactNode;
 }
 
 export default function BlogList({
@@ -73,7 +67,6 @@ export default function BlogList({
   tags = [],
   periods = [],
   pagination,
-  children,
 }: BlogListProps) {
   const t = useT();
   const { locale } = useLocale();
@@ -117,7 +110,6 @@ export default function BlogList({
         <Heading level={1} id="blog-heading" className="blog-index__title">
           {title}
         </Heading>
-        {children}
       </header>
 
       {tagLinks.length > 0 && (

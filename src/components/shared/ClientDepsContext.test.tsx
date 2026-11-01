@@ -55,7 +55,14 @@ function makeStore(locale: Locale, searchOpen = false): StoreApi<AppStore> {
   return createStore<AppStore>()((set) => ({
     ...appStore.getInitialState(),
     locale,
-    search: { open: searchOpen, query: "", status: "idle", results: [] },
+    search: {
+      open: searchOpen,
+      query: "",
+      status: "idle",
+      results: [],
+      recent: [],
+      epoch: 0,
+    },
     setLocale: (next) => set({ locale: next }),
     setHeaderHidden: () => {},
     setHeaderMenuOpen: () => {},
@@ -64,6 +71,9 @@ function makeStore(locale: Locale, searchOpen = false): StoreApi<AppStore> {
     setSearchQuery: () => {},
     setSearchStatus: () => {},
     setSearchResults: () => {},
+    setRecentSearches: () => {},
+    addRecentSearch: () => {},
+    clearRecentSearches: () => {},
   }));
 }
 

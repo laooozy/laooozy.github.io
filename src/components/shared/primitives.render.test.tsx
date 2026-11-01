@@ -64,6 +64,9 @@ function makeStore(locale: AppStore["locale"]): StoreApi<AppStore> {
     setSearchQuery: () => {},
     setSearchStatus: () => {},
     setSearchResults: () => {},
+    setRecentSearches: () => {},
+    addRecentSearch: () => {},
+    clearRecentSearches: () => {},
   }));
 }
 

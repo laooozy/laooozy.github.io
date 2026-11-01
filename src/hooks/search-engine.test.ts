@@ -18,7 +18,12 @@ import type { PagefindPort, SearchResult } from "@/adapters/pagefind";
 import { fakePagefind } from "@/adapters/pagefind";
 import { memoryStorageAdapter } from "@/adapters/storage";
 import type { ClientDeps } from "@/hooks/deps";
-import { createSearchEngine } from "@/hooks/useSearch";
+import {
+  clearPersistedRecentSearches,
+  createSearchEngine,
+  readRecentSearches,
+  writeRecentSearches,
+} from "@/hooks/useSearch";
 import type { MusicPayload } from "@/lib/domain/music";
 import { appStore } from "@/store/app-store";
 
@@ -63,7 +68,14 @@ beforeEach(() => {
   appStore.setState({
     locale: "zh-hant",
     headerHidden: false,
-    search: { open: false, query: "", status: "idle", results: [] },
+    search: {
+      open: false,
+      query: "",
+      status: "idle",
+      results: [],
+      recent: [],
+      epoch: 0,
+    },
   });
 });
 
@@ -146,5 +158,78 @@ describe("createSearchEngine", () => {
     expect(searchState().results).toEqual([
       { url: "/blog/fast/", title: "Fast" },
     ]);
+  });
+
+  it("drops an in-flight response that resolves after the palette closes", async () => {
+    let resolveSlow!: (value: SearchResult[]) => void;
+    const slow = new Promise<SearchResult[]>((resolve) => {
+      resolveSlow = resolve;
+    });
+    const pagefind: PagefindPort = {
+      load: () => Promise.resolve({ search: async () => ({ results: [] }) }),
+      search: () => slow,
+    };
+    const engine = createSearchEngine(makeDeps(pagefind), 0);
+
+    engine.run("slow");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(searchState().status).toBe("searching");
+
+    appStore.getState().closeSearch();
+    expect(searchState()).toMatchObject({
+      open: false,
+      query: "",
+      status: "idle",
+      results: [],
+    });
+
+    resolveSlow([{ url: "/blog/slow/", title: "Slow" }]);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(searchState()).toMatchObject({
+      open: false,
+      query: "",
+      status: "idle",
+      results: [],
+    });
+  });
+
+  it("drops a response from a session closed and reopened before it resolves", async () => {
+    let resolveSlow!: (value: SearchResult[]) => void;
+    const slow = new Promise<SearchResult[]>((resolve) => {
+      resolveSlow = resolve;
+    });
+    const pagefind: PagefindPort = {
+      load: () => Promise.resolve({ search: async () => ({ results: [] }) }),
+      search: () => slow,
+    };
+    const engine = createSearchEngine(makeDeps(pagefind), 0);
+
+    engine.run("slow");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    appStore.getState().closeSearch();
+    appStore.getState().openSearch();
+
+    resolveSlow([{ url: "/blog/stale/", title: "Stale" }]);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(searchState()).toMatchObject({
+      open: true,
+      query: "",
+      status: "idle",
+      results: [],
+    });
+  });
+});
+
+describe("recent search persistence", () => {
+  it("reads, sanitises and clears through the injected storage port", () => {
+    const storage = memoryStorageAdapter();
+
+    writeRecentSearches(storage, ["  alpha  ", "alpha", "beta", ""]);
+    expect(readRecentSearches(storage)).toEqual(["alpha", "beta"]);
+
+    clearPersistedRecentSearches(storage);
+    expect(readRecentSearches(storage)).toEqual([]);
   });
 });

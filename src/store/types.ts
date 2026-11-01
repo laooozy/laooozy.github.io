@@ -29,6 +29,14 @@ export interface SearchState {
   status: SearchStatus;
   /** Results for the current query. */
   results: SearchResult[];
+  /** Recent queries, newest first; persisted through the injected storage port. */
+  recent: string[];
+  /**
+   * Monotonic search session id, bumped by open/close. The query loop captures
+   * it when a search starts, so a response that resolves after the palette was
+   * closed (or reopened) is dropped instead of mutating the store.
+   */
+  epoch: number;
 }
 
 /** The full application state tree. */
@@ -56,6 +64,12 @@ export interface AppActions {
   setSearchQuery(query: string): void;
   setSearchStatus(status: SearchStatus): void;
   setSearchResults(results: SearchResult[]): void;
+  /** Replace the recent-query list (normalised and capped by the store). */
+  setRecentSearches(recent: string[]): void;
+  /** Record `query` at the front of the recent list, de-duplicated and capped. */
+  addRecentSearch(query: string): void;
+  /** Drop every recent query. */
+  clearRecentSearches(): void;
 }
 
 /** Store shape consumed by `createStore`: state + actions. */

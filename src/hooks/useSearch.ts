@@ -7,20 +7,58 @@
  *  - debounce ~160 ms, so a fast typist issues one query;
  *  - a monotonic sequence number, so a slow earlier query can never overwrite a
  *    newer one (stale results are dropped);
+ *  - the store's search `epoch` is captured with each run, so a result that
+ *    resolves after the palette closed (or reopened) is dropped;
  *  - status moves `searching` -> `results` / `empty`, and an adapter rejection
- *    is caught and surfaced as `error` — never thrown into render.
+ *    is caught and surfaced as `error` — never thrown into render;
+ *  - recent queries live in the store and are hydrated/persisted here through
+ *    the injected `StoragePort`.
  */
 
 import { useCallback, useEffect, useRef } from "react";
 import { useStore } from "zustand";
 
+import type { StoragePort } from "@/adapters/storage";
 import { useClientDeps } from "@/components/shared/ClientDepsContext";
+import {
+  parseRecentSearches,
+  RECENT_SEARCH_STORAGE_KEY,
+  serializeRecentSearches,
+} from "@/lib/domain/search-recents";
 import type { SearchResult, SearchStatus } from "@/store/types";
 
 import type { ClientDeps } from "./deps";
 
 /** Query debounce, in milliseconds. */
 export const SEARCH_DEBOUNCE_MS = 160;
+
+/** Read the persisted recent-query list through the injected storage port. */
+export function readRecentSearches(storage: StoragePort): string[] {
+  try {
+    return parseRecentSearches(storage.get(RECENT_SEARCH_STORAGE_KEY));
+  } catch {
+    return [];
+  }
+}
+
+export function writeRecentSearches(
+  storage: StoragePort,
+  list: readonly string[],
+): void {
+  try {
+    storage.set(RECENT_SEARCH_STORAGE_KEY, serializeRecentSearches(list));
+  } catch {
+    // Storage is best-effort; the in-memory list still drives this session.
+  }
+}
+
+export function clearPersistedRecentSearches(storage: StoragePort): void {
+  try {
+    storage.remove(RECENT_SEARCH_STORAGE_KEY);
+  } catch {
+    // Storage is best-effort; removal changes nothing when it fails.
+  }
+}
 
 /** Imperative query loop; safe to call outside React. */
 export interface SearchEngine {
@@ -38,16 +76,26 @@ export function createSearchEngine(
   let seq = 0;
   let timer: ReturnType<typeof setTimeout> | null = null;
 
-  const execute = async (query: string, mySeq: number): Promise<void> => {
+  const isCurrent = (mySeq: number, myEpoch: number): boolean => {
+    const search = store.getState().search;
+    return mySeq === seq && search.epoch === myEpoch;
+  };
+
+  const execute = async (
+    query: string,
+    mySeq: number,
+    myEpoch: number,
+  ): Promise<void> => {
+    if (!isCurrent(mySeq, myEpoch)) return;
     try {
       const results = await adapters.pagefind.search(query);
-      if (mySeq !== seq) return;
+      if (!isCurrent(mySeq, myEpoch)) return;
       store.getState().setSearchResults(results);
       store
         .getState()
         .setSearchStatus(results.length > 0 ? "results" : "empty");
     } catch {
-      if (mySeq !== seq) return;
+      if (!isCurrent(mySeq, myEpoch)) return;
       store.getState().setSearchResults([]);
       store.getState().setSearchStatus("error");
     }
@@ -60,6 +108,7 @@ export function createSearchEngine(
     }
     const trimmed = query.trim();
     const mySeq = ++seq;
+    const myEpoch = store.getState().search.epoch;
     if (trimmed === "") {
       store.getState().setSearchResults([]);
       store.getState().setSearchStatus("idle");
@@ -68,7 +117,7 @@ export function createSearchEngine(
     store.getState().setSearchStatus("searching");
     timer = setTimeout(() => {
       timer = null;
-      void execute(trimmed, mySeq);
+      void execute(trimmed, mySeq, myEpoch);
     }, debounceMs);
   };
 
@@ -89,9 +138,12 @@ export interface SearchController {
   query: string;
   status: SearchStatus;
   results: SearchResult[];
+  recent: string[];
   openSearch: () => void;
   closeSearch: () => void;
   setQuery: (query: string) => void;
+  recordRecent: (query: string) => void;
+  clearRecent: () => void;
 }
 
 interface EngineRef {
@@ -107,6 +159,7 @@ export function useSearch(
   const query = useStore(deps.store, (state) => state.search.query);
   const status = useStore(deps.store, (state) => state.search.status);
   const results = useStore(deps.store, (state) => state.search.results);
+  const recent = useStore(deps.store, (state) => state.search.recent);
 
   const engineRef = useRef<EngineRef | null>(null);
   if (engineRef.current === null || engineRef.current.deps !== deps) {
@@ -117,6 +170,13 @@ export function useSearch(
   useEffect(() => {
     engine.run(query);
   }, [engine, query]);
+
+  useEffect(() => {
+    if (!open) return;
+    deps.store
+      .getState()
+      .setRecentSearches(readRecentSearches(deps.adapters.storage));
+  }, [deps, open]);
 
   useEffect(() => () => engine.dispose(), [engine]);
 
@@ -133,5 +193,32 @@ export function useSearch(
     [deps],
   );
 
-  return { open, query, status, results, openSearch, closeSearch, setQuery };
+  const recordRecent = useCallback(
+    (value: string) => {
+      deps.store.getState().addRecentSearch(value);
+      writeRecentSearches(
+        deps.adapters.storage,
+        deps.store.getState().search.recent,
+      );
+    },
+    [deps],
+  );
+
+  const clearRecent = useCallback(() => {
+    deps.store.getState().clearRecentSearches();
+    clearPersistedRecentSearches(deps.adapters.storage);
+  }, [deps]);
+
+  return {
+    open,
+    query,
+    status,
+    results,
+    recent,
+    openSearch,
+    closeSearch,
+    setQuery,
+    recordRecent,
+    clearRecent,
+  };
 }

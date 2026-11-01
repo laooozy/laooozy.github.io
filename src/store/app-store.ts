@@ -14,8 +14,12 @@
 import { createStore } from "zustand/vanilla";
 
 import { defaultLang } from "@/i18n";
+import {
+  normalizeRecentSearches,
+  pushRecentSearch,
+} from "@/lib/domain/search-recents";
 
-import type { AppStore } from "./types";
+import type { AppStore, SearchState } from "./types";
 
 export type {
   AppActions,
@@ -38,6 +42,8 @@ export const appStore = createStore<AppStore>()((set) => ({
     query: "",
     status: "idle",
     results: [],
+    recent: [],
+    epoch: 0,
   },
 
   setLocale: (locale) => set({ locale }),
@@ -47,10 +53,10 @@ export const appStore = createStore<AppStore>()((set) => ({
   setHeaderMenuOpen: (open) => set({ headerMenuOpen: open }),
 
   openSearch: () =>
-    set((state) => ({ search: { ...state.search, open: true } })),
+    set((state) => ({ search: resetSearch(state.search, true) })),
 
   closeSearch: () =>
-    set((state) => ({ search: { ...state.search, open: false } })),
+    set((state) => ({ search: resetSearch(state.search, false) })),
 
   setSearchQuery: (query) =>
     set((state) => ({ search: { ...state.search, query } })),
@@ -60,4 +66,31 @@ export const appStore = createStore<AppStore>()((set) => ({
 
   setSearchResults: (results) =>
     set((state) => ({ search: { ...state.search, results } })),
+
+  setRecentSearches: (recent) =>
+    set((state) => ({
+      search: { ...state.search, recent: normalizeRecentSearches(recent) },
+    })),
+
+  addRecentSearch: (query) =>
+    set((state) => ({
+      search: {
+        ...state.search,
+        recent: pushRecentSearch(state.search.recent, query),
+      },
+    })),
+
+  clearRecentSearches: () =>
+    set((state) => ({ search: { ...state.search, recent: [] } })),
 }));
+
+function resetSearch(state: SearchState, open: boolean): SearchState {
+  return {
+    ...state,
+    open,
+    query: "",
+    status: "idle",
+    results: [],
+    epoch: state.epoch + 1,
+  };
+}

@@ -17,9 +17,9 @@
  *    trap, Escape to close and focus returned to the last focused element;
  *  - a full-screen, 44px-target dialog at 390 and a centred panel from `sm`.
  *
- * Recents are stored under `search:recent` as a JSON string array. Parsing is
- * defensive and the list is capped, so task 23 can centralise the same contract
- * without changing the persisted shape.
+ * Recents live in the single store and are persisted through the injected
+ * `StoragePort` by `useSearch`; this view only reads the list and asks the hook
+ * to record or clear it.
  *
  * The dialog is composed from Base UI's Dialog parts directly (not the generated
  * `DialogContent`) because that wrapper pins its overlay to `z-50`, which the
@@ -29,15 +29,8 @@
 
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { History, X } from "lucide-react";
-import {
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { type ReactNode, useCallback, useEffect, useRef } from "react";
 
-import type { StoragePort } from "@/adapters/storage";
 import { useClientDeps } from "@/components/shared/ClientDepsContext";
 import AlertState from "@/components/shared/state/AlertState";
 import SpinnerState from "@/components/shared/state/SpinnerState";
@@ -57,10 +50,6 @@ import {
 } from "@/hooks/useSearch";
 import { useT } from "@/hooks/useT";
 import type { SearchResult } from "@/store/types";
-
-/** Storage key + cap for the recent-query list (shared with task 23). */
-const RECENT_STORAGE_KEY = "search:recent";
-const RECENT_LIMIT = 5;
 
 type ResultGroup = "blog" | "music" | "pages";
 
@@ -91,52 +80,6 @@ function groupFor(url: string): ResultGroup {
   if (path === "/blog" || path.startsWith("/blog/")) return "blog";
   if (path === "/music" || path.startsWith("/music/")) return "music";
   return "pages";
-}
-
-/** Read + sanitise the persisted recent list. Never throws. */
-function readRecent(storage: StoragePort): string[] {
-  try {
-    const raw = storage.get(RECENT_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    const seen = new Set<string>();
-    const out: string[] = [];
-    for (const entry of parsed) {
-      if (typeof entry !== "string") continue;
-      const value = entry.trim();
-      if (value === "" || seen.has(value)) continue;
-      seen.add(value);
-      out.push(value);
-      if (out.length >= RECENT_LIMIT) break;
-    }
-    return out;
-  } catch {
-    return [];
-  }
-}
-
-/** Persist the recent list. Storage failures are silent by contract. */
-function writeRecent(storage: StoragePort, list: string[]): void {
-  try {
-    storage.set(
-      RECENT_STORAGE_KEY,
-      JSON.stringify(list.slice(0, RECENT_LIMIT)),
-    );
-  } catch {
-    // Storage is best-effort; the in-memory list still drives this session.
-  }
-}
-
-/** Move `query` to the front, de-duplicated and capped. */
-function pushRecent(list: string[], query: string): string[] {
-  const value = query.trim();
-  if (value === "") return list;
-  if (list[0] === value) return list;
-  return [value, ...list.filter((entry) => entry !== value)].slice(
-    0,
-    RECENT_LIMIT,
-  );
 }
 
 interface CommandLinkProps {
@@ -204,19 +147,21 @@ export default function SearchCommandDialog({
 }: SearchCommandDialogProps) {
   const deps = useClientDeps();
   const t = useT();
-  const { query, status, results, closeSearch, setQuery } = useSearch();
+  const {
+    query,
+    status,
+    results,
+    recent,
+    closeSearch,
+    setQuery,
+    recordRecent,
+    clearRecent,
+  } = useSearch();
 
-  const [recent, setRecent] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const retryEngineRef = useRef<SearchEngine | null>(null);
 
   const isBlank = query.trim() === "";
-
-  // Refresh the persisted recents whenever the palette opens.
-  useEffect(() => {
-    if (!open) return;
-    setRecent(readRecent(deps.adapters.storage));
-  }, [deps, open]);
 
   // The retry engine is separate from the hook's loop: a failed query leaves
   // the store in `error`, and re-running the same string needs a nudge.
@@ -234,26 +179,10 @@ export default function SearchCommandDialog({
     retryEngineRef.current.run(query);
   }, [deps, query]);
 
-  const recordRecent = useCallback(() => {
-    const next = pushRecent(recent, query);
-    if (next === recent) return;
-    setRecent(next);
-    writeRecent(deps.adapters.storage, next);
-  }, [deps, query, recent]);
-
-  const clearRecent = useCallback(() => {
-    setRecent([]);
-    try {
-      deps.adapters.storage.remove(RECENT_STORAGE_KEY);
-    } catch {
-      // Removal is best-effort.
-    }
-  }, [deps]);
-
   const activateResult = useCallback(() => {
-    recordRecent();
+    recordRecent(query);
     closeSearch();
-  }, [closeSearch, recordRecent]);
+  }, [closeSearch, query, recordRecent]);
 
   const grouped: Record<ResultGroup, SearchResult[]> = {
     blog: [],
@@ -264,12 +193,9 @@ export default function SearchCommandDialog({
 
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {
-      if (!nextOpen) {
-        closeSearch();
-        setQuery("");
-      }
+      if (!nextOpen) closeSearch();
     },
-    [closeSearch, setQuery],
+    [closeSearch],
   );
 
   return (
