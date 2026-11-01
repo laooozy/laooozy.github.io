@@ -19,12 +19,6 @@ export interface SectionProps extends Omit<
   /** Top-right control beside the heading (a link or button group). */
   actions?: ReactNode;
   /**
-   * Server-rendered action markup. Only the Astro compatibility shim uses it:
-   * named slots cannot cross the Astro/React boundary as React nodes, so the
-   * shim flattens its `actions` slot to HTML and hands it over here.
-   */
-  actionsHtml?: string;
-  /**
    * `true` renders nothing at all; `"empty"` renders nothing while the body
    * has no visible children. Never make the reveal default invisible.
    */
@@ -44,7 +38,6 @@ export default function Section({
   heading,
   lead,
   actions,
-  actionsHtml,
   hidden = false,
   className,
   children,
@@ -54,7 +47,7 @@ export default function Section({
   if (hidden === "empty" && !hasRenderableChildren(children)) return null;
 
   const headingId = id ? `${id}-heading` : undefined;
-  const hasHead = Boolean(heading) || actions != null || Boolean(actionsHtml);
+  const hasHead = Boolean(heading) || actions != null;
 
   return (
     <section
@@ -70,12 +63,9 @@ export default function Section({
               {heading}
             </Heading>
           ) : null}
-          {actions != null || actionsHtml ? (
+          {actions != null ? (
             <div className="section__actions flex flex-wrap items-center gap-[var(--space-3)] [&_p]:m-0 [&_p]:inline">
               {actions}
-              {actionsHtml ? (
-                <span dangerouslySetInnerHTML={{ __html: actionsHtml }} />
-              ) : null}
             </div>
           ) : null}
         </div>
