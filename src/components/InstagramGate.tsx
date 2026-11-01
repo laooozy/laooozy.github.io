@@ -19,6 +19,7 @@ import { ArrowUpRight, Camera, RefreshCw } from "lucide-react";
 import { useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";
+import SpinnerState from "@/components/shared/state/SpinnerState";
 
 /** The server-rendered oEmbed layer the gate reveals after consent. */
 const EMBEDS_SELECTOR = "[data-ig-embeds]";
@@ -104,14 +105,12 @@ export default function InstagramGate({
         </p>
       ) : null}
 
-      <p
+      <SpinnerState
         className="ig-consent__status"
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        {STATUS[state]}
-      </p>
+        label={STATUS[state]}
+        showLabel
+        spinner={state === "loading"}
+      />
 
       {state === "error" ? (
         <a

@@ -23,6 +23,9 @@
 import { useEffect, useRef, useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";
+import AlertState from "@/components/shared/state/AlertState";
+import SkeletonState from "@/components/shared/state/SkeletonState";
+import SpinnerState from "@/components/shared/state/SpinnerState";
 import { useLocale } from "@/hooks/useLocale";
 import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, langAttr, t as translate } from "@/i18n";
@@ -357,49 +360,9 @@ const MUSIC_CSS = `
 	white-space: nowrap;
 }
 
-.song-skeleton {
-	block-size: calc(40px + 2 * var(--space-3) + 2px);
-	border: 1px solid var(--glass-border);
-	border-radius: var(--radius-md);
-	background-color: var(--surface);
-	background-image: linear-gradient(
-		90deg,
-		oklch(1 0 0 / 0.02) 0%,
-		oklch(1 0 0 / 0.07) 50%,
-		oklch(1 0 0 / 0.02) 100%
-	);
-	background-size: 200% 100%;
-	animation: music-shimmer 1.6s ease-in-out infinite;
-}
-
-@keyframes music-shimmer {
-	from {
-		background-position: 200% 0;
-	}
-	to {
-		background-position: -200% 0;
-	}
-}
-
-.music-sr {
-	position: absolute;
-	inline-size: 1px;
-	block-size: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border: 0;
-}
-
 @media (prefers-reduced-motion: reduce) {
 	.song-row {
 		transition: none;
-		animation: none;
-	}
-
-	.song-skeleton {
 		animation: none;
 	}
 }
@@ -581,19 +544,21 @@ export default function MusicLibrary() {
         </div>
       </div>
 
-      <p
-        className="music-status"
-        role="status"
-        aria-live="polite"
-        ref={statusRef}
-        tabIndex={-1}
-      >
-        {status === "idle" || status === "loading" ? (
-          <span className="music-sr">{tr("music.loading")}</span>
+      <div className="music-status" ref={statusRef} tabIndex={-1}>
+        {status === "error" ? (
+          <AlertState variant="destructive" description={statusText} />
         ) : (
-          statusText
+          <SpinnerState
+            label={
+              status === "idle" || status === "loading"
+                ? tr("music.loading")
+                : statusText
+            }
+            showLabel={status !== "idle" && status !== "loading"}
+            spinner={status === "idle" || status === "loading"}
+          />
         )}
-      </p>
+      </div>
 
       {isReady && songs.length === 0 && (
         <p>
@@ -662,7 +627,9 @@ export default function MusicLibrary() {
       ) : status === "error" ? null : (
         <ul className="song-list" aria-hidden="true">
           {SKELETON_ROWS.map((row) => (
-            <li key={row} className="song-skeleton" />
+            <li key={row}>
+              <SkeletonState className="h-[calc(40px_+_2*var(--space-3)_+_2px)]" />
+            </li>
           ))}
         </ul>
       )}

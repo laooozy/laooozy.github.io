@@ -23,6 +23,10 @@
 import { useEffect, useRef, useState } from "react";
 
 import { clientDeps } from "@/client/bootstrap";
+import AlertState from "@/components/shared/state/AlertState";
+import EmptyState from "@/components/shared/state/EmptyState";
+import { Kbd } from "@/components/shared/state/Kbd";
+import SpinnerState from "@/components/shared/state/SpinnerState";
 import { useSearch } from "@/hooks/useSearch";
 import { type Translate, useT } from "@/hooks/useT";
 import { defaultLang, t as translate } from "@/i18n";
@@ -145,9 +149,9 @@ export default function SearchModal() {
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
         <span className="search__label">{tr("search.trigger")}</span>
-        <kbd className="search__kbd" aria-hidden="true">
+        <Kbd className="search__kbd" aria-hidden="true">
           {apple ? "⌘K" : "Ctrl K"}
-        </kbd>
+        </Kbd>
       </button>
 
       <dialog
@@ -216,9 +220,30 @@ export default function SearchModal() {
             />
           </div>
 
-          <p className="search-modal__status" aria-live="polite">
-            {statusText}
-          </p>
+          {status === "error" ? (
+            <AlertState
+              variant="destructive"
+              className="search-modal__status"
+              description={statusText}
+            />
+          ) : status === "searching" ? (
+            <SpinnerState
+              className="search-modal__status"
+              label={statusText}
+              showLabel
+            />
+          ) : status === "empty" ? (
+            <div className="search-modal__status" aria-live="polite">
+              <EmptyState
+                className="border-0 bg-transparent p-0"
+                description={statusText}
+              />
+            </div>
+          ) : (
+            <p className="search-modal__status" aria-live="polite">
+              {statusText}
+            </p>
+          )}
 
           <div className="search-results">
             {results.length > 0 && (

@@ -4,17 +4,16 @@
  * This is the SINGLE source of the empty-state markup. The hydrated React
  * wrapper (`BlogEmpty.tsx`) supplies the locale-reactive labels, and the
  * build-time `mdx/LatestPosts.astro` renders it directly with the default-locale
- * labels (server-only, no hydration). Keep the markup and class names here;
- * never duplicate them in a consumer.
+ * labels (server-only, no hydration). The panel is the shared `EmptyState`
+ * primitive so every zero-result surface shares one anatomy; keep the copy and
+ * links here, never duplicate them in a consumer.
  *
  * Every label is a plain string prop so this stays purely presentational: no
  * hooks, no store, no adapters.
  */
-import Card from "@/components/Card";
 import Cluster from "@/components/layout/Cluster";
-import Stack from "@/components/layout/Stack";
+import EmptyState from "@/components/shared/state/EmptyState";
 import Heading from "@/components/shared/typography/Heading";
-import Text from "@/components/shared/typography/Text";
 
 export interface BlogEmptyViewProps {
   /** Panel heading, e.g. `Blog`. */
@@ -36,14 +35,16 @@ export default function BlogEmptyView({
   className,
 }: BlogEmptyViewProps) {
   return (
-    <Card className={["blog-empty", className].filter(Boolean).join(" ")}>
-      <Stack gap={4}>
-        <Stack gap={2}>
-          <Heading level={2} className="blog-empty__title">
-            {heading}
-          </Heading>
-          <Text tone="muted">{message}</Text>
-        </Stack>
+    <EmptyState
+      className={["blog-empty", className].filter(Boolean).join(" ")}
+      title={
+        <Heading level={2} className="blog-empty__title">
+          {heading}
+        </Heading>
+      }
+      description={message}
+      contentClassName="blog-empty__content"
+      action={
         <Cluster gap={2} className="blog-empty__actions">
           <a className="link-arrow blog-empty__action" href="/">
             {homeLabel}
@@ -58,7 +59,7 @@ export default function BlogEmptyView({
             </span>
           </a>
         </Cluster>
-      </Stack>
-    </Card>
+      }
+    />
   );
 }
