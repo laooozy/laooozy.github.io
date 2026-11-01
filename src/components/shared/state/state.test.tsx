@@ -47,7 +47,9 @@ describe("state primitives", () => {
           title="Load failed"
           description="The playlist could not be loaded."
           action={<button type="button">Retry</button>}
-        />,
+        >
+          <a href="/fallback">Open fallback</a>
+        </AlertState>,
       );
 
       expect(html).toContain('role="alert"');
@@ -55,6 +57,7 @@ describe("state primitives", () => {
       expect(html).toContain('data-slot="alert-title"');
       expect(html).toContain('data-slot="alert-description"');
       expect(html).toContain('data-slot="alert-action"');
+      expect(html).toContain('data-slot="alert-children"');
       expect(html).toContain("Load failed");
       expect(html).toContain("The playlist could not be loaded.");
       expect(html).toContain("Retry");

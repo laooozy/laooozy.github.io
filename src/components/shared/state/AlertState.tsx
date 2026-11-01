@@ -48,7 +48,21 @@ export default function AlertState({
       {icon}
       {title ? <AlertTitle>{title}</AlertTitle> : null}
       {description ? <AlertDescription>{description}</AlertDescription> : null}
-      {children}
+      {children ? (
+        <div
+          data-slot="alert-children"
+          className={cn(
+            "min-w-0",
+            // The generated Alert switches to `auto 1fr` when it has a direct
+            // svg icon. Without this, a wide child is auto-placed in the icon
+            // column and pushes the title/description off-screen. Spanning the
+            // full row keeps any caller-owned controls under the copy.
+            "group-has-[>svg]/alert:col-span-full",
+          )}
+        >
+          {children}
+        </div>
+      ) : null}
       {action ? <AlertAction>{action}</AlertAction> : null}
     </Alert>
   );

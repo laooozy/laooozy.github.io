@@ -147,10 +147,12 @@ export default function InstagramGate({
               >
                 <Button
                   variant="outline"
-                  className="mt-2 min-h-11 rounded-full px-4"
+                  className="mt-2 min-h-11 max-w-full rounded-full px-4"
                   render={
                     <a href={profileHref} target="_blank" rel="noopener">
-                      <span>在 Instagram 觀看 {handle}</span>
+                      <span className="whitespace-normal">
+                        在 Instagram 觀看 {handle}
+                      </span>
                       <ArrowUpRight aria-hidden="true" />
                     </a>
                   }

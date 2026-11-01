@@ -227,6 +227,117 @@ test.describe("photography at rest", () => {
   });
 });
 
+for (const width of [320, 390, 1440] as const) {
+  test.describe(`blocked instagram gate at ${width}px`, () => {
+    test.use({ viewport: { width, height: width === 1440 ? 900 : 800 } });
+
+    test("keeps the failure alert inside its box and the viewport", async ({
+      page,
+    }) => {
+      await page.route("**/embed.js", (route) =>
+        route.abort("blockedbyclient"),
+      );
+
+      await loadPhotography(page);
+      await page.getByRole("button", { name: GATE_BUTTON }).click();
+
+      const alert = page.locator(GATE_ERROR);
+      await expect(alert).toBeVisible();
+      await expect(page.locator(GATE)).toHaveAttribute(
+        "data-ig-state",
+        "error",
+      );
+
+      const alertBox = await alert.boundingBox();
+      expect(alertBox).not.toBeNull();
+      if (!alertBox) return;
+
+      const parts = [
+        {
+          label: "title",
+          insideAlert: true,
+          locator: alert.getByText("無法載入 Instagram 貼文", { exact: true }),
+        },
+        {
+          label: "description",
+          insideAlert: true,
+          locator: alert.getByText("Instagram 的載入程式被封鎖或連線失敗", {
+            exact: false,
+          }),
+        },
+        {
+          label: "retry",
+          insideAlert: false,
+          locator: page.getByRole("button", { name: "再試一次" }),
+        },
+        {
+          label: "link",
+          insideAlert: true,
+          locator: alert.getByRole("link", {
+            name: `在 Instagram 觀看 ${HANDLE}`,
+          }),
+        },
+      ] as const;
+
+      for (const { label, insideAlert, locator } of parts) {
+        await expect(locator, label).toBeVisible();
+        const box = await locator.boundingBox();
+        expect(box, label).not.toBeNull();
+        if (!box) continue;
+
+        if (insideAlert) {
+          expect(box.x, `${label} left inside alert`).toBeGreaterThanOrEqual(
+            alertBox.x - 1,
+          );
+          expect(
+            box.x + box.width,
+            `${label} right inside alert`,
+          ).toBeLessThanOrEqual(alertBox.x + alertBox.width + 1);
+          expect(box.y, `${label} top inside alert`).toBeGreaterThanOrEqual(
+            alertBox.y - 1,
+          );
+          expect(
+            box.y + box.height,
+            `${label} bottom inside alert`,
+          ).toBeLessThanOrEqual(alertBox.y + alertBox.height + 1);
+        }
+
+        expect(box.x, `${label} left inside viewport`).toBeGreaterThanOrEqual(
+          0,
+        );
+        expect(
+          box.x + box.width,
+          `${label} right inside viewport`,
+        ).toBeLessThanOrEqual(width);
+      }
+
+      const linkBox = await parts[3].locator.boundingBox();
+      expect(linkBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+      const retryBox = await parts[2].locator.boundingBox();
+      expect(retryBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+      await expect(parts[2].locator).toBeEnabled();
+      expect(
+        await alert.evaluate(
+          (element) => element.scrollWidth - element.clientWidth,
+        ),
+        "alert content is not clipped",
+      ).toBeLessThanOrEqual(0);
+
+      if (width === 390) {
+        await parts[3].locator.scrollIntoViewIfNeeded();
+        mkdirSync(SCREENSHOT_DIR, { recursive: true });
+        await page.screenshot({
+          path: join(
+            SCREENSHOT_DIR,
+            `task-55-instagram-blocked-390-${test.info().project.name}.png`,
+          ),
+          fullPage: true,
+        });
+      }
+    });
+  });
+}
+
 for (const width of [390, 1440] as const) {
   test.describe(`instagram embeds at ${width}px`, () => {
     test.use({ viewport: { width, height: width === 390 ? 844 : 900 } });
