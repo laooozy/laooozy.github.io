@@ -78,6 +78,14 @@
   --accent-surface: oklch(0.6268 0.2325 303.9004 / 0.14);
   --accent-surface-hover: oklch(0.6268 0.2325 303.9004 / 0.22);
   --text-on-accent: oklch(0.1473 0.0107 285.0074);
+  /*
+   * Hover fill for a primary/active filled control. `--accent` is the idle
+   * fill; the generated `hover:bg-primary/80` composited it over the page and
+   * dropped the dark `--text-on-accent` to 3.63:1. This is the same hue lifted
+   * in lightness until the pair clears AA with headroom (measured 5.8:1), and
+   * it is OPAQUE so a translucent backdrop cannot change the result.
+   */
+  --primary-hover: oklch(0.66 0.21 303.9004);
 
   /*
    * Text-safe accent. `--accent` is the brand fill: it is only 4.1:1 against

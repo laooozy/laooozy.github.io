@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 
 /**
  * Shared accessibility probes for the page-content audit (Task 47).
@@ -266,6 +266,119 @@ export function expectTokenContrast(
     measurement.passes,
     `${context}: ${contrastSummary(measurement)}`,
   ).toBe(true);
+}
+
+export interface ElementContrast {
+  ratio: number;
+  required: number;
+  passes: boolean;
+  /** The element's painted background alpha (0-1). */
+  alpha: number;
+  foreground: string;
+  background: string;
+  backgroundRaw: string;
+  hovered: boolean;
+}
+
+/**
+ * Measure the text on `target` against the fill that element paints.
+ *
+ * A translucent fill is composited over `body`'s background in sRGB bytes, so a
+ * `bg-primary/80` hover cannot hide a low ratio behind its alpha. This is the
+ * deterministic companion to axe: axe reports a translucent fill as
+ * `incomplete`, which must not be mistaken for a pass.
+ */
+export async function measureElementContrast(
+  target: Locator,
+  required = 4.5,
+): Promise<ElementContrast> {
+  const measurement = await target.evaluate((element, floor) => {
+    if (!(element instanceof HTMLElement)) {
+      throw new Error("a11y element probe: target is not an HTML element");
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 1;
+    canvas.height = 1;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    if (!context) {
+      throw new Error("a11y element probe: 2D canvas unavailable");
+    }
+
+    const read = (value: string) => {
+      context.clearRect(0, 0, 1, 1);
+      context.fillStyle = value;
+      context.fillRect(0, 0, 1, 1);
+      const [r, g, b, a] = context.getImageData(0, 0, 1, 1).data;
+      return {
+        r,
+        g,
+        b,
+        a,
+        css:
+          a === 255
+            ? `#${[r, g, b]
+                .map((channel) => channel.toString(16).padStart(2, "0"))
+                .join("")}`
+            : `rgba(${r}, ${g}, ${b}, ${(a / 255).toFixed(3)})`,
+      };
+    };
+
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    const text = walker.nextNode();
+    const foregroundElement =
+      text?.parentElement instanceof HTMLElement ? text.parentElement : element;
+    const foreground = read(getComputedStyle(foregroundElement).color);
+    const rawBackground = read(getComputedStyle(element).backgroundColor);
+    const alpha = rawBackground.a / 255;
+    const background =
+      alpha < 1
+        ? (() => {
+            const pageBackground = read(
+              getComputedStyle(document.body).backgroundColor,
+            );
+            const blend = (a: number, b: number) =>
+              Math.round(a * alpha + b * (1 - alpha));
+            const r = blend(rawBackground.r, pageBackground.r);
+            const g = blend(rawBackground.g, pageBackground.g);
+            const b = blend(rawBackground.b, pageBackground.b);
+            return {
+              r,
+              g,
+              b,
+              a: 255,
+              css: `#${[r, g, b]
+                .map((channel) => channel.toString(16).padStart(2, "0"))
+                .join("")}`,
+            };
+          })()
+        : rawBackground;
+
+    const channel = (value: number) => {
+      const c = value / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    };
+    const luminance = (color: { r: number; g: number; b: number }) =>
+      0.2126 * channel(color.r) +
+      0.7152 * channel(color.g) +
+      0.0722 * channel(color.b);
+    const lighter = Math.max(luminance(foreground), luminance(background));
+    const darker = Math.min(luminance(foreground), luminance(background));
+    const ratio = (lighter + 0.05) / (darker + 0.05);
+
+    return {
+      ratio: Math.round(ratio * 100) / 100,
+      required: floor,
+      passes: ratio >= floor,
+      alpha,
+      foreground: foreground.css,
+      background: background.css,
+      backgroundRaw: getComputedStyle(element).backgroundColor,
+      hovered: element.matches(":hover"),
+    };
+  }, required);
+
+  return measurement;
 }
 
 /**

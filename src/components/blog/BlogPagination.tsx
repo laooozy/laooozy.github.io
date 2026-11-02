@@ -1,8 +1,8 @@
 /**
  * BlogPagination — prev/next controls for a paginated listing.
  *
- * Composed from the generated shadcn `Pagination` family. Prev/next are real
- * links when the direction exists; the unavailable direction is a non-
+ * Composed from the generated shadcn `Pagination` family. Prev/next are REAL
+ * anchors styled with `buttonVariants`; the unavailable direction is a non-
  * interactive span that keeps the bar's geometry stable. The page status is the
  * visible middle label and the nav's `aria-label` is the localised "Blog
  * pagination" string.
@@ -14,14 +14,14 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import type { Pagination as PaginationState } from "@/components/shared/types";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
 } from "@/components/ui/pagination";
 import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
+import { cn } from "@/lib/utils";
 
 interface BlogPaginationProps {
   pagination: PaginationState;
@@ -29,6 +29,11 @@ interface BlogPaginationProps {
 }
 
 const TOUCH_TARGET = "pointer-coarse:min-h-11 pointer-coarse:min-w-11";
+
+const STEP_CLASSES = cn(
+  buttonVariants({ variant: "ghost", size: "default" }),
+  TOUCH_TARGET,
+);
 
 /** The unavailable direction: a muted, non-focusable stub. */
 function DisabledStep({
@@ -47,6 +52,39 @@ function DisabledStep({
       <span className="hidden sm:block">{label}</span>
       {side === "next" && <ChevronRight aria-hidden="true" />}
     </span>
+  );
+}
+
+/** A native link step; `aria-label` supplies the name, so icons are hidden. */
+function StepLink({
+  href,
+  rel,
+  label,
+  side,
+  className,
+}: {
+  href: string;
+  rel: "prev" | "next";
+  label: string;
+  side: "prev" | "next";
+  className: string;
+}) {
+  return (
+    <a
+      href={href}
+      rel={rel}
+      aria-label={label}
+      data-slot="pagination-link"
+      className={className}
+    >
+      {side === "prev" && (
+        <ChevronLeft aria-hidden="true" data-icon="inline-start" />
+      )}
+      <span className="hidden sm:block">{label}</span>
+      {side === "next" && (
+        <ChevronRight aria-hidden="true" data-icon="inline-end" />
+      )}
+    </a>
   );
 }
 
@@ -69,12 +107,12 @@ export default function BlogPagination({
       <PaginationContent className="w-full flex-wrap justify-between gap-2">
         <PaginationItem>
           {pagination.url.prev ? (
-            <PaginationPrevious
+            <StepLink
               href={pagination.url.prev}
               rel="prev"
-              text={t("blog.prev")}
-              aria-label={t("blog.prev")}
-              className={TOUCH_TARGET}
+              side="prev"
+              label={t("blog.prev")}
+              className={cn(STEP_CLASSES, "pl-1.5!")}
             />
           ) : (
             <DisabledStep label={t("blog.prev")} side="prev" />
@@ -89,12 +127,12 @@ export default function BlogPagination({
 
         <PaginationItem>
           {pagination.url.next ? (
-            <PaginationNext
+            <StepLink
               href={pagination.url.next}
               rel="next"
-              text={t("blog.next")}
-              aria-label={t("blog.next")}
-              className={TOUCH_TARGET}
+              side="next"
+              label={t("blog.next")}
+              className={cn(STEP_CLASSES, "pr-1.5!")}
             />
           ) : (
             <DisabledStep label={t("blog.next")} side="next" />

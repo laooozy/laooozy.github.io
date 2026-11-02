@@ -68,14 +68,19 @@ if (!themeColor) {
 <html lang={langAttr[locale]} class="dark">
   <head>
     {/*
+     * Encoding prescan: `<meta charset>` and the viewport must precede the
+     * inline boot script and stay inside the first 1024 bytes, or a browser
+     * commits to an encoding before it sees the declaration.
+     */}
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/*
      * Pre-paint locale bootstrap: resolves localStorage → navigator.language
      * → default and reflects it on <html> (lang + data-locale) before the
      * first paint, so the CSS locale toggle shows the right language with
      * zero flash. Self-contained inline JS — see src/client/locale-boot.ts.
      */}
     <script is:inline set:html={LOCALE_BOOT_SCRIPT} />
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <meta name="theme-color" content={themeColor} />
     {metaDescription && <meta name="description" content={metaDescription} />}

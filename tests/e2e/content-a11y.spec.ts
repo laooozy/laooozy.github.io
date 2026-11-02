@@ -8,6 +8,7 @@ import {
   contrastSummary,
   expectNoSeriousViolations,
   expectTokenContrast,
+  measureElementContrast,
   measureTokenContrast,
   overrideToken,
   settlePage,
@@ -40,6 +41,9 @@ import {
  */
 
 const WIDTHS = [390, 1440] as const;
+
+/** Longest hover transition on the filled controls, plus a frame. */
+const HOVER_SETTLE_MS = 300;
 
 const MUSIC_PAYLOAD = JSON.parse(
   readFileSync(
@@ -187,6 +191,9 @@ test.describe("@a11y contrast", () => {
     // what the browser actually paints.
     const pairs = [
       { fg: "--text-on-accent", bg: "--accent" },
+      // The filled hover state must stay AA: `hover:bg-primary/80` used to
+      // composite the accent over the page and drop this pair to 3.63:1.
+      { fg: "--text-on-accent", bg: "--primary-hover" },
       { fg: "--accent", bg: "--bg-base" },
       // `--accent-text` is the body-link colour (`a { color: ... }` in
       // global.css) and `--text-muted` is body-size copy, so both must clear
@@ -230,6 +237,45 @@ test.describe("@a11y contrast", () => {
       measurement.passes,
       `a dark accent fill must fail 4.5:1, got ${measurement.ratio.toFixed(2)}:1`,
     ).toBe(false);
+  });
+});
+
+test.describe("@a11y hover contrast", () => {
+  test("the active blog filter keeps AA while hovered", async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name === "chromium-mobile",
+      "touch devices do not expose hover",
+    );
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/blog/");
+    await settlePage(page);
+
+    const active = page.locator('[data-blog-filter][aria-current="page"]');
+    await expect(active).toBeVisible();
+
+    await active.hover();
+    // The chip cross-fades its fill; sample only after the transition lands.
+    await page.waitForTimeout(HOVER_SETTLE_MS);
+
+    const measurement = await measureElementContrast(active);
+    console.log(
+      `blog filter hover: ${measurement.foreground} on ${measurement.background} (raw ${measurement.backgroundRaw}, hover ${measurement.hovered}) = ${measurement.ratio.toFixed(2)}:1 (alpha ${measurement.alpha})`,
+    );
+    expect(
+      measurement.passes,
+      `active blog filter hover must clear ${measurement.required}:1, got ${measurement.ratio}:1 on ${measurement.background}`,
+    ).toBe(true);
+
+    const audit = await auditVisiblePage(page);
+    await testInfo.attach("axe-blog-filter-hover.json", {
+      body: JSON.stringify(audit, null, 2),
+      contentType: "application/json",
+    });
+
+    expectNoSeriousViolations(audit, "active blog filter on hover");
   });
 });
 

@@ -3,6 +3,12 @@ import { join } from "node:path";
 
 import { expect, type Page, test } from "@playwright/test";
 
+import {
+  auditVisiblePage,
+  expectNoSeriousViolations,
+  measureElementContrast,
+  settlePage,
+} from "./helpers/a11y";
 import { expectNoHorizontalOverflow } from "./helpers/overflow";
 
 /**
@@ -24,6 +30,9 @@ import { expectNoHorizontalOverflow } from "./helpers/overflow";
 const SECTION = "[data-not-found]";
 const CODE = "[data-not-found-code]";
 const MISSING = "/this-page-does-not-exist";
+
+/** Longest hover transition on the filled control, plus a frame. */
+const HOVER_SETTLE_MS = 300;
 
 const SCREENSHOT_DIR = join(
   process.cwd(),
@@ -149,5 +158,43 @@ test.describe("404 content", () => {
       path: join(SCREENSHOT_DIR, "task-33-404-forced-colors-390.png"),
       fullPage: true,
     });
+  });
+});
+
+test.describe("@a11y 404 hover contrast", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test("the primary home action keeps AA while hovered", async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name === "chromium-mobile",
+      "touch devices do not expose hover",
+    );
+
+    await loadNotFound(page);
+    await settlePage(page);
+
+    const home = page.getByRole("link", { name: "回到首頁" });
+    await home.hover();
+    // The button cross-fades its fill; sample only after the transition lands.
+    await page.waitForTimeout(HOVER_SETTLE_MS);
+
+    const measurement = await measureElementContrast(home);
+    console.log(
+      `404 CTA hover: ${measurement.foreground} on ${measurement.background} (raw ${measurement.backgroundRaw}, hover ${measurement.hovered}) = ${measurement.ratio.toFixed(2)}:1 (alpha ${measurement.alpha})`,
+    );
+    expect(
+      measurement.passes,
+      `404 primary action hover must clear ${measurement.required}:1, got ${measurement.ratio}:1 on ${measurement.background}`,
+    ).toBe(true);
+
+    const audit = await auditVisiblePage(page);
+    await testInfo.attach("axe-404-cta-hover.json", {
+      body: JSON.stringify(audit, null, 2),
+      contentType: "application/json",
+    });
+
+    expectNoSeriousViolations(audit, "404 primary action on hover");
   });
 });

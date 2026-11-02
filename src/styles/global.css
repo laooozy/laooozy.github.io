@@ -224,6 +224,17 @@ button {
   }
 }
 
+/*
+ * Filled primary controls — the generated default Button, a linked default
+ * Badge and the active blog filter — hover to an opaque, lighter brand fill.
+ * The generated `hover:bg-primary/80` lives in the utilities layer and drops
+ * the dark `--text-on-accent` to 3.63:1; this unlayered rule outranks it
+ * without hand-editing `src/components/ui/**`.
+ */
+.bg-primary:hover {
+  background-color: var(--primary-hover);
+}
+
 /* Keyboard focus is always visible. The outline follows the element's own
    radius in modern browsers, so it must never rewrite `border-radius`. */
 :focus-visible {

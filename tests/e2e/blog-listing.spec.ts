@@ -220,3 +220,44 @@ test.describe("blog listing responsive matrix", () => {
     });
   }
 });
+
+test.describe("blog filters without JavaScript", () => {
+  test.use({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
+
+  test("every filter link is reachable by keyboard", async ({ page }) => {
+    const response = await page.goto("/blog/");
+    expect(response?.status()).toBe(200);
+
+    const filters = page.locator(FILTER_LINK);
+    const count = await filters.count();
+    expect(count).toBeGreaterThan(0);
+
+    const tabindexes = await filters.evaluateAll((elements) =>
+      elements.map((element) => element.getAttribute("tabindex")),
+    );
+    expect(tabindexes).toEqual(tabindexes.map(() => null));
+
+    const targets = await filters.evaluateAll((elements) =>
+      elements.map(
+        (element) =>
+          `${element.getAttribute("data-blog-filter")}:${element.getAttribute("href")}`,
+      ),
+    );
+
+    const reached = new Set<string>();
+    for (let step = 0; step < 120 && reached.size < targets.length; step += 1) {
+      await page.keyboard.press("Tab");
+      const focused = await page.evaluate(() => {
+        const element = document.activeElement;
+        if (!(element instanceof HTMLElement)) return null;
+        const kind = element.getAttribute("data-blog-filter");
+        if (kind === null) return null;
+        return `${kind}:${element.getAttribute("href")}`;
+      });
+
+      if (focused !== null) reached.add(focused);
+    }
+
+    expect([...reached].sort()).toEqual([...targets].sort());
+  });
+});

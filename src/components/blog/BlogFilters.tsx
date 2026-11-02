@@ -7,11 +7,12 @@
  *  - by tag, only when the post set actually has tags;
  *  - by date, only when it has periods.
  *
- * The generated `ToggleGroup` is used as a link toolbar: every item renders as
- * an anchor via Base UI's `render` escape hatch, so the filters stay ordinary
- * URLs (no client state, no JS-only controls) and still share one focus /
- * pressed-data contract. `role`/`aria-pressed` are cleared on the anchor so it
- * keeps native link semantics; the active item carries `aria-current="page"`.
+ * Every item is a plain anchor, so filters stay ordinary URLs with native link
+ * semantics and are keyboard-reachable without JavaScript. A generated
+ * `ToggleGroup` used to provide the roving tabindex, which SSR emitted as
+ * `tabindex="-1"` and removed every filter from the no-JS tab order; the plain
+ * `role="group"` wrapper keeps the same layout and accessible group name
+ * without a client-only control. The active item carries `aria-current="page"`.
  *
  * The tray renders when EITHER source exists: a set with no tags but dated
  * posts still shows the period filters (and the reset). A `Separator` closes
@@ -25,7 +26,6 @@
 
 import type { FilterLink } from "@/components/shared/types";
 import { Separator } from "@/components/ui/separator";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
 import { blogIndexPath } from "@/lib/domain/posts";
 import { cn } from "@/lib/utils";
@@ -37,7 +37,8 @@ interface BlogFiltersProps {
 }
 
 const FILTER_CLASSES = cn(
-  "h-9 rounded-full border px-3 text-sm font-medium transition-colors",
+  "inline-flex h-9 items-center justify-center gap-1 rounded-full border px-3",
+  "text-sm font-medium whitespace-nowrap transition-colors",
   "pointer-coarse:min-h-11 pointer-coarse:min-w-11",
   "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
 );
@@ -63,45 +64,36 @@ interface FilterGroupProps {
 /** One link toolbar; active links keep `aria-current` and a pressed data hook. */
 function FilterGroup({ items, label, ariaLabel, kind }: FilterGroupProps) {
   if (items.length === 0) return null;
-  const activeValue = items.find((item) => item.active)?.href;
 
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
       {label && <span className={GROUP_LABEL_CLASSES}>{label}</span>}
-      <ToggleGroup
+      <div
+        role="group"
         aria-label={ariaLabel}
-        defaultValue={activeValue ? [activeValue] : []}
         className="flex flex-wrap items-center gap-2"
       >
         {items.map((item) => (
-          <ToggleGroupItem
+          <a
             key={item.href}
-            value={item.href}
-            nativeButton={false}
-            role={undefined}
-            aria-pressed={undefined}
+            href={item.href}
+            aria-current={item.active ? "page" : undefined}
+            data-blog-filter={kind}
             className={cn(
               FILTER_CLASSES,
               item.active ? FILTER_ACTIVE_CLASSES : FILTER_IDLE_CLASSES,
             )}
-            render={
-              <a
-                href={item.href}
-                aria-current={item.active ? "page" : undefined}
-                data-blog-filter={kind}
-              >
-                <span
-                  className={
-                    item.active ? "text-primary-foreground" : "text-foreground"
-                  }
-                >
-                  {item.label}
-                </span>
-              </a>
-            }
-          />
+          >
+            <span
+              className={
+                item.active ? "text-primary-foreground" : "text-foreground"
+              }
+            >
+              {item.label}
+            </span>
+          </a>
         ))}
-      </ToggleGroup>
+      </div>
     </div>
   );
 }

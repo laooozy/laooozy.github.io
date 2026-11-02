@@ -198,14 +198,17 @@ describe("collectOrgs", () => {
     ]);
   });
 
-  it("does not resolve an org id through the prototype chain", () => {
-    const protoSong: Song = { ...songs[0], org: "__proto__" };
+  it.each(["__proto__", "toString", "constructor", "hasOwnProperty"])(
+    "does not resolve org id %s through the prototype chain",
+    (id) => {
+      const protoSong: Song = { ...songs[0], org: id };
 
-    expect(() => collectOrgs([protoSong], labels)).not.toThrow();
-    expect(collectOrgs([protoSong], labels)).toEqual([
-      { id: "__proto__", label: "__proto__" },
-    ]);
-  });
+      expect(() => collectOrgs([protoSong], labels)).not.toThrow();
+      const [org] = collectOrgs([protoSong], labels);
+      expect(org).toEqual({ id, label: id });
+      expect(typeof org.label).toBe("string");
+    },
+  );
 });
 
 describe("filterSongs", () => {

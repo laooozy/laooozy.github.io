@@ -142,6 +142,31 @@ describe("BlogFilters", () => {
     expect(html).toContain('href="/blog/"');
   });
 
+  it("renders each filter as a plain, keyboard-reachable link", () => {
+    const html = renderToStaticMarkup(
+      <BlogFilters
+        tags={[{ label: "隨筆", href: "/blog/tags/%E9%9A%A8%E7%AD%86/" }]}
+        periods={[{ label: "2026", href: "/blog/archive/2026/" }]}
+      />,
+    );
+
+    // The old ToggleGroup composite emitted `tabindex="-1"` on every anchor,
+    // which removed the filters from the no-JavaScript tab order.
+    expect(html).not.toContain('tabindex="-1"');
+    expect(html).not.toContain("<button");
+
+    const anchors = [...html.matchAll(/<a\b[^>]*>/gu)].map((match) => match[0]);
+    expect(anchors.length).toBeGreaterThanOrEqual(3);
+    for (const anchor of anchors) {
+      expect(anchor).toContain('data-blog-filter="');
+      expect(anchor).not.toMatch(/\btabindex=/u);
+      expect(anchor).not.toContain('role="button"');
+    }
+
+    expect(html).toContain('role="group"');
+    expect(html).toContain('aria-label="所有文章"');
+  });
+
   it("marks the reset when nothing is filtered", () => {
     const html = renderToStaticMarkup(
       <BlogFilters
@@ -189,6 +214,38 @@ describe("BlogList", () => {
     expect(html).toContain("第 2 / 3 頁");
     expect(html).toContain("上一頁");
     expect(html).toContain("下一頁");
+  });
+
+  it("renders pagination steps as native links, not buttons", () => {
+    const html = renderToStaticMarkup(
+      <BlogList
+        posts={POSTS}
+        heading={{ kind: "index" }}
+        pagination={{
+          currentPage: 2,
+          lastPage: 3,
+          url: { prev: "/blog/", next: "/blog/3/" },
+        }}
+      />,
+    );
+
+    expect(html).not.toContain('role="button"');
+    expect(html).not.toContain("<button");
+
+    const anchors = [...html.matchAll(/<a\b[^>]*>/gu)].map((match) => match[0]);
+
+    const prev = anchors.find((anchor) => anchor.includes('href="/blog/"'));
+    const next = anchors.find((anchor) => anchor.includes('href="/blog/3/"'));
+    expect(prev).toBeDefined();
+    expect(next).toBeDefined();
+
+    expect(prev).toContain('data-slot="pagination-link"');
+    expect(prev).toContain('rel="prev"');
+    expect(prev).toContain('aria-label="上一頁"');
+    expect(prev).toContain("min-h-11");
+    expect(next).toContain('rel="next"');
+    expect(next).toContain('aria-label="下一頁"');
+    expect(next).toContain("min-h-11");
   });
 
   it("omits pagination on a single page", () => {
