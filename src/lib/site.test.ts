@@ -10,8 +10,8 @@
  * The build-only playlist contract is tested separately in `playlist.test.ts`;
  * this module must not import `playlist.json` or the browser bundle pays for it.
  */
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync, statSync } from "node:fs";
+import { join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
@@ -28,9 +28,31 @@ function readProjectFile(path: string): string {
   return readFileSync(join(process.cwd(), path), "utf8");
 }
 
+/**
+ * A plain clone stores the config at `.git/config`; a `git worktree` checkout
+ * stores a `gitdir:` pointer file instead. Resolve both so the identity guard
+ * runs in the isolated worktrees this repository uses for plans.
+ */
+function readGitConfig(): string {
+  const dotGit = join(process.cwd(), ".git");
+  if (statSync(dotGit).isFile()) {
+    const pointer = readFileSync(dotGit, "utf8").trim();
+    const match = pointer.match(/^gitdir:\s*(.+)$/);
+    if (match) {
+      const gitDir = resolve(process.cwd(), match[1]);
+      const commonDirFile = join(gitDir, "commondir");
+      const commonDir = existsSync(commonDirFile)
+        ? resolve(gitDir, readFileSync(commonDirFile, "utf8").trim())
+        : gitDir;
+      return readFileSync(join(commonDir, "config"), "utf8");
+    }
+  }
+  return readFileSync(join(dotGit, "config"), "utf8");
+}
+
 const pkg = JSON.parse(readProjectFile("package.json")) as { name: string };
 const astroConfig = readProjectFile("astro.config.mjs");
-const gitConfig = readProjectFile(".git/config");
+const gitConfig = readGitConfig();
 
 function configuredSite(): string {
   const match = astroConfig.match(/\bsite:\s*["']([^"']+)["']/);
