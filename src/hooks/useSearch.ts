@@ -32,6 +32,7 @@ export interface SearchController {
   openSearch: () => void;
   closeSearch: () => void;
   setQuery: (query: string) => void;
+  retry: () => void;
   recordRecent: (query: string) => void;
   clearRecent: () => void;
 }
@@ -83,6 +84,10 @@ export function useSearch(
     [deps],
   );
 
+  const retry = useCallback(() => {
+    engine.retry();
+  }, [engine]);
+
   const recordRecent = useCallback(
     (value: string) => {
       deps.store.getState().addRecentSearch(value);
@@ -108,6 +113,7 @@ export function useSearch(
     openSearch,
     closeSearch,
     setQuery,
+    retry,
     recordRecent,
     clearRecent,
   };

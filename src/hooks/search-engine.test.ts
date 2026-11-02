@@ -159,6 +159,88 @@ describe("createSearchEngine", () => {
     ]);
   });
 
+  it("clears the previous results the moment a new query starts", async () => {
+    let resolveBeta!: (value: SearchResult[]) => void;
+    const pagefind: PagefindPort = {
+      load: () => Promise.resolve({ search: async () => ({ results: [] }) }),
+      search: (query) =>
+        query === "alpha"
+          ? Promise.resolve([{ url: "/blog/alpha/", title: "Alpha" }])
+          : new Promise<SearchResult[]>((resolve) => {
+              resolveBeta = resolve;
+            }),
+    };
+    const engine = createSearchEngine(makeDeps(pagefind), 0);
+
+    engine.run("alpha");
+    await vi.waitFor(() => expect(searchState().status).toBe("results"));
+    expect(searchState().results).toEqual([
+      { url: "/blog/alpha/", title: "Alpha" },
+    ]);
+
+    engine.run("beta");
+
+    // The old rows must vanish synchronously, not when beta resolves.
+    expect(searchState().status).toBe("searching");
+    expect(searchState().results).toEqual([]);
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(searchState().status).toBe("searching");
+    expect(searchState().results).toEqual([]);
+
+    resolveBeta([{ url: "/blog/beta/", title: "Beta" }]);
+    await vi.waitFor(() => expect(searchState().status).toBe("results"));
+    expect(searchState().results).toEqual([
+      { url: "/blog/beta/", title: "Beta" },
+    ]);
+  });
+
+  it("retries the last query through the same sequence guard", async () => {
+    const calls: string[] = [];
+    let resolveRetriedAlpha!: (value: SearchResult[]) => void;
+    const pagefind: PagefindPort = {
+      load: () => Promise.resolve({ search: async () => ({ results: [] }) }),
+      search: (query) => {
+        calls.push(query);
+        if (query === "alpha") {
+          const attempts = calls.filter((call) => call === "alpha").length;
+          if (attempts === 1) {
+            return Promise.reject(new Error("search failed"));
+          }
+          return new Promise<SearchResult[]>((resolve) => {
+            resolveRetriedAlpha = resolve;
+          });
+        }
+        return Promise.resolve([{ url: "/blog/beta/", title: "Beta" }]);
+      },
+    };
+    const engine = createSearchEngine(makeDeps(pagefind), 0);
+
+    engine.run("alpha");
+    await vi.waitFor(() => expect(searchState().status).toBe("error"));
+
+    engine.retry();
+    await vi.waitFor(() =>
+      expect(calls.filter((call) => call === "alpha")).toHaveLength(2),
+    );
+
+    // A newer query supersedes the retried attempt.
+    engine.run("beta");
+    await vi.waitFor(() => expect(searchState().status).toBe("results"));
+    expect(searchState().results).toEqual([
+      { url: "/blog/beta/", title: "Beta" },
+    ]);
+
+    // The retried alpha response arriving late must be dropped.
+    resolveRetriedAlpha([{ url: "/blog/alpha/", title: "Alpha" }]);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(searchState().status).toBe("results");
+    expect(searchState().results).toEqual([
+      { url: "/blog/beta/", title: "Beta" },
+    ]);
+  });
+
   it("drops an in-flight response that resolves after the palette closes", async () => {
     let resolveSlow!: (value: SearchResult[]) => void;
     const slow = new Promise<SearchResult[]>((resolve) => {

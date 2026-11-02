@@ -29,9 +29,9 @@
 
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { History, X } from "lucide-react";
-import { type ReactNode, useCallback, useEffect, useRef } from "react";
+import { type ReactNode, useCallback, useRef } from "react";
 
-import { useClientDeps } from "@/components/shared/ClientDepsContext";
+import { INTERACTIVE_TOUCH_CLASSES } from "@/components/shared/layout/classes";
 import AlertState from "@/components/shared/state/AlertState";
 import SpinnerState from "@/components/shared/state/SpinnerState";
 import { Button } from "@/components/ui/button";
@@ -43,7 +43,6 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { createSearchEngine, type SearchEngine } from "@/hooks/search-engine";
 import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
 import { useSearch } from "@/hooks/useSearch";
 import type { TranslationKey } from "@/i18n";
@@ -143,7 +142,6 @@ interface SearchCommandDialogProps {
 export default function SearchCommandDialog({
   open,
 }: SearchCommandDialogProps) {
-  const deps = useClientDeps();
   const { t } = useHydrationSafeT();
   const {
     query,
@@ -152,30 +150,14 @@ export default function SearchCommandDialog({
     recent,
     closeSearch,
     setQuery,
+    retry,
     recordRecent,
     clearRecent,
   } = useSearch();
 
   const inputRef = useRef<HTMLInputElement>(null);
-  const retryEngineRef = useRef<SearchEngine | null>(null);
 
   const isBlank = query.trim() === "";
-
-  // The retry engine is separate from the hook's loop: a failed query leaves
-  // the store in `error`, and re-running the same string needs a nudge.
-  useEffect(
-    () => () => {
-      retryEngineRef.current?.dispose();
-    },
-    [],
-  );
-
-  const retry = useCallback(() => {
-    if (retryEngineRef.current === null) {
-      retryEngineRef.current = createSearchEngine(deps);
-    }
-    retryEngineRef.current.run(query);
-  }, [deps, query]);
 
   const activateResult = useCallback(() => {
     recordRecent(query);
@@ -257,7 +239,12 @@ export default function SearchCommandDialog({
                 className="mx-2 my-1"
                 description={t("search.error")}
                 action={
-                  <Button variant="outline" size="sm" onClick={retry}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={retry}
+                    className={INTERACTIVE_TOUCH_CLASSES}
+                  >
                     {t("search.retry")}
                   </Button>
                 }
@@ -331,42 +318,44 @@ export default function SearchCommandDialog({
                       {t("search.noResults")}
                     </CommandEmpty>
                   ) : null}
-                  {GROUP_ORDER.map((group) => {
-                    const items = grouped[group];
-                    if (items.length === 0) return null;
-                    return (
-                      <CommandGroup
-                        key={group}
-                        heading={t(GROUP_HEADING_KEY[group])}
-                      >
-                        {items.map((item) => (
-                          <CommandLink
-                            key={item.url}
-                            href={item.url}
-                            value={`result:${item.url}`}
-                            onActivate={activateResult}
-                            className="min-h-11 items-start"
+                  {status === "results"
+                    ? GROUP_ORDER.map((group) => {
+                        const items = grouped[group];
+                        if (items.length === 0) return null;
+                        return (
+                          <CommandGroup
+                            key={group}
+                            heading={t(GROUP_HEADING_KEY[group])}
                           >
-                            <span className="flex min-w-0 flex-col gap-0.5">
-                              <span className="truncate font-medium">
-                                {item.title || item.url}
-                              </span>
-                              {item.excerpt ? (
-                                <span
-                                  className="line-clamp-1 text-xs text-muted-foreground [&_mark]:rounded-sm [&_mark]:bg-[var(--accent-soft)] [&_mark]:px-0.5 [&_mark]:text-[var(--text)]"
-                                  // Pagefind only entity-encodes and wraps
-                                  // matches in <mark>, so it is documented safe.
-                                  dangerouslySetInnerHTML={{
-                                    __html: item.excerpt,
-                                  }}
-                                />
-                              ) : null}
-                            </span>
-                          </CommandLink>
-                        ))}
-                      </CommandGroup>
-                    );
-                  })}
+                            {items.map((item) => (
+                              <CommandLink
+                                key={item.url}
+                                href={item.url}
+                                value={`result:${item.url}`}
+                                onActivate={activateResult}
+                                className="min-h-11 items-start"
+                              >
+                                <span className="flex min-w-0 flex-col gap-0.5">
+                                  <span className="truncate font-medium">
+                                    {item.title || item.url}
+                                  </span>
+                                  {item.excerpt ? (
+                                    <span
+                                      className="line-clamp-1 text-xs text-muted-foreground [&_mark]:rounded-sm [&_mark]:bg-[var(--accent-soft)] [&_mark]:px-0.5 [&_mark]:text-[var(--text)]"
+                                      // Pagefind only entity-encodes and wraps
+                                      // matches in <mark>, so it is documented safe.
+                                      dangerouslySetInnerHTML={{
+                                        __html: item.excerpt,
+                                      }}
+                                    />
+                                  ) : null}
+                                </span>
+                              </CommandLink>
+                            ))}
+                          </CommandGroup>
+                        );
+                      })
+                    : null}
                 </>
               )}
             </CommandList>

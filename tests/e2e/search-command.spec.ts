@@ -176,6 +176,42 @@ test.describe("Pagefind results", () => {
   });
 });
 
+for (const viewport of [
+  { width: 320, height: 800 },
+  { width: 390, height: 844 },
+] as const) {
+  test.describe(`error retry target — ${viewport.width}px`, () => {
+    test.use({ viewport });
+
+    test("the retry control meets the coarse-pointer 44x44 floor", async ({
+      page,
+      isMobile,
+    }) => {
+      test.skip(
+        !isMobile,
+        "the 44x44 contract is the coarse-pointer (mobile) surface",
+      );
+
+      await page.route("**/pagefind/pagefind.js", (route) => route.abort());
+      await page.goto("/");
+      await openWithTrigger(page);
+
+      await page.locator(INPUT).fill("情報系");
+      const alert = page.locator(DIALOG).getByRole("alert");
+      await expect(alert).toBeVisible();
+      await expect(alert).toContainText("搜尋暫時無法使用");
+
+      const retry = await expectTouchTarget(
+        page,
+        `${DIALOG} [role="alert"] [data-slot="button"]`,
+        `search retry @ ${viewport.width}px`,
+      );
+      expect(retry.width).toBeGreaterThanOrEqual(44);
+      expect(retry.height).toBeGreaterThanOrEqual(44);
+    });
+  });
+}
+
 test.describe("lazy loading", () => {
   test("the dialog chunk is requested only on first open", async ({ page }) => {
     const requested: string[] = [];

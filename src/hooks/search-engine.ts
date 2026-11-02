@@ -5,8 +5,10 @@
  * The loop is extracted from the `useSearch` React binding (no React) so it can
  * be driven directly in tests. Behaviour:
  *  - debounce ~160 ms, so a fast typist issues one query;
- *  - a monotonic sequence number, so a slow earlier query can never overwrite a
- *    newer one (stale results are dropped);
+ *  - a monotonic sequence number, so a slow earlier query (including a retried
+ *    one) can never overwrite a newer one (stale results are dropped);
+ *  - the previous results are cleared as soon as a new query starts, so the
+ *    UI never renders or activates rows from the last query;
  *  - the store's search `epoch` is captured with each run, so a result that
  *    resolves after the palette closed (or reopened) is dropped;
  *  - status moves `searching` -> `results` / `empty`, and an adapter rejection
@@ -58,6 +60,8 @@ export function clearPersistedRecentSearches(storage: StoragePort): void {
 export interface SearchEngine {
   /** Schedule a (debounced) search for `query`; `""` clears to `idle`. */
   run(query: string): void;
+  /** Re-run the last non-empty query through the same sequence guard. */
+  retry(): void;
   /** Cancel any pending run and invalidate in-flight results. */
   dispose(): void;
 }
@@ -69,6 +73,7 @@ export function createSearchEngine(
   const { store, adapters } = deps;
   let seq = 0;
   let timer: ReturnType<typeof setTimeout> | null = null;
+  let lastQuery = "";
 
   const isCurrent = (mySeq: number, myEpoch: number): boolean => {
     const search = store.getState().search;
@@ -108,11 +113,18 @@ export function createSearchEngine(
       store.getState().setSearchStatus("idle");
       return;
     }
+    lastQuery = trimmed;
+    store.getState().setSearchResults([]);
     store.getState().setSearchStatus("searching");
     timer = setTimeout(() => {
       timer = null;
       void execute(trimmed, mySeq, myEpoch);
     }, debounceMs);
+  };
+
+  const retry = (): void => {
+    if (lastQuery === "") return;
+    run(lastQuery);
   };
 
   const dispose = (): void => {
@@ -123,5 +135,5 @@ export function createSearchEngine(
     }
   };
 
-  return { run, dispose };
+  return { run, retry, dispose };
 }

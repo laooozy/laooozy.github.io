@@ -96,6 +96,58 @@ describe("SearchCommandDialog query states", () => {
     expect(screen.queryByText("關於")).toBeNull();
   });
 
+  it("removes the previous rows and navigation target as soon as the query changes", async () => {
+    let resolveBeta!: (value: SearchResult[]) => void;
+    let betaCalls = 0;
+    const pagefind: PagefindPort = {
+      load: () => Promise.resolve({ search: async () => ({ results: [] }) }),
+      search: (query) => {
+        if (query === "alpha") {
+          return Promise.resolve([
+            { url: "/blog/alpha/", title: "Alpha result" },
+          ]);
+        }
+        betaCalls += 1;
+        return new Promise<SearchResult[]>((resolve) => {
+          resolveBeta = resolve;
+        });
+      },
+    };
+    const { store, container } = renderDialog(pagefind, {
+      search: { open: true },
+    });
+    const input = screen.getByRole("combobox");
+    const alphaAnchor = () =>
+      container.ownerDocument.querySelector<HTMLAnchorElement>(
+        'a[data-search-navigation-target][href="/blog/alpha/"]',
+      );
+
+    fireEvent.change(input, { target: { value: "alpha" } });
+    expect(await screen.findByText("Alpha result")).not.toBeNull();
+    expect(alphaAnchor()).not.toBeNull();
+
+    fireEvent.change(input, { target: { value: "beta" } });
+
+    expect(store.getState().search.status).toBe("searching");
+    expect(store.getState().search.results).toEqual([]);
+    expect(screen.queryByText("Alpha result")).toBeNull();
+    expect(alphaAnchor()).toBeNull();
+
+    await waitFor(() => expect(betaCalls).toBe(1));
+
+    // Enter during beta's debounce must not follow the removed alpha row.
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(store.getState().search.open).toBe(true);
+    expect(store.getState().search.recent).toEqual([]);
+    expect(alphaAnchor()).toBeNull();
+
+    resolveBeta([{ url: "/blog/beta/", title: "Beta result" }]);
+    expect(await screen.findByText("Beta result")).not.toBeNull();
+    expect(store.getState().search.results).toEqual([
+      { url: "/blog/beta/", title: "Beta result" },
+    ]);
+  });
+
   it("shows the empty state when Pagefind has no matches", async () => {
     renderDialog(fakePagefind([]));
 
