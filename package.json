@@ -22,9 +22,10 @@
     "test:links": "node scripts/check-links.mjs",
     "e2e:build": "INSTAGRAM_OEMBED_FIXTURE=1 SITE_UPDATED_FIXTURE=1 bun run build && bun run pagefind",
     "e2e:serve": "bun run e2e:build && node scripts/serve-dist.mjs",
-    "test:e2e": "playwright test --grep-invert @visual",
+    "test:e2e": "playwright test --grep-invert \"@visual|@production\"",
     "test:a11y": "playwright test --grep @a11y",
     "test:visual": "playwright test --grep @visual",
+    "test:prod": "playwright test --grep @production",
     "typecheck": "astro check"
   },
   "dependencies": {

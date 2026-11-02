@@ -2,8 +2,9 @@
 
 Read [AGENTS.md](AGENTS.md) before changing anything. It holds the invariants
 and the mobile-first policy. [docs/architecture.md](docs/architecture.md) maps
-the code and [docs/decisions.md](docs/decisions.md) records why the boundaries
-exist.
+the code, [docs/decisions.md](docs/decisions.md) records why the boundaries
+exist and [docs/release.md](docs/release.md) is the Pages cutover and release
+runbook.
 
 ## Requirements
 
@@ -70,6 +71,29 @@ bun run size
 The browser gates need a built artifact. `bun run test:e2e` builds one from
 fixture data and serves it; CI reuses `bun run e2e:build`. The build is never the
 dev server.
+
+### Production smoke
+
+The fixture gates prove deterministic behavior; the `@production` smoke proves
+the artifact that actually ships. It is excluded from `test:e2e`, `test:a11y`
+and `test:visual`, and it refuses to run without an external production server:
+
+```sh
+bun run build
+bun run pagefind
+
+PORT=4323 HOST=127.0.0.1 node scripts/serve-dist.mjs &
+server_pid=$!
+trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+curl --silent --fail --retry 30 --retry-delay 1 --retry-connrefused \
+  --output /dev/null http://127.0.0.1:4323/
+
+PLAYWRIGHT_BASE_URL=http://127.0.0.1:4323 bun run test:prod
+```
+
+Do not point `test:prod` at the fixture artifact. The full Pages cutover and
+post-deploy verification are in [docs/release.md](docs/release.md).
 
 For a visual change, update the committed baseline and review the image diff
 before committing:

@@ -11,6 +11,7 @@ server, no database.
 | [ARCHITECTURE](docs/architecture.md)   | Layers, ports, data flow, routes and the component tree      |
 | [DESIGN SYSTEM](docs/design-system.md) | Tokens, typography, primitives, responsive rules and recipes |
 | [DECISIONS](docs/decisions.md)         | Short ADR log for the load-bearing choices                   |
+| [RELEASE](docs/release.md)             | Pages cutover, deploy verification and production smoke      |
 | [CONTRIBUTING](CONTRIBUTING.md)        | Setup, gates, commit and pull-request rules                  |
 | [AGENTS](AGENTS.md)                    | Invariants and policy an agent must not break                |
 | [PRODUCT](PRODUCT.md)                  | Audience, voice and hard product constraints                 |

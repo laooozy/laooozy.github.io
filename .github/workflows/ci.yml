@@ -108,6 +108,30 @@ jobs:
         env:
           PLAYWRIGHT_SERVE_DIST: "1"
         run: bun run test:visual
+      # The three gates above run against the deterministic fixture build. The
+      # shipped artifact must also be proven, so rebuild WITHOUT fixture env,
+      # index it and smoke-test the real output on a dedicated port. The build
+      # job's uploaded Pages artifact is untouched.
+      - name: Build the production artifact and Pagefind index
+        run: |
+          bun run build
+          bun run pagefind
+      - name: Production artifact smoke
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:4323
+        run: |
+          set -euo pipefail
+          PORT=4323 HOST=127.0.0.1 node scripts/serve-dist.mjs > /tmp/production-smoke-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true; wait "$server_pid" 2>/dev/null || true' EXIT
+
+          if ! curl --silent --fail --retry 30 --retry-delay 1 --retry-connrefused \
+            --output /dev/null http://127.0.0.1:4323/; then
+            cat /tmp/production-smoke-server.log
+            exit 1
+          fi
+
+          bun run test:prod
       - name: Upload failure evidence
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
