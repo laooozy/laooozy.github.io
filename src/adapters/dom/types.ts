@@ -18,6 +18,12 @@ export interface DomScriptOptions {
   id?: string;
   /** Set the tag's `async` flag; defaults to `true`. */
   async?: boolean;
+  /**
+   * How long to wait for `load`/`error` before giving up, in milliseconds.
+   * Defaults to `DEFAULT_SCRIPT_TIMEOUT_MS`; non-positive or non-finite
+   * overrides also resolve to that default.
+   */
+  timeoutMs?: number;
 }
 
 /** Scroll observation and scroll-position controls. */
@@ -102,16 +108,34 @@ export interface DomLocalePort {
   setHidden(selector: string, hidden: boolean): void;
 }
 
-/** Third-party script injection. */
+/** Third-party script injection and consent-gated provider markup. */
 export interface DomScriptsPort {
   /**
    * Append one `<script src>` and resolve `true` once it loads, `false` when
-   * the platform lacks a DOM, the tag cannot be created, or the request
-   * errors (the failed tag is removed so a retry injects a fresh one).
-   * `options.id` dedupes: a call that finds a loaded tag with that id resolves
-   * `true` without appending a duplicate. Never rejects.
+   * the platform lacks a DOM, the tag cannot be created, the request errors or
+   * it stalls past `options.timeoutMs` (the failed/timed-out tag is removed so
+   * a retry can inject a fresh one). `options.id` dedupes: a call that finds a
+   * loaded tag with that id resolves `true` without appending a duplicate.
+   * Never rejects.
    */
   loadScript(src: string, options?: DomScriptOptions): Promise<boolean>;
+  /**
+   * Clone the inert content of the `<template>` matching `templateSelector`
+   * into the element matching `targetSelector`, replacing its children.
+   * Template content is outside the document tree, so nothing inside it is
+   * fetched or executed before this call. Returns `false` (and mutates
+   * nothing) when either element or the template content is missing. Never
+   * throws.
+   */
+  materializeTemplate(
+    templateSelector: string,
+    targetSelector: string,
+  ): boolean;
+  /**
+   * Remove every child of the first element matching `selector`, leaving the
+   * element (and any inert template) intact for a retry. Never throws.
+   */
+  clearElement(selector: string): void;
 }
 
 /** Global event seams. */

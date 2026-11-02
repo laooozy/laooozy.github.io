@@ -34,6 +34,7 @@ export type {
   DomScriptsPort,
   DomScrollPort,
 } from "./types";
+export { DEFAULT_SCRIPT_TIMEOUT_MS } from "./scripts";
 
 /** Build one aggregate DOM adapter from the cohesive slices. */
 export function createDomAdapter(): DomPort {
@@ -64,6 +65,8 @@ export const noopDomAdapter: DomPort = {
   applyLocale: () => {},
   setHidden: () => {},
   loadScript: () => Promise.resolve(false),
+  materializeTemplate: () => false,
+  clearElement: () => {},
   onHashChange: () => () => {},
   onKeyDown: () => () => {},
 };

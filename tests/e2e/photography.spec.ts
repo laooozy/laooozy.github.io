@@ -26,6 +26,7 @@ import { expectNoHorizontalOverflow } from "./helpers/overflow";
 const INDEX = "[data-ig-gate]";
 const CARDS = `${INDEX} .photo-index__card`;
 const EMBEDS = "[data-ig-embeds]";
+const TEMPLATE = "template[data-ig-template]";
 const GATE = "[data-ig-consent]";
 const GATE_ERROR = "[data-ig-gate-error]";
 const GATE_BUTTON = "載入 Instagram 貼文";
@@ -110,6 +111,14 @@ async function embedColumnCount(page: Page): Promise<number> {
   });
 }
 
+/** Count the provider entries held by the inert template. */
+async function templateEmbedCount(page: Page): Promise<number> {
+  return page.locator(TEMPLATE).evaluate((element) => {
+    const template = element as HTMLTemplateElement;
+    return template.content.querySelectorAll(".ig-embed, .ig-fallback").length;
+  });
+}
+
 for (const { width, height } of MATRIX) {
   test.describe(`photography index at ${width}px`, () => {
     test.use({ viewport: { width, height } });
@@ -150,7 +159,9 @@ test.describe("photography at rest", () => {
       .count();
     expect(noMedia).toBe(0);
     await expect(page.locator(EMBEDS)).toHaveAttribute("hidden", "");
+    await expect(page.locator(`${EMBEDS} > *`)).toHaveCount(0);
     await expect(page.locator("script#instagram-embed")).toHaveCount(0);
+    expect(await templateEmbedCount(page)).toBeGreaterThan(0);
 
     const cards = await readCards(page);
     expect(cards.length).toBeGreaterThan(0);
@@ -177,12 +188,14 @@ test.describe("photography at rest", () => {
     const thirdParty = watchThirdParty(page);
     await loadPhotography(page);
     expect(thirdParty).toEqual([]);
+    const inertCount = await templateEmbedCount(page);
 
     const button = page.getByRole("button", { name: GATE_BUTTON });
     await expect(button).toBeEnabled();
     await button.click();
 
     await expect(page.locator(EMBEDS)).not.toHaveAttribute("hidden");
+    await expect(page.locator(`${EMBEDS} > *`)).toHaveCount(inertCount);
     await expect(page.locator(INDEX)).toHaveAttribute("hidden", "");
     await expect(page.locator(GATE)).toHaveAttribute("data-ig-state", "loaded");
     await expect(page.locator("script#instagram-embed")).toHaveCount(1);
@@ -211,8 +224,10 @@ test.describe("photography at rest", () => {
 
     await expect(page.locator(GATE)).toHaveAttribute("data-ig-state", "error");
     await expect(page.locator(EMBEDS)).toHaveAttribute("hidden", "");
+    await expect(page.locator(`${EMBEDS} > *`)).toHaveCount(0);
     await expect(page.locator(`${EMBEDS} iframe`)).toHaveCount(0);
     await expect(page.locator(INDEX)).toBeVisible();
+    expect(await templateEmbedCount(page)).toBeGreaterThan(0);
     await expect(page.getByRole("button", { name: "再試一次" })).toBeEnabled();
 
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
@@ -224,6 +239,35 @@ test.describe("photography at rest", () => {
       ),
       fullPage: true,
     });
+  });
+
+  test("times out a stalled embed script and keeps retry available", async ({
+    page,
+  }) => {
+    await page.route("**/embed.js", () => new Promise(() => {}));
+    await loadPhotography(page);
+
+    const inertCount = await templateEmbedCount(page);
+    const button = page.getByRole("button", { name: GATE_BUTTON });
+    await expect(button).toBeEnabled();
+
+    const startedAt = Date.now();
+    await button.click();
+
+    const alert = page.locator(GATE_ERROR);
+    await expect(alert).toBeVisible();
+    const elapsedMs = Date.now() - startedAt;
+
+    expect(elapsedMs).toBeGreaterThanOrEqual(300);
+    expect(elapsedMs).toBeLessThan(5_000);
+
+    await expect(alert).toContainText("無法載入 Instagram 貼文");
+    await expect(page.locator(GATE)).toHaveAttribute("data-ig-state", "error");
+    await expect(page.locator(EMBEDS)).toHaveAttribute("hidden", "");
+    await expect(page.locator(`${EMBEDS} > *`)).toHaveCount(0);
+    await expect(page.locator(INDEX)).toBeVisible();
+    await expect(page.getByRole("button", { name: "再試一次" })).toBeEnabled();
+    expect(await templateEmbedCount(page)).toBe(inertCount);
   });
 });
 

@@ -3,19 +3,19 @@
  *
  * Nothing from Instagram is requested on page load: the wall renders the
  * server-built portfolio index plus this panel, and `instagram.com/embed.js`
- * is appended only after the visitor opts in. The script injection, the
- * dedupe and the reveal/hide of the server-rendered blockquote layer all go
- * through the injected `DomPort` (`clientDeps.adapters.dom`), so this
- * component never reaches for `document` or `window` and the no-op double
- * keeps it testable.
+ * is appended only after the visitor opts in. The provider HTML is authored in
+ * an inert `<template>`; the click clones it into the live embed target through
+ * the injected `DomPort` (`clientDeps.adapters.dom`), so this component never
+ * reaches for `document` or `window` and the no-op double keeps it testable.
  *
- * The build-time blockquotes and per-post link fallbacks stay Astro-rendered in
- * `.ig-embeds[hidden]`; the gate only toggles their `hidden` attribute. On a
- * provider failure the layer is hidden again, the local index stays visible and
- * the panel shows a destructive `Alert` with a direct link-out, so a blocked
- * script never leaves a blank dark panel or a broken embed behind. All copy is
- * zh-hant page content, not fixed chrome; the panel is built from the generated
- * shadcn `Card`, `Button` and `Alert` primitives.
+ * The gate materialises the template, then loads the script, so Meta's library
+ * finds the blockquotes in layout. On a provider failure or timeout the live
+ * layer is cleared and hidden again, the local index stays visible and the
+ * panel shows a destructive `Alert` with a direct link-out, so a blocked script
+ * never leaves a blank dark panel, stale provider markup or a forever-disabled
+ * button. The template itself is untouched, so a retry clones a fresh copy. All
+ * copy is zh-hant page content, not fixed chrome; the panel is built from the
+ * generated shadcn `Card`, `Button` and `Alert` primitives.
  */
 
 import {
@@ -33,7 +33,9 @@ import SpinnerState from "@/components/shared/state/SpinnerState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-/** The server-rendered oEmbed layer the gate reveals after consent. */
+/** The inert server-rendered oEmbed markup the gate clones after consent. */
+const TEMPLATE_SELECTOR = "template[data-ig-template]";
+/** The live embed target the template is materialised into. */
 const EMBEDS_SELECTOR = "[data-ig-embeds]";
 /** The at-rest portfolio index, retired once the real embeds load. */
 const GATE_CARDS_SELECTOR = "[data-ig-gate]";
@@ -51,6 +53,12 @@ interface InstagramGateProps {
   handle: string;
   /** How many posts the wall resolves, so the note states the cost. */
   postCount: number;
+  /**
+   * Optional script-stall override, forwarded to `DomPort.loadScript`.
+   * Production leaves this undefined so the port's 10s default applies; the
+   * fixture E2E build passes a short value so a stalled request is observable.
+   */
+  scriptTimeoutMs?: number;
 }
 
 const BUTTON_LABEL: Record<Exclude<GateState, "loaded">, string> = {
@@ -64,6 +72,7 @@ export default function InstagramGate({
   profileHref,
   handle,
   postCount,
+  scriptTimeoutMs,
 }: InstagramGateProps) {
   const deps = useClientDeps();
   const [state, setState] = useState<GateState>("idle");
@@ -75,19 +84,33 @@ export default function InstagramGate({
 
     setState("loading");
     /*
-     * Reveal before injecting so Meta's library finds the blockquotes in
-     * layout when it processes them; the `embed-frame` skeleton covers
-     * the light placeholder until the real iframe arrives. A failed load
-     * hides the layer again below, so nothing half-rendered is left behind.
+     * Materialise first so Meta's library finds the blockquotes in layout,
+     * then reveal the live layer. The template stays inert and untouched, so
+     * a retry clones a fresh copy. If the target/template is missing, fail
+     * closed instead of injecting the script into an empty layer.
      */
+    const materialised = dom.materializeTemplate(
+      TEMPLATE_SELECTOR,
+      EMBEDS_SELECTOR,
+    );
+    if (!materialised) {
+      dom.clearElement(EMBEDS_SELECTOR);
+      dom.setHidden(EMBEDS_SELECTOR, true);
+      setState("error");
+      return;
+    }
     dom.setHidden(EMBEDS_SELECTOR, false);
 
-    const loaded = await dom.loadScript(scriptSrc, { id: SCRIPT_ID });
+    const loaded = await dom.loadScript(scriptSrc, {
+      id: SCRIPT_ID,
+      timeoutMs: scriptTimeoutMs,
+    });
 
     if (loaded) {
       dom.setHidden(GATE_CARDS_SELECTOR, true);
       setState("loaded");
     } else {
+      dom.clearElement(EMBEDS_SELECTOR);
       dom.setHidden(EMBEDS_SELECTOR, true);
       setState("error");
     }

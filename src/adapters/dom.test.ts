@@ -11,7 +11,11 @@
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { domAdapter, noopDomAdapter } from "@/adapters/dom";
+import {
+  DEFAULT_SCRIPT_TIMEOUT_MS,
+  domAdapter,
+  noopDomAdapter,
+} from "@/adapters/dom";
 
 type StubbedGlobal = "window" | "document";
 
@@ -33,6 +37,7 @@ afterEach(() => {
     if (original) Object.defineProperty(globalThis, key, original);
     else Reflect.deleteProperty(globalThis, key);
   }
+  vi.useRealTimers();
   vi.restoreAllMocks();
 });
 
@@ -69,6 +74,13 @@ describe("noopDomAdapter", () => {
     expect(() =>
       noopDomAdapter.setHidden("[data-ig-embeds]", false),
     ).not.toThrow();
+    expect(
+      noopDomAdapter.materializeTemplate(
+        "template[data-ig-template]",
+        "[data-ig-embeds]",
+      ),
+    ).toBe(false);
+    expect(() => noopDomAdapter.clearElement("[data-ig-embeds]")).not.toThrow();
     await expect(
       noopDomAdapter.loadScript("https://example.com/x.js"),
     ).resolves.toBe(false);
@@ -89,6 +101,13 @@ describe("domAdapter without a DOM", () => {
     expect(domAdapter.scrollY()).toBe(0);
     expect(() => domAdapter.scrollToTop()).not.toThrow();
     expect(() => domAdapter.setHidden("[data-ig-embeds]", false)).not.toThrow();
+    expect(
+      domAdapter.materializeTemplate(
+        "template[data-ig-template]",
+        "[data-ig-embeds]",
+      ),
+    ).toBe(false);
+    expect(() => domAdapter.clearElement("[data-ig-embeds]")).not.toThrow();
     const stopKeyDown = domAdapter.onKeyDown(() => {});
     expect(typeof stopKeyDown).toBe("function");
     expect(() => stopKeyDown()).not.toThrow();
@@ -603,5 +622,61 @@ describe("domAdapter loadScript", () => {
     });
 
     await expect(domAdapter.loadScript(src, { id })).resolves.toBe(false);
+  });
+
+  it("resolves false after the default timeout, removes the tag and allows a retry", async () => {
+    const { appended, fire } = installScriptDocument();
+    vi.useFakeTimers();
+
+    const first = domAdapter.loadScript(src, { id });
+    let settled = false;
+    void first.then(() => {
+      settled = true;
+    });
+
+    expect(DEFAULT_SCRIPT_TIMEOUT_MS).toBe(10_000);
+    expect(appended).toHaveLength(1);
+
+    await vi.advanceTimersByTimeAsync(DEFAULT_SCRIPT_TIMEOUT_MS - 1);
+    expect(settled).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(1);
+    await expect(first).resolves.toBe(false);
+    expect(appended[0].removed).toBe(true);
+
+    // A timed-out tag is gone, so a retry may append a fresh one.
+    const retry = domAdapter.loadScript(src, { id });
+    expect(appended).toHaveLength(2);
+    fire(appended[1], "load");
+    await expect(retry).resolves.toBe(true);
+  });
+
+  it("honours a short explicit timeout override", async () => {
+    const { appended } = installScriptDocument();
+    vi.useFakeTimers();
+
+    const pending = domAdapter.loadScript(src, { id, timeoutMs: 25 });
+    await vi.advanceTimersByTimeAsync(25);
+
+    await expect(pending).resolves.toBe(false);
+    expect(appended[0].removed).toBe(true);
+  });
+
+  it("falls back to the default timeout for a non-positive override", async () => {
+    const { appended } = installScriptDocument();
+    vi.useFakeTimers();
+
+    const pending = domAdapter.loadScript(src, { id, timeoutMs: -5 });
+    let settled = false;
+    void pending.then(() => {
+      settled = true;
+    });
+
+    await vi.advanceTimersByTimeAsync(DEFAULT_SCRIPT_TIMEOUT_MS - 1);
+    expect(settled).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(1);
+    await expect(pending).resolves.toBe(false);
+    expect(appended[0].removed).toBe(true);
   });
 });

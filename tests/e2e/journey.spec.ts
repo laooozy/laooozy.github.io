@@ -277,13 +277,20 @@ test.describe("Instagram consent journey", () => {
     await page.goto("/photographer/");
     await waitForIsland(page, "InstagramGate");
 
-    // The build seam rendered deterministic blockquotes with no Meta request.
+    // The build seam rendered deterministic blockquotes with no Meta request,
+    // but they stay inert inside the template until consent.
     const embeds = page.locator("[data-ig-embeds]");
+    const template = page.locator("template[data-ig-template]");
     await expect(embeds).toHaveAttribute("hidden", "");
-    await expect(embeds.locator("blockquote.instagram-media")).toHaveCount(2);
-    await expect(
-      embeds.locator("blockquote.instagram-media[data-instgrm-permalink]"),
-    ).toHaveCount(2);
+    await expect(embeds.locator("blockquote.instagram-media")).toHaveCount(0);
+    expect(
+      await template.evaluate(
+        (element) =>
+          (element as HTMLTemplateElement).content.querySelectorAll(
+            "blockquote.instagram-media[data-instgrm-permalink]",
+          ).length,
+      ),
+    ).toBe(2);
     expect(
       thirdParty.filter((url) => url.includes("graph.facebook.com")),
       "the build must not call Meta in the E2E artifact",
@@ -292,6 +299,7 @@ test.describe("Instagram consent journey", () => {
 
     await page.getByRole("button", { name: GATE_BUTTON }).click();
     await expect(embeds).not.toHaveAttribute("hidden");
+    await expect(embeds.locator("blockquote.instagram-media")).toHaveCount(2);
     await expect(page.locator("[data-ig-gate]")).toHaveAttribute("hidden", "");
     await expect(page.locator("[data-ig-gate-error]")).toHaveCount(0);
   });

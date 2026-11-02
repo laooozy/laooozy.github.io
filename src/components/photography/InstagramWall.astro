@@ -21,15 +21,17 @@
  *     third-party asset is allowed to load. The cards map the local list, not
  *     the oEmbed result, so an offline build (or a deleted post) still renders
  *     the full index.
- *  2. The build-time oEmbed blockquotes stay in the DOM inside `.ig-embeds`,
- *     which is `hidden` until consent. Keeping them server-rendered preserves
- *     the privacy-safe fallback and lets the consent gate reveal real markup
- *     instead of re-fetching.
+ *  2. The build-time oEmbed blockquotes are authored inside an inert
+ *     `<template>` (`data-ig-template`). Template content is a DocumentFragment
+ *     outside the document tree, so the provider markup, any images in it and
+ *     the blockquotes are not live and cannot load anything until the consent
+ *     gate clones the template into `.ig-embeds`. Keeping them server-rendered
+ *     preserves the privacy-safe fallback without re-fetching on click.
  *
  * The embed.js loader is NOT emitted here and never loads at rest: the
- * `InstagramGate` island (`client:idle`) injects it through the DomPort only
- * after a click, then reveals the hidden blockquote layer. On a provider
- * failure it leaves the index and shows a local fallback instead.
+ * `InstagramGate` island (`client:idle`) materialises the template and injects
+ * the script through the DomPort only after a click. On a provider failure it
+ * clears the live layer, leaves the index and shows a local fallback instead.
  *
  * Meta's embed.js creates the final `<iframe>` itself, so build-time markup
  * cannot set that iframe's `title`/`loading`. The figure therefore carries the
@@ -50,6 +52,8 @@ const instagramMode =
 const embeds = await getInstagramEmbeds(instagramPosts, {
   mode: instagramMode,
 });
+/* Fixture builds only: make a stalled embed.js observable in E2E quickly. */
+const FIXTURE_SCRIPT_TIMEOUT_MS = 500;
 const igHandle = `@${CONTACT.photoIg}`;
 const igHref = `https://instagram.com/${CONTACT.photoIg}`;
 
@@ -82,6 +86,9 @@ function ordinal(position: number): string {
     <InstagramGate
       client:idle
       scriptSrc="https://www.instagram.com/embed.js"
+      scriptTimeoutMs={
+        instagramMode === "fixture" ? FIXTURE_SCRIPT_TIMEOUT_MS : undefined
+      }
       profileHref={igHref}
       handle={igHandle}
       postCount={instagramPosts.length}
@@ -142,18 +149,27 @@ function ordinal(position: number): string {
     </ol>
 
     {/*
-        Consent-gated layer. `hidden` keeps the raw oEmbed blockquotes and the
-        per-post link fallback out of paint (and out of the accessibility tree)
-        until the gate reveals them. `data-ig-embeds` is the hook the gate uses.
-        One column on phones, two from `md` up; `data-pagefind-ignore` keeps
-        the third-party markup out of the search index.
+        Consent-gated layer. The live target ships EMPTY and `hidden`; the gate
+        clones the inert template below into it after consent. `data-ig-embeds`
+        is the hook the gate materialises into, so raw provider HTML is never
+        live before the click. One column on phones, two from `md` up;
+        `data-pagefind-ignore` keeps the third-party markup out of the index.
       */}
     <div
       class="ig-embeds photo-wall grid min-w-0 max-w-full grid-cols-1 items-start gap-5 [&[hidden]]:hidden md:grid-cols-2"
       data-ig-embeds
       data-pagefind-ignore
       hidden
-    >
+    ></div>
+
+    {/*
+        Inert provider markup. A `<template>`'s content is outside the document
+        tree, so no image/script inside it is fetched or executed at rest and
+        document selectors cannot see it. The gate clones it on consent; a
+        failed load clears only the live target, leaving this template reusable
+        for the retry.
+      */}
+    <template data-ig-template data-pagefind-ignore>
       {embeds.map((embed) =>
         embed.html ? (
           <figure
@@ -193,7 +209,7 @@ function ordinal(position: number): string {
           </a>
         ),
       )}
-    </div>
+    </template>
   </div>
 ) : (
   <a
