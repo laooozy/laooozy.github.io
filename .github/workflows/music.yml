@@ -9,6 +9,11 @@ on:
         description: "Test-only playlist URL override (failure testing)"
         required: false
         type: string
+      yt_dlp_version:
+        description: "Pinned yt-dlp release tag to download and verify"
+        required: false
+        default: "2026.10.26"
+        type: string
   push:
     branches: [main]
     paths:
@@ -27,20 +32,25 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
-      - name: Install the latest yt-dlp
+      - name: Install pinned yt-dlp
+        env:
+          YT_DLP_VERSION: ${{ inputs.yt_dlp_version || '2026.10.26' }}
         run: |
           set -euo pipefail
-          curl -fL -o "$RUNNER_TEMP/yt-dlp" https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux
-          chmod +x "$RUNNER_TEMP/yt-dlp"
+          cd "$RUNNER_TEMP"
+          curl -fsSL -o yt-dlp_linux "https://github.com/yt-dlp/yt-dlp/releases/download/${YT_DLP_VERSION}/yt-dlp_linux"
+          curl -fsSL -o SHA2-256SUMS "https://github.com/yt-dlp/yt-dlp/releases/download/${YT_DLP_VERSION}/SHA2-256SUMS"
+          grep -E '  yt-dlp_linux$' SHA2-256SUMS | sha256sum -c -
+          chmod +x yt-dlp_linux
+          mv yt-dlp_linux yt-dlp
           echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
-          export PATH="$RUNNER_TEMP:$PATH"
-          yt-dlp --version
+          "$RUNNER_TEMP/yt-dlp" --version
       - name: Build the payload
         env:
           PLAYLIST_OVERRIDE: ${{ inputs.playlist }}
@@ -59,4 +69,6 @@ jobs:
           git init -q -b music_asset
           git add music.json.gz
           git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "chore(music): refresh $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" music_asset
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git config --local credential.helper '!f() { echo "username=x-access-token"; echo "password=${GITHUB_TOKEN}"; }; f'
+          git push --force origin music_asset
