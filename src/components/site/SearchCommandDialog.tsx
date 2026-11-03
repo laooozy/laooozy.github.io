@@ -205,7 +205,7 @@ export default function SearchCommandDialog({
             className="h-full rounded-none! bg-transparent p-0 sm:h-auto"
           >
             <div className="flex items-start gap-1 p-1 pb-0">
-              <div className="min-w-0 flex-1 [&_[data-slot=input-group]]:h-11!">
+              <div className="min-w-0 flex-1 [&_[data-slot=input-group]]:h-11! [&_[data-slot=input-group]]:focus-within:outline-2 [&_[data-slot=input-group]]:focus-within:outline-offset-2 [&_[data-slot=input-group]]:focus-within:outline-[var(--accent)] [&_[data-slot=input-group]]:focus-within:outline-solid">
                 <CommandInput
                   ref={inputRef}
                   value={query}
@@ -215,7 +215,7 @@ export default function SearchCommandDialog({
                   autoComplete="off"
                   autoCapitalize="off"
                   spellCheck={false}
-                  className="min-h-11 text-base"
+                  className="min-h-11 text-base focus-visible:outline-none!"
                 />
               </div>
               <DialogPrimitive.Close
