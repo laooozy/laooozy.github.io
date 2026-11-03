@@ -51,7 +51,7 @@ export default function InterestCard({
       <Stack
         gap={3}
         className={cn(
-          "[&>ol]:m-0 [&>p]:m-0 [&>p]:text-[var(--text-muted)] [&>p:has(+ul)]:text-[length:var(--text-sm)] [&>ul]:m-0 [&>ul]:grid [&>ul]:list-none [&>ul]:gap-[var(--space-1)] [&>ul>li]:text-[length:var(--text-sm)] [&>ul>li]:text-[var(--text-muted)]",
+          "[&>ol]:m-0 [&>p]:m-0 [&>p]:text-[var(--text-muted)] [&>p:has(+ul)]:text-[length:var(--text-sm)] [&>ul:not([data-slot=chip-row])]:m-0 [&>ul:not([data-slot=chip-row])]:grid [&>ul:not([data-slot=chip-row])]:list-none [&>ul:not([data-slot=chip-row])]:gap-[var(--space-1)] [&>ul>li]:text-[length:var(--text-sm)] [&>ul>li]:text-[var(--text-muted)]",
           id === "runner" && "[&>p]:text-[length:var(--text-sm)]",
         )}
       >

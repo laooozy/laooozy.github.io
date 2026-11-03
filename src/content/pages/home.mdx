@@ -29,75 +29,99 @@ import { CONTACT } from "../../lib/site";
   lead="Hi，我是 laooozy，歡迎來到我的網站。"
 >
   {/*
-    An asymmetric bento: Photography is the feature card (two columns from the
-    small breakpoint), the rest are content-sized so a short card never inherits
-    a tall neighbour's empty space. `items-start` is load-bearing — without it
-    every card stretches to its row's tallest sibling.
+    A composed two-rail bento. Below `lg` the rails are `contents`, so the
+    cards flow in the mobile reading order (Photography, Running, Music,
+    Gaming, Vtuber) with Photography spanning both tracks at `md`. From `lg`
+    each rail becomes its own flex column: Photography + Gaming on the 2fr
+    left, Running + Music + Vtuber on the 1fr right. `items-start` is
+    load-bearing — every card keeps its natural content height instead of
+    stretching to a neighbour's.
   */}
   <div
     data-home-bento
-    className="grid grid-cols-1 items-start gap-(--space-5) md:grid-cols-2 lg:grid-cols-3"
+    className="grid grid-cols-1 items-start gap-(--space-5) md:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
   >
-    <InterestCard
-      id="photography"
-      title="Photography"
-      className="md:col-span-2"
-    >
-      我現在喜歡上了拍照
+    <div className="contents lg:flex lg:flex-col lg:gap-(--space-5)">
+      <InterestCard
+        id="photography"
+        title="Photography"
+        className="order-1 md:col-span-2 lg:order-none"
+      >
+        我現在喜歡上了拍照
 
-      目前裝備:
+        目前裝備:
 
-      - Canon EOS R10
-      - Canon RF-S18-150mm F3.5-6.3 IS STM
-      - Sigma 30mm F1.4 DC DN (未買，應該今個月會買)
-      - Godox V1mid
-      - Godox X3 Pro
+        - Canon EOS R10
+        - Canon RF-S18-150mm F3.5-6.3 IS STM
+        - Sigma 30mm F1.4 DC DN (未買，應該今個月會買)
+        - Godox V1mid
+        - Godox X3 Pro
 
-      <Cta href="/photographer/" label="看看我的攝影子版介紹" />
-    </InterestCard>
+        <Cta href="/photographer/" label="看看我的攝影子版介紹" className="self-start" />
+      </InterestCard>
 
-    <InterestCard id="runner" title="Running">
-      有空會去跑步，起步通常會跑 6-10 公里左右 <br/>
-      狀態不好的時候會跑 3-5 公里，狀態好的時候會跑 10-15 公里<br/>
-      
-      主要練有氧能力<br/>
-      ~~菜鳥一名而已~~<br/>
-    </InterestCard>
+      <InterestCard
+        id="games"
+        title="Gaming"
+        className="order-4 lg:order-none"
+      >
+        大多是和朋友一起玩的多人遊戲吧
 
-    <InterestCard id="music" title="Music" hidden="empty">
-      喜歡聽J-Pop，下面是我的歌單，請閱！！！
+        <ChipRow
+          className="mt-(--space-4)"
+          items={[
+            { label: "Barotrauma" },
+            { label: "CS2" },
+            { label: "Dying Light 2" },
+            { label: "GTFO" },
+            { label: "L4D2" },
+            { label: "RE9" },
+            { label: "Ready or Not" },
+            { label: "Slay the Spire 1 and 2" },
+            { label: "Sons of the Forest" },
+            { label: "Stellaris" },
+          ]}
+        />
+      </InterestCard>
+    </div>
 
-      <Cta href="/music/" label="看看我的歌單" />
-    </InterestCard>
+    <div className="contents lg:flex lg:flex-col lg:gap-(--space-5)">
+      <InterestCard
+        id="runner"
+        title="Running"
+        className="order-2 lg:order-none"
+      >
+        有空會去跑步，起步通常會跑 6-10 公里左右 <br/>
+        狀態不好的時候會跑 3-5 公里，狀態好的時候會跑 10-15 公里<br/>
+        
+        主要練有氧能力<br/>
+        ~~菜鳥一名而已~~<br/>
+      </InterestCard>
 
-    <InterestCard id="games" title="Gaming">
-      大多是和朋友一起玩的多人遊戲吧
+      <InterestCard
+        id="music"
+        title="Music"
+        hidden="empty"
+        className="order-3 lg:order-none"
+      >
+        喜歡聽J-Pop，下面是我的歌單，請閱！！！
 
-      <ChipRow
-        className="mt-(--space-4)"
-        items={[
-          { label: "Barotrauma" },
-          { label: "CS2" },
-          { label: "Dying Light 2" },
-          { label: "GTFO" },
-          { label: "L4D2" },
-          { label: "RE9" },
-          { label: "Ready or Not" },
-          { label: "Slay the Spire 1 and 2" },
-          { label: "Sons of the Forest" },
-          { label: "Stellaris" },
-        ]}
-      />
-    </InterestCard>
+        <Cta href="/music/" label="看看我的歌單" className="self-start" />
+      </InterestCard>
 
-    <InterestCard id="vtuber" title="Vtuber">
-      很棒！
+      <InterestCard
+        id="vtuber"
+        title="Vtuber"
+        className="order-5 lg:order-none"
+      >
+        很棒！
 
-      <ChipRow
-        className="mt-(--space-4)"
-        items={[{ label: "Gura" }, { label: "Laplus" }]}
-      />
-    </InterestCard>
+        <ChipRow
+          className="mt-(--space-4)"
+          items={[{ label: "Gura" }, { label: "Laplus" }]}
+        />
+      </InterestCard>
+    </div>
   </div>
 </Section>
 

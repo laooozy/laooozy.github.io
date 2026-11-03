@@ -11,11 +11,12 @@ import { expectNoHorizontalOverflow } from "./helpers/overflow";
  * The page body is authored MDX (`src/content/pages/home.mdx`) and rendered at
  * build time, so these assertions run against the real stylesheet:
  *
- *  - the 320/390/768/1024/1440 matrix neither overflows nor collapses;
+ *  - the 320/390/768/1024/1440/1920 matrix neither overflows nor collapses;
  *  - every About card ends within 40px of its content at 1440 (the card's own
  *    bottom padding), proving `items-start` keeps short cards from inheriting a
  *    tall neighbour's dead space;
- *  - a sixth card auto-places without becoming a full-width orphan;
+ *  - a sixth card stays inside its rail and never becomes a full-width orphan;
+ *  - the two-rail composition keeps the 2fr feature column and the 1fr rail;
  *  - the LatestPosts grid defines a distinct layout for 1, 2, 3 and 4 cards.
  */
 
@@ -34,6 +35,7 @@ const MATRIX = [
   { width: 768, height: 1024 },
   { width: 1024, height: 768 },
   { width: 1440, height: 900 },
+  { width: 1920, height: 1080 },
 ] as const;
 
 interface CardMeasurement {
@@ -136,13 +138,19 @@ test.describe("home bento at 1440px", () => {
         if (!grid)
           throw new Error(`sixth-card probe: no element matches ${selector}`);
 
-        const last = grid.lastElementChild;
-        if (!last) throw new Error("sixth-card probe: the bento grid is empty");
+        const cards = grid.querySelectorAll<HTMLElement>(".interest");
+        const last = cards[cards.length - 1];
+        const rail = last?.parentElement;
+        if (!last || !rail)
+          throw new Error("sixth-card probe: the bento grid has no rail");
 
+        // Clone into the last card's own rail: at `lg` the right rail is a
+        // flex column, so the sixth card stays a narrow rail child instead of
+        // becoming a full-width grid orphan.
         const clone = last.cloneNode(true) as HTMLElement;
         clone.removeAttribute("id");
         clone.dataset.clone = "sixth";
-        grid.append(clone);
+        rail.append(clone);
 
         const gridRect = grid.getBoundingClientRect();
         const cloneRect = clone.getBoundingClientRect();
@@ -159,7 +167,8 @@ test.describe("home bento at 1440px", () => {
       BENTO,
     );
 
-    // A third-row orphan would sit at one track (1/3 of the grid), never full width.
+    // At 1440 the sixth card joins the 1fr right rail, so it stays a narrow
+    // column rather than a full-width orphan.
     expect(measurement.ratio).toBeLessThan(0.75);
     expect(measurement.cloneWidth).toBeGreaterThan(0);
     expect(measurement.scrollWidth).toBeLessThanOrEqual(
