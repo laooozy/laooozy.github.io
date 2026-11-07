@@ -1,15 +1,26 @@
 # Release operations
 
-This runbook is the executable path from a verified branch to the live site at
-<https://laooozy.github.io>. It covers the one-time GitHub Pages source switch,
-the `main` push, verification of the deployed artifact and retirement of the
-legacy `gh-pages` branch.
+This runbook covers how `main` reaches the live site at
+<https://laooozy.github.io>, how to verify a deployment and how to roll back.
+There is no manual deploy command.
 
-> **Current state (checked 2026-11-02, read-only):** GitHub Pages is still
-> configured as `build_type: legacy` with source `gh-pages`, and `origin/main`
-> is behind the remediation branch. Nothing in this runbook has been executed
-> by CI on the owner's behalf; the cutover requires repository-owner
-> credentials and a push to `main`.
+## Current state
+
+Verified 2026-11-04 from the repository, the read-only Pages API and the live
+site:
+
+- GitHub Pages uses `build_type: workflow`. The Pages API can still return the
+  old `source` metadata; with the workflow build type, that field does not
+  control deployment.
+- The `deploy` job in `.github/workflows/ci.yml` deploys `main` after the
+  `build` and `browser` jobs pass. Only a push to `refs/heads/main` deploys.
+- The remote has no `gh-pages` branch. The legacy branch is retired.
+- A pull request runs the quality, build and browser jobs without deploying.
+- The most recent `main` run before this check (2026-11-03) completed with the
+  `build`, `browser` and `deploy` jobs successful.
+
+This describes the deployment path only. There are no version tags or versioned
+releases yet; the package version is `0.0.1` in `package.json`.
 
 ## Identifiers
 
@@ -21,80 +32,41 @@ legacy `gh-pages` branch.
 
 ## Prerequisites
 
-- `gh` authenticated as an owner/admin of the repository.
-- The release branch is merged, all gates are green and the working tree is
-  clean.
+- Merge rights on `main`.
+- The release branch is merged or ready to merge, all gates are green and the
+  working tree is clean.
 - The pre-commit hook is installed (`bun run hooks:install`) so the footer stamp
   is refreshed by the commit, never by a manual edit.
+- No Pages setting change is part of a normal release. If
+  `gh api repos/laooozy/laooozy.github.io/pages --jq '.build_type'` does not
+  print `workflow`, stop and ask the repository owner to repair the setting in
+  GitHub Pages settings. Do not create a `gh-pages` branch.
 
-## One-time: switch Pages to GitHub Actions
+## Deploy `main`
 
-The repository currently deploys legacy `gh-pages` content. The workflow's
-`deploy` job uses `actions/deploy-pages`, which requires the GitHub Actions
-source.
-
-Inspect the current settings first:
-
-```sh
-gh api repos/laooozy/laooozy.github.io/pages \
-  --jq '{build_type, source, status, html_url}'
-```
-
-Switch the build type (this is the only mutation in this runbook):
-
-```sh
-gh api --method PUT repos/laooozy/laooozy.github.io/pages \
-  -f build_type=workflow
-```
-
-If Pages is not enabled at all, enable it with the same build type instead:
-
-```sh
-gh api --method POST repos/laooozy/laooozy.github.io/pages \
-  -f build_type=workflow
-```
-
-Verify the switch before pushing:
-
-```sh
-gh api repos/laooozy/laooozy.github.io/pages \
-  --jq '{build_type, source, status, html_url}'
-# expect build_type: "workflow"
-```
-
-The workflow already uploads `dist/` with `actions/upload-pages-artifact` and
-deploys with `actions/deploy-pages`; do not add a second deploy workflow or a
-manual `gh-pages` deploy command.
-
-## Push `main`
-
-Merge the verified release branch fast-forward and push it:
+Merge the verified branch and push it:
 
 ```sh
 git switch main
 git fetch origin
-git merge --ff-only chore/dependency-upgrade-remediation
+git merge --ff-only <release-branch>
 git push origin main
 ```
 
-A push to `main` triggers the full workflow. A pull request runs the quality,
-build and browser jobs without deploying. The `deploy` job is deliberately
-guarded by:
+A push to `main` triggers the full workflow. The `deploy` job is guarded by:
 
 ```yaml
 if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 ```
 
-Confirm that condition locally before pushing:
+It keeps `needs: [build, browser]` and deploys the Pages artifact uploaded by
+the `build` job. The `build` job runs `bun run build` without fixture
+environment and uploads `dist/` as `production-dist`; the `browser` job
+downloads that artifact and runs the production smoke against it through
+`DIST_DIR`. The browser job does not rebuild a second production artifact.
 
-```sh
-sed -n '/^  deploy:/,/^    steps:/p' .github/workflows/ci.yml
-```
-
-The `deploy` job must keep `needs: [build, browser]` and deploy the `build`
-job's uploaded Pages artifact. The `build` job already runs `bun run build`
-without fixture environment; the browser job's production smoke is additional
-coverage and does not replace that artifact.
+Do not add a second deploy workflow, a `gh-pages` push step or a manual deploy
+script.
 
 ## Watch CI and the deployment
 
@@ -104,8 +76,8 @@ gh run watch <run-id> --exit-status
 ```
 
 The run must show `build`, `browser` and `deploy` succeeding. A failing
-`browser` job in the production smoke step means the real `dist/` is wrong;
-fix it instead of skipping the spec.
+`browser` job in the production smoke step means the real `dist/` is wrong; fix
+it instead of skipping the spec.
 
 ## Verify `origin/main` parity
 
@@ -128,8 +100,11 @@ gh api repos/laooozy/laooozy.github.io/pages \
 curl -sSI https://laooozy.github.io/ | grep -Ei 'HTTP/|content-type|last-modified'
 ```
 
-Confirm the deployed HTML is the new build, not fixture data and not the old
-`gh-pages` export:
+The API must show `build_type: "workflow"`. Treat the `source` field as legacy
+metadata when the build type is `workflow`.
+
+Confirm the deployed HTML is the new build, not fixture data and not an old
+export:
 
 ```sh
 # Must print nothing: no fixture environment markers or fixture stamp.
@@ -147,21 +122,6 @@ Fetch one asset from the list above and require HTTP 200. While
 `SITE_INDEXABLE` is `false` in `src/lib/seo.ts`, the live site intentionally
 serves `robots.txt` with `Disallow: /` and pages with `noindex, nofollow`.
 Flip that one switch only when the site is ready to be indexed.
-
-## Retire `gh-pages`
-
-Do this **only after** the Actions deployment is live and the checks above pass.
-Deleting the branch before the first successful Actions deploy removes the
-current live source.
-
-```sh
-git push origin --delete gh-pages
-git ls-remote --heads origin gh-pages
-# expect no output
-```
-
-If the repository protected the branch, delete it through the API instead and
-record the exception.
 
 ## Local production smoke
 
@@ -182,14 +142,24 @@ curl --silent --fail --retry 30 --retry-delay 1 --retry-connrefused \
 PLAYWRIGHT_BASE_URL=http://127.0.0.1:4323 bun run test:prod
 ```
 
-Without `PLAYWRIGHT_BASE_URL`, the `@production` spec skips with a message
-saying how to set it. `bun run test:e2e` excludes both `@visual` and
-`@production`; `bun run test:a11y` and `bun run test:visual` never select the
-production spec.
+`bun run test:prod` refuses to start without `PLAYWRIGHT_BASE_URL`; it never
+builds a fixture artifact or exits successfully with every test skipped. If you
+run the spec directly, it still skips without a base URL. `bun run test:e2e`
+excludes `@visual`, `@a11y` and `@production`; `bun run test:a11y` and
+`bun run test:visual` never select the production spec.
 
 ## Rollback
 
-If the live artifact is wrong after the switch, redeploy the last known-good
+If the live artifact is wrong after a deployment, redeploy the last known-good
 commit through a new `main` push. Do not recreate `gh-pages` as a fallback and
-do not revert the Pages source to `legacy`; the workflow is the only deploy
-path once the switch is done.
+do not switch Pages back to the legacy source; the workflow is the only deploy
+path.
+
+## Retired procedures
+
+The one-time cutover from legacy `gh-pages` to GitHub Actions and the deletion
+of `gh-pages` are complete. They were verified on 2026-11-04 and are not part of
+a release. Do not run the old `gh api --method PUT ... -f build_type=workflow`
+command, do not recreate `gh-pages` and do not add a manual deploy step. If the
+Pages setting ever regresses, the repository owner repairs it once in the
+GitHub Pages settings; the release process stays push-to-`main`.
