@@ -7,7 +7,7 @@ import {
 } from "./instagram";
 
 const POST = "https://www.instagram.com/p/DdtBD23yLte/";
-const OTHER_POST = "https://www.instagram.com/p/Dcsnb5YyY0I/";
+const OTHER_POST = "https://www.instagram.com/p/DfXLwbryfCU/";
 
 function jsonResponse(body: unknown, ok = true): Response {
   return { ok, json: async () => body } as unknown as Response;

@@ -10,14 +10,17 @@
  *
  * Behaviour:
  *  - `/` and every directory resolve to `index.html`;
+ *  - like GitHub Pages, an extensionless path falls back to `<path>.html`
+ *    (so `/404` serves `404.html` with status 200), then `<path>/index.html`;
  *  - an unknown path serves `404.html` with status 404 (the real not-found
  *    document), matching how GitHub Pages responds;
  *  - content types cover the artifact's html/js/css/json/images/fonts/wasm/gz;
- *  - every request is resolved inside `dist/`; `..`, encoded traversal, a NUL
- *    byte or a symlink escaping the root is rejected with 403;
+ *  - every request is resolved inside the artifact root; `..`, encoded
+ *    traversal, a NUL byte or a symlink escaping the root is rejected with 403;
  *  - HEAD is supported and the process exits cleanly on SIGINT/SIGTERM.
  *
- * Usage: `PORT=4322 node scripts/serve-dist.mjs` (PORT defaults to 4322).
+ * Usage: `PORT=4322 DIST_DIR=dist node scripts/serve-dist.mjs` (both default to
+ * 4322 and `dist`).
  */
 
 import { createReadStream } from "node:fs";
@@ -27,7 +30,8 @@ import { extname, resolve, sep } from "node:path";
 
 const HOST = process.env.HOST ?? "127.0.0.1";
 const PORT = Number.parseInt(process.env.PORT ?? "4322", 10);
-const ROOT = resolve(process.cwd(), "dist");
+const DIST_DIR = process.env.DIST_DIR ?? "dist";
+const ROOT = resolve(process.cwd(), DIST_DIR);
 const NOT_FOUND = resolve(ROOT, "404.html");
 
 /** Artifact extensions -> response content type. */
@@ -99,6 +103,58 @@ async function sendFile(request, response, filePath, status = 200) {
     .pipe(response);
 }
 
+function isInsideRoot(path) {
+  return path === ROOT || path.startsWith(`${ROOT}${sep}`);
+}
+
+/**
+ * Resolve a URL pathname to a file in the artifact, mimicking GitHub Pages'
+ * extensionless lookup. Returns `forbidden` when the path escapes the root.
+ */
+async function resolveArtifact(pathname) {
+  const target = resolveInsideRoot(pathname);
+  if (target === null) return { kind: "forbidden" };
+
+  const candidates = [target];
+  if (!extname(target)) {
+    candidates.push(`${target}.html`, resolve(target, "index.html"));
+  }
+
+  for (const candidate of candidates) {
+    let resolved;
+    try {
+      resolved = await realpath(candidate);
+    } catch {
+      continue;
+    }
+    if (!isInsideRoot(resolved)) return { kind: "forbidden" };
+
+    let candidateStat;
+    try {
+      candidateStat = await stat(resolved);
+    } catch {
+      continue;
+    }
+
+    if (candidateStat.isDirectory()) {
+      const index = resolve(resolved, "index.html");
+      try {
+        const indexResolved = await realpath(index);
+        if (!isInsideRoot(indexResolved)) return { kind: "forbidden" };
+        if ((await stat(indexResolved)).isFile()) {
+          return { kind: "file", path: indexResolved };
+        }
+      } catch {
+        continue;
+      }
+    } else if (candidateStat.isFile()) {
+      return { kind: "file", path: resolved };
+    }
+  }
+
+  return { kind: "missing" };
+}
+
 async function sendNotFound(request, response) {
   try {
     await sendFile(request, response, NOT_FOUND, 404);
@@ -124,35 +180,19 @@ const server = createServer(async (request, response) => {
     return;
   }
 
-  const target = resolveInsideRoot(pathname);
-  if (target === null) {
+  const artifact = await resolveArtifact(pathname);
+  if (artifact.kind === "forbidden") {
     response.writeHead(403, { "content-type": "text/plain; charset=utf-8" });
     response.end("403: Forbidden");
     return;
   }
 
-  try {
-    const resolved = await realpath(target);
-    if (resolved !== ROOT && !resolved.startsWith(`${ROOT}${sep}`)) {
-      response.writeHead(403, { "content-type": "text/plain; charset=utf-8" });
-      response.end("403: Forbidden");
-      return;
-    }
-
-    const targetStat = await stat(resolved);
-    if (targetStat.isDirectory()) {
-      const index = resolve(resolved, "index.html");
-      const indexStat = await stat(index);
-      if (!indexStat.isFile()) throw new Error("directory without index.html");
-      await sendFile(request, response, index);
-      return;
-    }
-
-    if (!targetStat.isFile()) throw new Error("not a file");
-    await sendFile(request, response, resolved);
-  } catch {
-    await sendNotFound(request, response);
+  if (artifact.kind === "file") {
+    await sendFile(request, response, artifact.path);
+    return;
   }
+
+  await sendNotFound(request, response);
 });
 
 server.listen(PORT, HOST, () => {

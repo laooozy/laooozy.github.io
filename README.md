@@ -1,20 +1,30 @@
 # laooozy
 
+[![CI](https://github.com/laooozy/laooozy.github.io/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/laooozy/laooozy.github.io/actions/workflows/ci.yml)
+[![License: All rights reserved](https://img.shields.io/badge/license-All%20rights%20reserved-red.svg)](LICENSE)
+
 Personal site of **laooozy**: photography, games and a few things written down.
-Fully static Astro on GitHub Pages (<https://laooozy.github.io>). No CMS, no
+Fully static Astro on GitHub Pages at <https://laooozy.github.io>. No CMS, no
 server, no database.
 
-## Documentation
+![Home page of laooozy.github.io at 1440 px](docs/assets/home.png)
 
-| Document                               | What it answers                                              |
-| :------------------------------------- | :----------------------------------------------------------- |
-| [ARCHITECTURE](docs/architecture.md)   | Layers, ports, data flow, routes and the component tree      |
-| [DESIGN SYSTEM](docs/design-system.md) | Tokens, typography, primitives, responsive rules and recipes |
-| [DECISIONS](docs/decisions.md)         | Short ADR log for the load-bearing choices                   |
-| [RELEASE](docs/release.md)             | Pages cutover, deploy verification and production smoke      |
-| [CONTRIBUTING](CONTRIBUTING.md)        | Setup, gates, commit and pull-request rules                  |
-| [AGENTS](AGENTS.md)                    | Invariants and policy an agent must not break                |
-| [PRODUCT](PRODUCT.md)                  | Audience, voice and hard product constraints                 |
+## Links
+
+| Link                                                          | What it answers                                              |
+| :------------------------------------------------------------ | :----------------------------------------------------------- |
+| [LIVE SITE](https://laooozy.github.io)                        | The deployed site                                            |
+| [ARCHITECTURE](docs/architecture.md)                          | Layers, ports, data flow, routes and the component tree      |
+| [DESIGN SYSTEM](docs/design-system.md)                        | Tokens, typography, primitives, responsive rules and recipes |
+| [DECISIONS](docs/decisions.md)                                | Short ADR log for the load-bearing choices                   |
+| [RELEASE](docs/release.md)                                    | Deploy verification and production smoke                     |
+| [CONTRIBUTING](CONTRIBUTING.md)                               | Setup, gates, commit and pull-request rules                  |
+| [ISSUES](https://github.com/laooozy/laooozy.github.io/issues) | Bug reports and feature requests                             |
+| [SECURITY](SECURITY.md)                                       | Supported versions and private vulnerability reporting       |
+| [CODE OF CONDUCT](CODE_OF_CONDUCT.md)                         | Community standards and enforcement                          |
+| [CHANGELOG](CHANGELOG.md)                                     | Notable changes                                              |
+| [AGENTS](AGENTS.md)                                           | Invariants and policy an agent must not break                |
+| [PRODUCT](PRODUCT.md)                                         | Audience, voice and hard product constraints                 |
 
 ## Requirements
 
@@ -41,23 +51,25 @@ To run the dev server in the foreground, use `bun run dev`.
 
 ## Commands
 
-| Command                | What it does                                                      |
-| :--------------------- | :---------------------------------------------------------------- |
-| `bun run dev`          | Astro dev server with hot reload                                  |
-| `bun run build`        | Static build into `dist/`                                         |
-| `bun run pagefind`     | Builds the search index from `dist/` (`--force-language zh-hant`) |
-| `bun run preview`      | Serves the production build                                       |
-| `bun run typecheck`    | `astro check` over `.astro` and `.ts`                             |
-| `bun run lint`         | ESLint with `--max-warnings 0`                                    |
-| `bun run format:check` | Prettier check                                                    |
-| `bun run test`         | Vitest unit and component tests                                   |
-| `bun run knip`         | Dead-code and unused-export check                                 |
-| `bun run size`         | size-limit bundle budgets                                         |
-| `bun run test:links`   | Verifies every internal link in `dist/`                           |
-| `bun run test:e2e`     | Playwright journey and chrome tests                               |
-| `bun run test:a11y`    | Playwright axe and contrast tests                                 |
-| `bun run test:visual`  | Screenshot regression baselines                                   |
-| `bun run gen:og`       | Regenerates the Open Graph image                                  |
+| Command                 | What it does                                                      |
+| :---------------------- | :---------------------------------------------------------------- |
+| `bun run dev`           | Astro dev server with hot reload                                  |
+| `bun run build`         | Static build into `dist/`                                         |
+| `bun run pagefind`      | Builds the search index from `dist/` (`--force-language zh-hant`) |
+| `bun run preview`       | Serves the production build                                       |
+| `bun run typecheck`     | `astro check` over `.astro` and `.ts`                             |
+| `bun run lint`          | ESLint with `--max-warnings 0`                                    |
+| `bun run format:check`  | Prettier check                                                    |
+| `bun run test`          | Vitest unit and component tests                                   |
+| `bun run test:coverage` | Vitest with v8 coverage thresholds                                |
+| `bun run knip`          | Dead-code and unused-export check                                 |
+| `bun run size`          | size-limit bundle budgets                                         |
+| `bun run test:links`    | Verifies every internal link in `dist/`                           |
+| `bun run test:e2e`      | Playwright journey and chrome tests                               |
+| `bun run test:a11y`     | Playwright axe and contrast tests                                 |
+| `bun run test:visual`   | Screenshot regression baselines                                   |
+| `bun run test:prod`     | Production smoke; requires `PLAYWRIGHT_BASE_URL`                  |
+| `bun run gen:og`        | Regenerates the Open Graph image                                  |
 
 Always run `bun run build` before `bun run pagefind`: the index is generated
 from the rendered HTML in `dist/`.
@@ -109,6 +121,14 @@ hook and leaves the stamp stale.
 GitHub Actions (`.github/workflows/ci.yml`) runs the quality, build and browser
 gates, then deploys `main` to GitHub Pages. A pull request runs the gates
 without deploying. There is no manual deploy command.
+
+## License
+
+This repository is proprietary. All rights reserved. No permission is granted
+to use, copy, modify, distribute, sublicense or create derivative works from the
+source code, prose, photography or artwork without prior written authorization
+from laooozy. See [LICENSE](LICENSE). Third-party dependencies, fonts and
+embedded third-party content keep their own licenses.
 
 ## Contact
 

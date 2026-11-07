@@ -67,7 +67,9 @@ export function parseMusicPayload(raw: unknown): MusicPayload {
 }
 
 /** Unique artists by `artistId`, sorted by name with plain code-unit order. */
-export function collectArtists(songs: Song[]): { id: string; name: string }[] {
+export function collectArtists(
+  songs: readonly Song[],
+): { id: string; name: string }[] {
   const byId = new Map<string, string>();
   for (const song of songs) {
     if (song.artistId === "") continue;
@@ -80,7 +82,7 @@ export function collectArtists(songs: Song[]): { id: string; name: string }[] {
 
 /** Unique non-null organisation ids, sorted, labelled from the payload map. */
 export function collectOrgs(
-  songs: Song[],
+  songs: readonly Song[],
   labels: Record<string, string>,
 ): { id: string; label: string }[] {
   const ids = new Set<string>();
@@ -105,7 +107,7 @@ export interface MusicFilters {
  * input order.
  */
 export function filterSongs(
-  songs: Song[],
+  songs: readonly Song[],
   { query, artistId, org }: MusicFilters = {},
 ): Song[] {
   const needle = (query ?? "").normalize("NFKC").trim().toLowerCase();

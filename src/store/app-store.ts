@@ -21,8 +21,6 @@ import {
 
 import type { AppStore, SearchState } from "./types";
 
-export type { AppActions, AppState, AppStore, SearchState } from "./types";
-
 /**
  * Create an isolated store with the production state machine.
  *

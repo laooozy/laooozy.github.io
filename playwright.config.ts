@@ -40,6 +40,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
+  // A retry may recover a transient failure, but it must not turn a flaky
+  // suite green: report the run as failed so instability is visible.
+  failOnFlakyTests: true,
   workers: process.env.CI ? 1 : undefined,
   reporter: [["list"]],
   timeout: 30_000,

@@ -21,6 +21,14 @@
  *     `src/content.config.ts`), and network calls only in `src/lib/io/**` or
  *     `src/adapters/**`; those are the documented build/runtime edges.
  *  5. `src/store/**` imports neither components nor adapters.
+ *  6. Shipped `src/components/**` does not import the build-time edge
+ *     `src/lib/io/**`; the three documented `.astro` wrappers that read it are
+ *     the only exceptions.
+ *  7. Inside `src/components/**`, only `shared/ClientDepsContext.tsx` imports
+ *     the composition root `src/client/bootstrap`; every other component reads
+ *     the injected bundle through `useClientDeps`.
+ *  8. Shipped `.tsx` components never read the visitor clock (`new Date()` /
+ *     `Date.now()`), so SSR and the client render agree.
  *
  * All violations are returned, never thrown, so a failing run names every
  * offender in one go.
@@ -106,6 +114,25 @@ const BUILD_WRAPPER_ALLOWLIST = new Set([
   "components/site/Hero.astro",
   "components/photography/InstagramWall.astro",
 ]);
+
+/**
+ * The three thin Astro wrappers allowed to read the build-time IO edge. They
+ * cross the boundary as serializable props; a React island must never import
+ * `src/lib/io/**` itself, or build-only data reaches the browser and the
+ * SSR/client render can disagree.
+ */
+const IO_WRAPPER_ALLOWLIST = new Set([
+  "components/blog/LatestPosts.astro",
+  "components/site/NowTicker.astro",
+  "components/photography/InstagramWall.astro",
+]);
+
+/**
+ * The one component-side importer of the composition root. `useClientDeps`
+ * falls back to its singleton, and tests override it through the provider, so
+ * the adapter wiring still happens exactly once.
+ */
+const CLIENT_DEPS_CONTEXT = "components/shared/ClientDepsContext.tsx";
 
 /** Content edge: the only place `astro:content` may be imported. */
 const CONTENT_EDGE = "lib/io";
@@ -537,6 +564,41 @@ export function checkAdapterImportSource(
 // Rule 3 — no browser globals in components.
 // ---------------------------------------------------------------------------
 
+/** `new Date()` and `Date.now()` read the visitor clock during render. */
+function clockReadViolations(parsed: ParsedSource): Violation[] {
+  const reads: ts.Node[] = [];
+
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isNewExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === "Date"
+    ) {
+      reads.push(node);
+    } else if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(node.expression) &&
+      ts.isIdentifier(node.expression.expression) &&
+      node.expression.expression.text === "Date" &&
+      node.expression.name.text === "now"
+    ) {
+      reads.push(node);
+    }
+    ts.forEachChild(node, visit);
+  };
+
+  visit(parsed.syntax);
+
+  return reads.map((node) =>
+    violation(
+      parsed,
+      node,
+      "components/clock-read",
+      "reads the visitor clock; pass the time as a build-time prop so the server HTML and the first client render agree",
+    ),
+  );
+}
+
 /** Pure AST check for component sources (`.ts`, `.tsx`, `.astro` frontmatter). */
 export function checkComponentSource(
   file: string,
@@ -547,6 +609,10 @@ export function checkComponentSource(
     parsed,
     "components/browser-global",
   );
+
+  if (parsed.file.endsWith(".tsx")) {
+    violations.push(...clockReadViolations(parsed));
+  }
 
   if (
     parsed.file.endsWith(".astro") &&
@@ -565,6 +631,82 @@ export function checkComponentSource(
         ),
       );
     }
+  }
+
+  return violations;
+}
+
+// ---------------------------------------------------------------------------
+// Rule 6 — components do not import the build-time IO edge.
+// ---------------------------------------------------------------------------
+
+/** Pure AST check for `src/lib/io/**` imports from shipped components. */
+export function checkComponentIoSource(
+  file: string,
+  source: string,
+): Violation[] {
+  const parsed = parseSource(file, source);
+
+  if (
+    isTestPath(parsed.file) ||
+    !isUnder(parsed.file, "components") ||
+    IO_WRAPPER_ALLOWLIST.has(parsed.file)
+  ) {
+    return [];
+  }
+
+  const violations: Violation[] = [];
+  for (const imported of collectImports(parsed.syntax)) {
+    const target = resolveTarget(parsed.file, imported.specifier);
+    if (!isUnder(target, "lib/io")) continue;
+
+    violations.push(
+      violation(
+        parsed,
+        imported.node,
+        "components/io-import",
+        `imports build-time IO module \`${imported.specifier}\`; components must not import src/lib/io/** (only ${[...IO_WRAPPER_ALLOWLIST].join(", ")} may). Pass serializable props from an Astro wrapper instead`,
+      ),
+    );
+  }
+
+  return violations;
+}
+
+// ---------------------------------------------------------------------------
+// Rule 7 — only the ClientDeps context binds the composition root.
+// ---------------------------------------------------------------------------
+
+/** Pure AST check for `src/client/bootstrap` imports from components. */
+export function checkClientDepsImportSource(
+  file: string,
+  source: string,
+): Violation[] {
+  const parsed = parseSource(file, source);
+
+  if (
+    isTestPath(parsed.file) ||
+    !isUnder(parsed.file, "components") ||
+    parsed.file === CLIENT_DEPS_CONTEXT
+  ) {
+    return [];
+  }
+
+  const violations: Violation[] = [];
+  for (const imported of collectImports(parsed.syntax)) {
+    const target = resolveTarget(parsed.file, imported.specifier);
+    if (target !== "client/bootstrap" && target !== "client/bootstrap.ts") {
+      continue;
+    }
+
+    violations.push(
+      violation(
+        parsed,
+        imported.node,
+        "client/bootstrap-import",
+        `imports the composition root \`${imported.specifier}\`; only ${CLIENT_DEPS_CONTEXT} may bind it inside components (read the bundle through useClientDeps)`,
+      ),
+    );
   }
 
   return violations;
@@ -742,7 +884,7 @@ describe("architecture boundaries", () => {
     expectNoViolations(checkTree(() => true, checkAdapterImportSource));
   });
 
-  it("components use no browser globals (rule 3)", () => {
+  it("components use no browser globals and do not read the clock (rules 3 and 8)", () => {
     expectNoViolations(
       checkTree(
         (file) => isUnder(file, "components") && !isTestPath(file),
@@ -763,6 +905,14 @@ describe("architecture boundaries", () => {
         checkStoreSource,
       ),
     );
+  });
+
+  it("components do not import the build-time IO edge (rule 6)", () => {
+    expectNoViolations(checkTree(() => true, checkComponentIoSource));
+  });
+
+  it("only ClientDepsContext imports the composition root (rule 7)", () => {
+    expectNoViolations(checkTree(() => true, checkClientDepsImportSource));
   });
 });
 
@@ -858,6 +1008,75 @@ describe("synthetic boundary violations", () => {
     expect(violations).toHaveLength(1);
     expect(violations[0]?.rule).toBe("adapters/runtime-import");
     expect(violations[0]?.message).toContain("src/client/bootstrap.ts");
+  });
+
+  it("flags an IO import from a shipped component with components/io-import", () => {
+    const violations = checkComponentIoSource(
+      "src/components/site/Probe.tsx",
+      'import { getAllPosts } from "@/lib/io/posts";\n',
+    );
+
+    expect(violations).toHaveLength(1);
+    expect(violations[0]?.rule).toBe("components/io-import");
+    expect(violations[0]?.message).toContain("@/lib/io/posts");
+    expect(violations[0]?.message).toContain("LatestPosts.astro");
+  });
+
+  it("allows the three documented Astro wrappers to read the IO edge", () => {
+    const wrapper = [
+      "---",
+      'import { getAllPosts } from "../../lib/io/posts";',
+      "---",
+      "<p />",
+      "",
+    ].join("\n");
+
+    expect(
+      checkComponentIoSource("src/components/blog/LatestPosts.astro", wrapper),
+    ).toEqual([]);
+
+    const unlisted = checkComponentIoSource(
+      "src/components/site/Probe.astro",
+      wrapper,
+    );
+    expect(unlisted).toHaveLength(1);
+    expect(unlisted[0]?.rule).toBe("components/io-import");
+  });
+
+  it("flags a composition-root import outside ClientDepsContext", () => {
+    const violations = checkClientDepsImportSource(
+      "src/components/shared/Probe.tsx",
+      'import { clientDeps } from "@/client/bootstrap";\n',
+    );
+
+    expect(violations).toHaveLength(1);
+    expect(violations[0]?.rule).toBe("client/bootstrap-import");
+    expect(violations[0]?.message).toContain(
+      "components/shared/ClientDepsContext.tsx",
+    );
+
+    expect(
+      checkClientDepsImportSource(
+        "src/components/shared/ClientDepsContext.tsx",
+        'import { clientDeps } from "@/client/bootstrap";\n',
+      ),
+    ).toEqual([]);
+  });
+
+  it("flags a component clock read with components/clock-read", () => {
+    const constructorRead = checkComponentSource(
+      "src/components/site/Probe.tsx",
+      "export const year = new Date().getFullYear();\n",
+    );
+    expect(constructorRead).toHaveLength(1);
+    expect(constructorRead[0]?.rule).toBe("components/clock-read");
+
+    const nowRead = checkComponentSource(
+      "src/components/site/Probe.tsx",
+      "export const stamp = Date.now();\n",
+    );
+    expect(nowRead).toHaveLength(1);
+    expect(nowRead[0]?.rule).toBe("components/clock-read");
   });
 
   it("ignores browser globals mentioned only in comments (AST, not regex)", () => {

@@ -1,10 +1,12 @@
 /**
- * Global base styles. Consumes tokens from tokens.css; every value here is a
- * token reference, never a magic number.
+ * Global base styles for the screen theme. Brand values reference the tokens
+ * in tokens.css; the literals that remain are base defaults, mathematical
+ * units or accessibility floors (for example the 44px touch target), never a
+ * second copy of a brand colour. Print-only paper values live in print.css.
  *
- * This is the ONE CSS entry: brand primitives first, then Tailwind v4, the
- * animation helpers and shadcn/ui's state variants/utilities. shadcn's design
- * tokens are mapped onto the brand palette further down.
+ * This is the ONE screen CSS entry: brand primitives first, then Tailwind v4,
+ * the animation helpers and shadcn/ui's state variants/utilities. shadcn's
+ * design tokens are mapped onto the brand palette further down.
  *
  * Token ownership:
  * - `tokens.css` owns every brand primitive, including the raw `--radius-*`
@@ -307,6 +309,11 @@ html:not([data-locale]) [data-l="zh-hant"] {
     scroll-behavior: auto;
   }
 
+  /*
+   * `!important` is required here: the reduced-motion kill-switch must beat
+   * animation and transition declarations from every layer and every
+   * component, not just one cascade origin.
+   */
   *,
   *::before,
   *::after {
@@ -843,23 +850,7 @@ html:not([data-locale]) [data-l="zh-hant"] {
   margin-bottom: 0;
 }
 
-/* Paper has no scrollbar: let a table fit the page and wrap instead. */
-@media print {
-  .prose-brand {
-    max-width: none;
-  }
-
-  .prose-brand table {
-    display: table;
-    width: 100%;
-    overflow: visible;
-  }
-
-  .prose-brand th,
-  .prose-brand td {
-    overflow-wrap: anywhere;
-  }
-}
+/* Paper-specific prose rules live in print.css. */
 
 /* Stack, Grid and Cluster are Tailwind-only React primitives in
    `src/components/shared/layout/**`; they own their own display, track and gap
@@ -981,7 +972,9 @@ html:not([data-locale]) [data-l="zh-hant"] {
  * cannot be written as Tailwind utilities on our own elements. Everything that
  * IS ours lives in the component class string; this utility owns only the
  * third-party frame plus the dark loading skeleton (`::after`) that covers the
- * light placeholder until the real iframe replaces it.
+ * light placeholder until the real iframe replaces it. Every `!important` here
+ * is in that third-party-override category; do not copy the pattern onto our
+ * own elements.
  */
 @utility embed-frame {
   &::after {
@@ -1041,78 +1034,5 @@ html:not([data-locale]) [data-l="zh-hant"] {
    Tailwind utilities in their owning components. Only the keyframes live here
    (declared in `@theme`) because a CSS animation must be global. */
 
-/*
- * Print.
- *
- * Every entrance/reveal animation is declared under
- * `prefers-reduced-motion: no-preference` with `animation-fill-mode: both`, so
- * a print render can freeze a block on its `opacity: 0` start frame. This
- * block settles every animated block to its final frame and repaints the dark
- * theme onto white paper (browsers do not print background graphics by
- * default, and light-on-white text would otherwise vanish). Tokens are
- * re-pointed instead of every component, so cards and links all follow
- * without new print-only component rules. Screen styles are untouched.
- */
-@media print {
-  @page {
-    margin: 14mm;
-  }
-
-  :root {
-    --bg-base: #fff;
-    --bg-deep: #fff;
-    --bg-elevated: #fff;
-    --surface: #fff;
-    --surface-strong: #fff;
-    --surface-hover: #fff;
-    --card-bg: none;
-    --card-inset: none;
-    --glass-border: #999;
-    --glass-border-strong: #666;
-    --glass-glow: none;
-    --shadow-lift: none;
-    --accent: #5b1b9e;
-    --accent-text: #5b1b9e;
-    --accent-soft: #eee;
-    --accent-surface: #eee;
-    --accent-surface-hover: #e4e4e4;
-    --text: #111;
-    --text-muted: #333;
-    --text-on-accent: #fff;
-  }
-
-  html,
-  body {
-    background: #fff !important;
-    color: var(--text);
-  }
-
-  body::before,
-  #atmosphere-canvas {
-    display: none !important;
-  }
-
-  .hero__main > *,
-  .hero__meta,
-  .home .reveal,
-  .photo-masthead > *,
-  .now-ticker__track,
-  .now-ticker__group {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-
-  .site-header {
-    position: static !important;
-    transform: none !important;
-    background: transparent !important;
-  }
-
-  .skip-link,
-  .language-switcher,
-  .site-menu,
-  .now-ticker__toggle {
-    display: none !important;
-  }
-}
+/* Paper repaints, animation settling and print-only chrome hiding live in
+   print.css, imported after this file by BaseLayout.astro. */

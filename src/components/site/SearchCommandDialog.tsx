@@ -47,6 +47,7 @@ import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
 import { useSearch } from "@/hooks/useSearch";
 import type { TranslationKey } from "@/i18n";
 import type { SearchResult } from "@/lib/domain/search";
+import { isBlogPath, isMusicPath, routes } from "@/lib/routes";
 
 type ResultGroup = "blog" | "music" | "pages";
 
@@ -60,10 +61,10 @@ const GROUP_HEADING_KEY: Record<ResultGroup, TranslationKey> = {
 
 /** Quick links shown for an empty query. Photography is deliberately absent. */
 const QUICK_LINKS = [
-  { href: "/#about", key: "nav.about" },
-  { href: "/blog/", key: "nav.blog" },
-  { href: "/music/", key: "search.group.music" },
-  { href: "/links/", key: "nav.usefulLink" },
+  { href: routes.about, key: "nav.about" },
+  { href: routes.blog, key: "nav.blog" },
+  { href: routes.music, key: "search.group.music" },
+  { href: routes.links, key: "nav.usefulLink" },
 ] as const;
 
 /** Which result group a Pagefind URL belongs to. */
@@ -74,8 +75,8 @@ function groupFor(url: string): ResultGroup {
   } catch {
     // Not a parsable URL: fall back to the raw value.
   }
-  if (path === "/blog" || path.startsWith("/blog/")) return "blog";
-  if (path === "/music" || path.startsWith("/music/")) return "music";
+  if (isBlogPath(path)) return "blog";
+  if (isMusicPath(path)) return "music";
   return "pages";
 }
 
@@ -90,11 +91,12 @@ interface CommandLinkProps {
 /**
  * One navigable command row.
  *
- * `asChild` is not usable on the generated `CommandItem` (it appends a trailing
- * check icon, so Radix Slot sees two children), so the real anchor lives next to
- * the item, visually hidden. cmdk's Enter/click path fires `onSelect`, which
- * activates that anchor; a plain pointer click follows the same path, so mouse
- * and keyboard share one activation.
+ * The generated `CommandItem` is a cmdk item, not a Base UI primitive: it has
+ * no `render` prop (and cmdk appends a trailing check icon when the item is
+ * selected), so an anchor cannot be composed as its root. The real anchor lives
+ * next to the item, visually hidden. cmdk's Enter/click path fires `onSelect`,
+ * which activates that anchor; a plain pointer click follows the same path, so
+ * mouse and keyboard share one activation.
  */
 function CommandLink({
   href,

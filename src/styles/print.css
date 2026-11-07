@@ -1,0 +1,111 @@
+/**
+ * Print styles.
+ *
+ * The screen theme is dark-only; paper gets the inverse. `BaseLayout.astro`
+ * imports this file after `global.css`, so its unlayered rules keep winning
+ * over the screen utilities and layered styles. It is a print override, not a
+ * light theme: every rule below is inside `@media print`.
+ *
+ * The `--print-*` values are deliberate paper-safe inks (plain hex, not brand
+ * tokens). Re-pointing the brand tokens at them lets existing component rules
+ * follow without a second print-only component sheet.
+ */
+@media print {
+  :root {
+    --print-paper: #fff;
+    --print-ink: #111;
+    --print-ink-muted: #333;
+    --print-accent: #5b1b9e;
+    --print-accent-surface: #eee;
+    --print-accent-surface-hover: #e4e4e4;
+    --print-rule: #999;
+    --print-rule-strong: #666;
+    --print-text-on-accent: #fff;
+
+    --bg-base: var(--print-paper);
+    --bg-deep: var(--print-paper);
+    --bg-elevated: var(--print-paper);
+    --surface: var(--print-paper);
+    --surface-strong: var(--print-paper);
+    --surface-hover: var(--print-paper);
+    --card-bg: none;
+    --card-inset: none;
+    --glass-border: var(--print-rule);
+    --glass-border-strong: var(--print-rule-strong);
+    --glass-glow: none;
+    --shadow-lift: none;
+    --accent: var(--print-accent);
+    --accent-text: var(--print-accent);
+    --accent-soft: var(--print-accent-surface);
+    --accent-surface: var(--print-accent-surface);
+    --accent-surface-hover: var(--print-accent-surface-hover);
+    --text: var(--print-ink);
+    --text-muted: var(--print-ink-muted);
+    --text-on-accent: var(--print-text-on-accent);
+  }
+
+  @page {
+    margin: 14mm;
+  }
+
+  html,
+  body {
+    background: var(--print-paper);
+    color: var(--text);
+  }
+
+  /* Decoration only: the nebula wash and the atmosphere canvas must never
+   * reach paper. */
+  body::before,
+  #atmosphere-canvas {
+    display: none;
+  }
+
+  /*
+   * Entrance/reveal animations are declared with `animation-fill-mode: both`,
+   * so a print render can freeze a block on its `opacity: 0` start frame.
+   * These unlayered rules settle every animated block to its final frame.
+   */
+  .hero__main > *,
+  .hero__meta,
+  .home .reveal,
+  .photo-masthead > *,
+  .now-ticker__track,
+  .now-ticker__group {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  /* The header is sticky and can be scroll-hidden on screen; paper shows it
+   * once, in flow, without the glass wash. */
+  .site-header {
+    position: static;
+    transform: none;
+    background: transparent;
+  }
+
+  /* Interactive-only chrome has no meaning on paper. */
+  .skip-link,
+  .language-switcher,
+  .site-menu,
+  .now-ticker__toggle {
+    display: none;
+  }
+
+  /* Paper has no scrollbar: let a table fit the page and wrap instead. */
+  .prose-brand {
+    max-width: none;
+  }
+
+  .prose-brand table {
+    display: table;
+    width: 100%;
+    overflow: visible;
+  }
+
+  .prose-brand th,
+  .prose-brand td {
+    overflow-wrap: anywhere;
+  }
+}

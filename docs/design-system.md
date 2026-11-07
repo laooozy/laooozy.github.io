@@ -22,6 +22,8 @@ src/styles/tokens.css        raw brand primitives, unlayered :root
         |
 src/styles/global.css        single semantic :root bridge (shadcn names)
         |
+src/styles/print.css         print-only token repaint and paper rules
+        |
 @theme inline                colour and font names exposed to Tailwind
 @theme                       breakpoints and animation entries
         |
@@ -52,10 +54,12 @@ bar cannot drift from the page canvas.
 
 ### `global.css` bridges shadcn names
 
-[global.css](../src/styles/global.css) is the one CSS entry. It imports
+[global.css](../src/styles/global.css) is the one screen CSS entry. It imports
 `tokens.css`, `atmosphere.css`, the six Fontsource faces, Tailwind,
-`tw-animate-css`, `shadcn/tailwind.css`, and wires the Typography plugin. It
-then contains:
+`tw-animate-css`, `shadcn/tailwind.css`, and wires the Typography plugin.
+[print.css](../src/styles/print.css) is imported after it by
+[BaseLayout.astro](../src/layouts/BaseLayout.astro), so its unlayered print
+rules win over the screen cascade. `global.css` then contains:
 
 1. A `@theme inline` block that maps shadcn colour names (`--color-background`,
    `--color-primary`, and so on) to the semantic variables, plus
@@ -85,8 +89,8 @@ switch a second palette.
   `--accent` itself is for fills, icons and display punctuation, not body copy.
 - `--control-border` and `--control-border-strong` are solid tones for control
   boundaries. `--glass-border` is decorative and too faint for a control edge.
-- Print re-points the tokens to paper-safe values near the bottom of
-  `global.css`. That is a print override, not a light theme.
+- Print re-points the tokens to paper-safe values in `print.css`. That is a
+  print override, not a light theme.
 
 ## Typography
 
@@ -128,8 +132,8 @@ without `!important`. It:
 - turns a Markdown table into its own horizontal scroll container at
   `width: max-content; max-width: 100%; overflow-x: auto`;
 - restores code, blockquote, image and figure styles;
-- switches tables to `display: table` and removes the measure under
-  `@media print`, so paper has no scrollbar.
+- switches tables to `display: table` and removes the measure in `print.css`
+  under `@media print`, so paper has no scrollbar.
 
 The post body stays Astro-rendered. `Prose` in
 [typography/Prose.tsx](../src/components/shared/typography/Prose.tsx) is for

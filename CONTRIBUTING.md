@@ -3,13 +3,13 @@
 Read [AGENTS.md](AGENTS.md) before changing anything. It holds the invariants
 and the mobile-first policy. [docs/architecture.md](docs/architecture.md) maps
 the code, [docs/decisions.md](docs/decisions.md) records why the boundaries
-exist and [docs/release.md](docs/release.md) is the Pages cutover and release
-runbook.
+exist and [docs/release.md](docs/release.md) is the deployment and release
+verification runbook.
 
 ## Requirements
 
 - Node.js >= 22.22.0
-- [bun](https://bun.sh)
+- [bun](https://bun.sh) 1.4.3 or newer. CI pins 1.4.3.
 - `yt-dlp` on `PATH` only when working on the music pipeline
 
 ## Setup
@@ -17,11 +17,23 @@ runbook.
 ```sh
 bun install
 bun run hooks:install
+bunx playwright install --with-deps chromium
 ```
 
 `hooks:install` points `core.hooksPath` at `.githooks`. The pre-commit hook
 rewrites `src/data/site-updated.json` and stages only that file. Run it once per
 clone.
+
+`playwright install` is needed for the browser gates. The visual baselines were
+captured on CI's Ubuntu image with Noto CJK fonts installed. On Linux, install
+them before running `test:visual`, or Chinese text falls back to another font
+and every baseline diffs:
+
+```sh
+sudo apt-get update
+sudo apt-get install -y fonts-noto-cjk
+fc-cache -f
+```
 
 ## Development
 
@@ -58,6 +70,7 @@ bun run format:check
 bun run lint
 bun run typecheck
 bun run test
+bun run test:coverage
 bun run knip
 bun run build
 bun run pagefind
@@ -92,8 +105,8 @@ curl --silent --fail --retry 30 --retry-delay 1 --retry-connrefused \
 PLAYWRIGHT_BASE_URL=http://127.0.0.1:4323 bun run test:prod
 ```
 
-Do not point `test:prod` at the fixture artifact. The full Pages cutover and
-post-deploy verification are in [docs/release.md](docs/release.md).
+Do not point `test:prod` at the fixture artifact. Deployment and post-deploy
+verification are in [docs/release.md](docs/release.md).
 
 For a visual change, update the committed baseline and review the image diff
 before committing:
@@ -102,7 +115,23 @@ before committing:
 bun run test:visual -- --update-snapshots
 ```
 
+## Security reports
+
+Do not open a public issue for a vulnerability. Follow
+[SECURITY.md](SECURITY.md) and use GitHub private vulnerability reporting when
+it is available, or email <laooozy@outlook.com>.
+
+## License
+
+This repository is proprietary. All rights reserved. See [LICENSE](LICENSE).
+External contributions are accepted only with prior written authorization from
+laooozy and on terms that assign the contribution to laooozy. Do not submit
+code or content under an open-source license.
+
 ## Commits
+
+Create a topic branch from `main` and open a pull request. Do not commit
+directly to `main`; keep each pull request scoped to one change.
 
 Use a conventional subject: `type(scope): summary`, where `type` is one of
 `feat`, `fix`, `refactor`, `test`, `docs`, `chore` or `ci`.
@@ -114,9 +143,10 @@ under review.
 
 ## Pull requests
 
-Open a pull request with the repository template. It asks for a summary, the
-gates you ran and a note about visual baselines. A pull request runs the three
-CI jobs without deploying; only a push to `main` deploys to GitHub Pages.
+Open a pull request with the repository template. It asks for a related issue,
+a license confirmation, the gates you ran, visual evidence and a note about any
+security-sensitive change. A pull request runs the CI jobs without deploying;
+only a push to `main` deploys to GitHub Pages.
 
 Before opening one:
 

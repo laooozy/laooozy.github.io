@@ -1,0 +1,48 @@
+name: Feature request
+description: Suggest a change to the site, its content or its tooling
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the gap or friction, not only the desired implementation.
+      placeholder: The archive has no way to filter posts by year.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Explain the smallest change that would solve the problem.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Site UI or layout
+        - Blog or page content
+        - Music or photography
+        - Accessibility or responsive behavior
+        - Documentation or repository tooling
+    validations:
+      required: true
+
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints
+      description: Note any effect on mobile, keyboard or touch use, locale handling, build size or the static-only architecture.
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and the documentation for this request.
+          required: true

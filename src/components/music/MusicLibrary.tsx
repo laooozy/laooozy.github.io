@@ -29,7 +29,7 @@
  */
 
 import { ExternalLink, ListFilter, Music } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "zustand";
 
 import { useClientDeps } from "@/components/shared/ClientDepsContext";
@@ -63,8 +63,9 @@ import {
 } from "@/lib/domain/music";
 import { cn } from "@/lib/utils";
 
-/** Stable empty list so the memoised option derivation never re-runs. */
+/** Stable empty list and empty label map, so memoised derivations stay stable. */
 const EMPTY_SONGS: readonly Song[] = [];
+const EMPTY_ORG_LABELS: Readonly<Record<string, string>> = {};
 
 /** Six placeholder rows stand in for the list while the payload loads. */
 const SKELETON_ROWS = [0, 1, 2, 3, 4, 5] as const;
@@ -89,7 +90,10 @@ const ROW_CLASS = cn(
   "hover:bg-muted/40 focus-visible:ring-[3px] focus-visible:ring-ring/50",
 );
 
-type Status = "idle" | "loading" | "ready" | "error";
+type MusicState =
+  | { status: "idle" | "loading" }
+  | { status: "ready"; payload: MusicPayload }
+  | { status: "error" };
 
 interface FieldProps {
   id: string;
@@ -185,8 +189,7 @@ export default function MusicLibrary() {
   const headerHidden = useStore(deps.store, (state) => state.headerHidden);
   const errorRef = useRef<HTMLDivElement>(null);
 
-  const [status, setStatus] = useState<Status>("idle");
-  const [payload, setPayload] = useState<MusicPayload | null>(null);
+  const [state, setState] = useState<MusicState>({ status: "idle" });
   const [query, setQuery] = useState("");
   const [artistId, setArtistId] = useState("");
   const [organisation, setOrganisation] = useState("");
@@ -198,21 +201,17 @@ export default function MusicLibrary() {
 
   useEffect(() => {
     let cancelled = false;
-    setStatus("loading");
-    // Drop any previous payload so a failed reload can never leave a stale
-    // playlist link or row list behind.
-    setPayload(null);
+    setState({ status: "loading" });
 
     deps.adapters.music
       .load()
       .then((next) => {
         if (cancelled) return;
-        setPayload(next);
-        setStatus("ready");
+        setState({ status: "ready", payload: next });
       })
       .catch(() => {
         if (cancelled) return;
-        setStatus("error");
+        setState({ status: "error" });
       });
 
     return () => {
@@ -222,18 +221,21 @@ export default function MusicLibrary() {
 
   const langAttrValue = langAttr[locale];
 
+  const payload = state.status === "ready" ? state.payload : null;
   const songs = payload?.songs ?? EMPTY_SONGS;
-  const artists = collectArtists([...songs]);
-  const orgs = payload ? collectOrgs(payload.songs, payload.organisations) : [];
-  const visible = filterSongs([...songs], {
-    query,
-    artistId,
-    org: organisation,
-  });
-  const orgLabels = payload?.organisations ?? {};
+  const artists = useMemo(() => collectArtists(songs), [songs]);
+  const orgs = useMemo(
+    () => (payload ? collectOrgs(payload.songs, payload.organisations) : []),
+    [payload],
+  );
+  const visible = useMemo(
+    () => filterSongs(songs, { query, artistId, org: organisation }),
+    [songs, query, artistId, organisation],
+  );
+  const orgLabels = payload?.organisations ?? EMPTY_ORG_LABELS;
   const playlistUrl = payload?.playlist.url ?? null;
 
-  const isReady = status === "ready" && payload !== null;
+  const isReady = state.status === "ready";
   const activeFilterCount =
     Number(Boolean(artistId)) + Number(Boolean(organisation));
   const countText = isReady ? t("music.count", { count: visible.length }) : "";
@@ -350,7 +352,7 @@ export default function MusicLibrary() {
         </div>
       </div>
 
-      {status === "error" ? (
+      {state.status === "error" ? (
         <AlertState
           ref={errorRef}
           tabIndex={-1}
@@ -376,7 +378,7 @@ export default function MusicLibrary() {
         </AlertState>
       ) : (
         <>
-          {(status === "idle" || status === "loading") && (
+          {(state.status === "idle" || state.status === "loading") && (
             <SpinnerState
               label={t("music.loading")}
               showLabel
@@ -495,7 +497,7 @@ export default function MusicLibrary() {
             </ul>
           )}
 
-          {status !== "ready" && (
+          {state.status !== "ready" && (
             <ul className="song-list m-0 grid list-none gap-(--space-2) p-0">
               {SKELETON_ROWS.map((row) => (
                 <li key={row} aria-hidden="true">

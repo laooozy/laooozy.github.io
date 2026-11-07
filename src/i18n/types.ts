@@ -1,13 +1,9 @@
 /**
  * Pure i18n types — no Astro, no DOM, no runtime imports.
  *
- * `Locale` is single-sourced from `LOCALE_CODES` in `./locales.ts` and
- * re-exported here for historical importers. `DotPaths` derives the set of
- * dotted key paths that point at a translatable string leaf, so `t()` gets
- * typed keys without hard-coding a second key list.
+ * `DotPaths` derives the set of dotted key paths that point at a translatable
+ * string leaf, so `t()` gets typed keys without hard-coding a second key list.
  */
-
-export type { Locale } from "./locales";
 
 /**
  * Recursively build a union of dotted paths (`"blog.pageOf"`) that resolve to a

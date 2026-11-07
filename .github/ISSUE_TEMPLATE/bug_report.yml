@@ -1,0 +1,77 @@
+name: Bug report
+description: Report a broken page, interaction, build or deployment
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Do not use this form for security problems; see
+        [SECURITY.md](https://github.com/laooozy/laooozy.github.io/blob/main/SECURITY.md).
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the actual result and what you expected instead.
+      placeholder: The music page stops playing after I switch locale.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List the shortest path that triggers the problem.
+      placeholder: |
+        1. Open /music/
+        2. Start a track
+        3. Switch the locale to English
+        4. The player stops
+    validations:
+      required: true
+
+  - type: input
+    id: route
+    attributes:
+      label: Page or route
+      description: The URL path where this happens.
+      placeholder: /music/ or /blog/tags/astro/
+    validations:
+      required: true
+
+  - type: dropdown
+    id: locale
+    attributes:
+      label: Locale
+      options:
+        - zh-hant
+        - en
+        - zh-hans
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Browser, OS and viewport
+      description: Include the CSS viewport width when the problem looks like a layout bug.
+      placeholder: Safari 26 on iOS, 390 px
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Console errors or screenshots
+      description: Paste any console or network errors, or attach a screenshot.
+      render: shell
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this is not a security report.
+          required: true

@@ -24,5 +24,5 @@
  */
 export const instagramPosts: string[] = [
   "https://www.instagram.com/p/DdtBD23yLte/",
-  "https://www.instagram.com/p/Dcsnb5YyY0I/",
+  "https://www.instagram.com/p/DfXLwbryfCU/",
 ];

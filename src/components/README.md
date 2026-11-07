@@ -21,7 +21,13 @@ of the folders below.
   MDX compatibility shims and no second implementation beside it. Page content
   imports the shared components directly.
 - **No feature logic in `shared/`.** The shared kit stays presentational: no
-  hooks, no store, no adapters. Feature state belongs in the owning folder.
+  feature hooks, no store and no adapters. The one boundary exception is
+  `shared/ClientDepsContext.tsx`: it is the single component-side importer of
+  the composition root (`@/client/bootstrap`) and exposes the injected
+  `ClientDeps` bundle through `useClientDeps()`. Every other component reads the
+  bundle through that hook. Feature state belongs in the owning folder.
+  `src/architecture.test.ts` enforces the allowlist, so a new
+  `shared/ → client/bootstrap` import fails CI.
 - **Thin Astro wrappers stay thin.** `site/Hero.astro`, `site/NowTicker.astro`,
   `blog/LatestPosts.astro` and `photography/InstagramWall.astro` exist because
   Astro owns build-time I/O (`await`) and `client:*` directives. Their bodies
