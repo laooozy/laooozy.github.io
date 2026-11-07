@@ -24,6 +24,12 @@ import { langAttr } from "@/i18n";
 import type { NowItem } from "@/lib/domain/now";
 import { cn } from "@/lib/utils";
 
+import {
+  NOW_TICKER_PAUSED_CLASS,
+  NOW_TICKER_RUNNING_TRACK_CLASS,
+  NOW_TICKER_TOGGLE_CLASS,
+} from "./now-ticker-classes";
+
 interface NowTickerClientProps {
   items: readonly NowItem[];
 }
@@ -130,9 +136,8 @@ export default function NowTickerClient({ items }: NowTickerClientProps) {
         <div
           className={cn(
             "now-ticker__track flex min-w-0 items-center gap-[var(--space-2)]",
-            running &&
-              "w-max flex-nowrap gap-0 will-change-transform hover:[animation-play-state:paused] has-[:focus-visible]:[animation-play-state:paused] motion-safe:animate-now-ticker",
-            running && paused && "[animation-play-state:paused]",
+            running && NOW_TICKER_RUNNING_TRACK_CLASS,
+            running && paused && NOW_TICKER_PAUSED_CLASS,
           )}
         >
           <div className={cn(GROUP_CLASS, running && RUNNING_GROUP_CLASS)}>
@@ -156,7 +161,7 @@ export default function NowTickerClient({ items }: NowTickerClientProps) {
       {running && (
         <button
           type="button"
-          className="now-ticker__toggle m-0 inline-flex size-11 flex-none cursor-pointer items-center justify-center rounded-[var(--radius-pill)] border border-[var(--control-border)] bg-[var(--surface)] p-0 text-[var(--text-muted)] transition-[color,border-color,background-color] duration-[var(--dur-fast)] ease-brand hover:border-[var(--control-border-strong)] hover:bg-[var(--surface-hover)] hover:text-[var(--text)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+          className={NOW_TICKER_TOGGLE_CLASS}
           aria-label={toggleLabel}
           aria-pressed={paused}
           lang={langAttr[locale]}
