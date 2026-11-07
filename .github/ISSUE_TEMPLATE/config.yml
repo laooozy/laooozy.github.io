@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security report
+    url: https://github.com/laooozy/laooozy.github.io/blob/main/SECURITY.md
+    about: Report vulnerabilities privately. Do not open a public issue.
+  - name: Contributing guide
+    url: https://github.com/laooozy/laooozy.github.io/blob/main/CONTRIBUTING.md
+    about: Setup, quality gates, commit style and pull request expectations.
