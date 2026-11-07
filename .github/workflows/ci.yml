@@ -35,7 +35,7 @@ jobs:
       - run: bun run format:check
       - run: bun run lint
       - run: bun run typecheck
-      - run: bun run test
+      - run: bun run test:coverage
       - run: bun run knip
 
   build:
@@ -62,6 +62,12 @@ jobs:
       - run: bun run pagefind
       - run: bun run test:links
       - run: bun run size
+      - name: Upload the production artifact for browser tests
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: production-dist
+          path: dist
+          if-no-files-found: error
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: dist
@@ -86,6 +92,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile
+      - name: Download the production artifact built by the build job
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: production-dist
+          path: production-dist
       - name: Cache Playwright browsers
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
@@ -115,19 +126,15 @@ jobs:
           PLAYWRIGHT_SERVE_DIST: "1"
         run: bun run test:visual
       # The three gates above run against the deterministic fixture build. The
-      # shipped artifact must also be proven, so rebuild WITHOUT fixture env,
-      # index it and smoke-test the real output on a dedicated port. The build
-      # job's uploaded Pages artifact is untouched.
-      - name: Build the production artifact and Pagefind index
-        run: |
-          bun run build
-          bun run pagefind
+      # production smoke then proves the exact artifact the build job uploaded
+      # for Pages, so a green browser job cannot approve a different build.
       - name: Production artifact smoke
         env:
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:4323
+          DIST_DIR: production-dist
         run: |
           set -euo pipefail
-          PORT=4323 HOST=127.0.0.1 node scripts/serve-dist.mjs > /tmp/production-smoke-server.log 2>&1 &
+          PORT=4323 HOST=127.0.0.1 DIST_DIR=production-dist node scripts/serve-dist.mjs > /tmp/production-smoke-server.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true; wait "$server_pid" 2>/dev/null || true' EXIT
 

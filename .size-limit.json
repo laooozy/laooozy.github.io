@@ -3,28 +3,28 @@
     "name": "CSS",
     "path": "dist/_astro/*.css",
     "limit": "140 kB",
-    "gzip": false,
+    "gzip": true,
     "brotli": false
   },
   {
     "name": "client entry",
     "path": "dist/_astro/client.*.js",
     "limit": "230 kB",
-    "gzip": false,
+    "gzip": true,
     "brotli": false
   },
   {
     "name": "bootstrap",
     "path": "dist/_astro/bootstrap.*.js",
     "limit": "109 kB",
-    "gzip": false,
+    "gzip": true,
     "brotli": false
   },
   {
     "name": "search dialog",
     "path": "dist/_astro/SearchCommandDialog.*.js",
     "limit": "76 kB",
-    "gzip": false,
+    "gzip": true,
     "brotli": false
   }
 ]
