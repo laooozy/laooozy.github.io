@@ -32,7 +32,9 @@ file and the code disagree, fix the code or this file in the same change.
 
 - **Single URL space.** There is one URL space. The locale is client state, not
   a path segment. Do not add `/en/`, `/zh-hans/` or any locale-prefixed route,
-  per-locale page folder or `hreflang` alternate.
+  per-locale page folder or `hreflang` alternate. Public paths live in
+  `src/lib/routes.ts`; header nav, command quick links and current-page checks
+  share it, so do not retype route literals in components.
 - **Client locale and the accepted flash.** `src/client/locale-boot.ts` is an
   inline pre-paint script in `<head>`. It resolves `localStorage`, then
   `navigator`, then falls back to `zh-hant`, and sets `<html lang>` plus
@@ -46,7 +48,11 @@ file and the code disagree, fix the code or this file in the same change.
   adapters are wired only in `src/client/bootstrap.ts`.
   Components and hooks receive the injected `ClientDeps`; do not import a real
   adapter or touch `document`, `window`, `navigator` or `localStorage` from a
-  component.
+  component. The one component-side exception is
+  `src/components/shared/ClientDepsContext.tsx`, which imports the
+  composition-root singleton to provide the default bundle. Every other
+  component reads it through `useClientDeps()`; `src/architecture.test.ts`
+  enforces that allowlist.
 - **DomPort is split, one interface.** `src/adapters/dom/**` implements cohesive
   slices: `scroll`, `motion`, `focus`, `locale`, `scripts` and `events`.
   `createDomAdapter` assembles them into the single `DomPort` every consumer
@@ -123,8 +129,14 @@ file and the code disagree, fix the code or this file in the same change.
   The music payload URL in `src/lib/site.ts` is derived from that name plus the
   repository remote, never retyped.
 - **CI/CD.** `.github/workflows/ci.yml` runs quality, build and browser gates,
-  then deploys `main` to GitHub Pages. Do not re-add a manual `gh-pages` deploy
-  script or a second deploy workflow.
+  then deploys `main` to GitHub Pages. The `build` job uploads `dist/` as
+  `production-dist`; the `browser` job downloads that artifact and runs the
+  production smoke against it through `DIST_DIR`; `deploy` ships the same Pages
+  artifact. Do not rebuild a second production artifact in the browser job.
+  `bun run test:prod` fails fast without `PLAYWRIGHT_BASE_URL`; `/404` is a real
+  route and returns 200 on GitHub Pages, while unknown paths return 404.
+  `test:e2e` excludes `@a11y`; accessibility runs separately. Do not re-add a
+  manual `gh-pages` deploy script or a second deploy workflow.
 
 ## Naming conventions
 
@@ -192,6 +204,7 @@ bun run format:check
 bun run lint          # eslint . --max-warnings 0
 bun run typecheck
 bun run test
+bun run test:coverage # v8 thresholds for domain, adapters, store and hooks
 bun run knip
 bun run build
 bun run pagefind
@@ -200,12 +213,24 @@ bun run test:e2e
 bun run test:a11y
 bun run test:visual
 bun run size
+# PLAYWRIGHT_BASE_URL=... bun run test:prod
 ```
 
 `test:e2e`, `test:a11y` and `test:visual` need a built artifact, which the
-Playwright harness builds from fixture data. A visual change also needs its
-committed baseline updated with `bun run test:visual -- --update-snapshots` and
-the diff reviewed. The full policy is in [CONTRIBUTING.md](CONTRIBUTING.md).
+Playwright harness builds from fixture data. `test:e2e` excludes `@a11y`; run
+`test:a11y` separately. A visual change also needs its committed baseline
+updated with `bun run test:visual -- --update-snapshots` and the diff reviewed.
+`test:prod` requires a separate production artifact server and fails fast
+without `PLAYWRIGHT_BASE_URL`. Prefer behavior tests over source-string
+assertions; `src/architecture.test.ts` is the single AST boundary guard. The
+full policy is in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+This repository is proprietary: all rights reserved. No permission is granted
+to use, copy, modify, distribute or create derivative works without prior
+written authorization from laooozy. See [LICENSE](LICENSE). Do not describe the
+repository as open source and do not add an open-source license.
 
 ## Development
 
