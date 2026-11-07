@@ -1,6 +1,5 @@
 {
   "$schema": "./node_modules/knip/schema.json",
-  "ignoreFiles": ["src/components/shared/state/index.ts"],
   "ignoreBinaries": ["yt-dlp"],
   "ignoreExportsUsedInFile": true,
   "ignoreIssues": {
@@ -10,23 +9,6 @@
       "types",
       "nsExports",
       "nsTypes"
-    ],
-    "src/adapters/dom/index.ts": ["types"],
-    "src/adapters/dom/types.ts": ["types"],
-    "src/adapters/pagefind.ts": ["types"],
-    "src/components/blog/BlogList.tsx": ["types"],
-    "src/components/shared/layout/*.tsx": ["types"],
-    "src/components/shared/layout/*.ts": ["types"],
-    "src/components/shared/typography/variants.ts": ["types"],
-    "src/i18n/index.ts": ["types"],
-    "src/i18n/types.ts": ["types"],
-    "src/layouts/BlogListing.astro": ["types"],
-    "src/lib/domain/posts.ts": ["types"],
-    "src/lib/io/instagram.ts": ["types"],
-    "src/store/app-store.ts": ["types"],
-    "src/store/types.ts": ["types"],
-    "src/test/client-deps.ts": ["types"],
-    "tests/e2e/helpers/*.ts": ["types"],
-    "src/hooks/useLocale.ts": ["exports"]
+    ]
   }
 }
