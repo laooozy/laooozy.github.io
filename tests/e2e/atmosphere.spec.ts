@@ -20,31 +20,50 @@ const SCREENSHOT_DIR = join(
   ".omo/evidence/architecture-artwork-refactor/screenshots",
 );
 
+interface RafFrame {
+  /** Animation-frame timestamp shared by every callback in one tick. */
+  time: number;
+  /** Id of the rAF chain that scheduled this callback. */
+  chain: number;
+}
+
 interface RafProbe {
-  frames: number[];
+  frames: RafFrame[];
 }
 
 declare global {
   interface Window {
-    __rafFrames?: number[];
+    __rafFrames?: RafFrame[];
   }
 }
 
 /**
- * Record every `requestAnimationFrame` callback timestamp before any app code
- * runs. Frames delivered in the same animation tick share a timestamp, so the
- * largest group is the number of concurrently scheduled loops: one loop = one
- * callback per frame.
+ * Record every `requestAnimationFrame` callback before any app code runs and
+ * tag it with the chain that scheduled it. A callback scheduled while another
+ * callback is running inherits that callback's chain, so a loop that schedules
+ * its own continuation stays one chain across frames. An independent loop
+ * starts a new chain because it is scheduled outside a callback.
  */
 async function probeAnimationFrames(page: Page) {
   await page.addInitScript(() => {
     window.__rafFrames = [];
+    let nextChain = 0;
+    let currentChain: number | null = null;
     const native = window.requestAnimationFrame.bind(window);
-    window.requestAnimationFrame = (callback: FrameRequestCallback) =>
-      native((time) => {
-        window.__rafFrames?.push(time);
-        callback(time);
+    window.requestAnimationFrame = (callback: FrameRequestCallback) => {
+      const chain = currentChain ?? nextChain;
+      if (currentChain === null) nextChain += 1;
+      return native((time) => {
+        window.__rafFrames?.push({ time, chain });
+        const previous = currentChain;
+        currentChain = chain;
+        try {
+          callback(time);
+        } finally {
+          currentChain = previous;
+        }
       });
+    };
   });
 }
 
@@ -52,10 +71,24 @@ async function readRafProbe(page: Page): Promise<RafProbe> {
   return page.evaluate(() => ({ frames: window.__rafFrames ?? [] }));
 }
 
-function largestFrameGroup(frames: number[]): number {
-  const counts = new Map<number, number>();
-  for (const time of frames) counts.set(time, (counts.get(time) ?? 0) + 1);
-  return Math.max(0, ...counts.values());
+/**
+ * Count the rAF chains that run in more than one animation frame. The shared
+ * animation loop is one recurring chain. A one-off frame (scroll coalescing,
+ * focus restore, hydration) appears in a single frame and is not a loop, and a
+ * loop's startup can legitimately have its initial and continuation callbacks
+ * share one tick. A second loop would be a second recurring chain.
+ */
+function recurringChainCount(frames: RafFrame[]): number {
+  const framesByChain = new Map<number, Set<number>>();
+  for (const { time, chain } of frames) {
+    let times = framesByChain.get(chain);
+    if (times === undefined) {
+      times = new Set<number>();
+      framesByChain.set(chain, times);
+    }
+    times.add(time);
+  }
+  return [...framesByChain.values()].filter((times) => times.size > 1).length;
 }
 
 /** Flip `document.hidden` and fire the event the DOM port listens for. */
@@ -114,9 +147,21 @@ test("one canvas, stylesheet presentation, capped DPR and console clean", async 
     Math.ceil(metrics.cssHeight * 2) + 1,
   );
 
-  await page.waitForTimeout(250);
+  // Wait for the loop to run across several distinct frames, not a fixed
+  // sleep: the sample is then long enough to expose a second recurring chain.
+  // Poll from the test process, never from the page: Playwright's default
+  // in-page rAF polling would itself register as a second chain in the probe.
+  await expect
+    .poll(
+      async () => {
+        const { frames } = await readRafProbe(page);
+        return new Set(frames.map((frame) => frame.time)).size;
+      },
+      { timeout: 5_000 },
+    )
+    .toBeGreaterThanOrEqual(6);
   const probe = await readRafProbe(page);
-  expect(largestFrameGroup(probe.frames)).toBe(1);
+  expect(recurringChainCount(probe.frames)).toBe(1);
 
   expect(errors).toEqual([]);
 });
@@ -155,7 +200,7 @@ test.describe("reduced motion", () => {
     await page.waitForTimeout(300);
 
     const probe = await readRafProbe(page);
-    expect(largestFrameGroup(probe.frames)).toBe(0);
+    expect(probe.frames).toEqual([]);
   });
 });
 

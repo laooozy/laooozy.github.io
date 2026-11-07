@@ -23,12 +23,11 @@ import type { ClientDeps } from "@/hooks/deps";
 /** Stable selector/id so QA can find the one atmosphere canvas. */
 export const ATMOSPHERE_CANVAS_ID = "atmosphere-canvas";
 
-/** Exact value of `--accent` in `src/styles/tokens.css` (the ONE brand purple). */
-const ACCENT_TOKEN = "oklch(0.6268 0.2325 303.9004)";
-/** Exact value of `--text` in `src/styles/tokens.css` (star ink). */
-const STAR_TOKEN = "oklch(0.9475 0.0067 286.2717)";
-
-/** Hard numeric fallbacks if a CSS custom property cannot be resolved. */
+/**
+ * Hard numeric fallbacks if a CSS custom property cannot be resolved. These
+ * are intentionally the only colour values in this module: the real brand
+ * tokens stay in `src/styles/tokens.css` and are read at runtime below.
+ */
 const ACCENT_FALLBACK: Rgb = [168, 85, 247];
 const STAR_FALLBACK: Rgb = [240, 240, 245];
 
@@ -131,18 +130,21 @@ function rasterise(raw: string, fallback: Rgb): Rgb {
   }
 }
 
-/** Read a design token off `:root`, or the documented literal when unavailable. */
-function readToken(name: string, literal: string, fallback: Rgb): Rgb {
-  let raw = literal;
+/**
+ * Read a design token off `:root` and rasterise it. `tokens.css` is the only
+ * source of the brand colour, so a missing or unparseable property uses the
+ * numeric fallback instead of a duplicated `oklch()` literal.
+ */
+function readToken(name: string, fallback: Rgb): Rgb {
+  let raw: string;
   try {
-    const value = getComputedStyle(document.documentElement)
+    raw = getComputedStyle(document.documentElement)
       .getPropertyValue(name)
       .trim();
-    if (value) raw = value;
   } catch {
-    // keep the documented literal
+    return fallback;
   }
-  return rasterise(raw, fallback);
+  return raw ? rasterise(raw, fallback) : fallback;
 }
 
 function rgba(color: Rgb, alpha: number): string {
@@ -303,8 +305,8 @@ export function attachAtmosphere(deps: ClientDeps): () => void {
   const ctx: CanvasRenderingContext2D = context;
   document.body.appendChild(canvas);
 
-  const starColor = readToken("--text", STAR_TOKEN, STAR_FALLBACK);
-  const accentColor = readToken("--accent", ACCENT_TOKEN, ACCENT_FALLBACK);
+  const starColor = readToken("--text", STAR_FALLBACK);
+  const accentColor = readToken("--accent", ACCENT_FALLBACK);
 
   let width = 0;
   let height = 0;
