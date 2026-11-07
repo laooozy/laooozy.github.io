@@ -52,6 +52,7 @@ import { useClientDeps } from "@/components/shared/ClientDepsContext";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
 import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
+import { isBlogPath, isLinksPath, routes } from "@/lib/routes";
 
 // Nav always targets the HOME page's sections, so from `/blog/` or any sub-page
 // an anchor still resolves to the home hero sections. Blog is the listing index
@@ -59,19 +60,13 @@ import { useHydrationSafeT } from "@/hooks/useHydrationSafeT";
 // `/photographer/` but is not a top-bar item; it is reached from the home grid.
 // Single-URL model: home is always `/` (locale is client-side).
 const NAV_ITEMS = [
-  { href: "/#about", key: "nav.about" },
-  { href: "/blog/", key: "nav.blog" },
-  { href: "/#contact", key: "nav.contact" },
-  { href: "/links/", key: "nav.usefulLink" },
+  { href: routes.about, key: "nav.about" },
+  { href: routes.blog, key: "nav.blog" },
+  { href: routes.contact, key: "nav.contact" },
+  { href: routes.links, key: "nav.usefulLink" },
 ] as const;
 
 type NavItem = (typeof NAV_ITEMS)[number];
-
-/** Normalise a pathname so `/blog`, `/blog/` and `/blog` compare equal. */
-function normalisePath(path: string): string {
-  const trimmed = path.replace(/\/+$/, "");
-  return trimmed === "" ? "/" : trimmed;
-}
 
 /**
  * Which nav entry is the current page, if any. The home anchors (About,
@@ -79,12 +74,11 @@ function normalisePath(path: string): string {
  * `/blog/*` tag/archive/post path; Useful Links is an exact page.
  */
 function isCurrent(item: NavItem, currentPath: string): boolean {
-  const path = normalisePath(currentPath);
   switch (item.key) {
     case "nav.blog":
-      return path === "/blog" || path.startsWith("/blog/");
+      return isBlogPath(currentPath);
     case "nav.usefulLink":
-      return path === "/links";
+      return isLinksPath(currentPath);
     default:
       return false;
   }
