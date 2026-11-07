@@ -10,7 +10,7 @@
  * absolute instead of carving out route-shell exceptions.
  *
  * This module runs at BUILD time only. It must never be imported from a
- * hydrated island (the existing `client-io-guard` test enforces that).
+ * hydrated island (`src/architecture.test.ts` rule 6 enforces that).
  */
 import type { CollectionEntry } from "astro:content";
 import { getEntry, render } from "astro:content";

@@ -24,16 +24,7 @@ import { createScriptsAdapter } from "./scripts";
 import { createScrollAdapter } from "./scroll";
 import type { DomPort } from "./types";
 
-export type {
-  DomEventsPort,
-  DomFocusPort,
-  DomLocalePort,
-  DomMotionPort,
-  DomPort,
-  DomScriptOptions,
-  DomScriptsPort,
-  DomScrollPort,
-} from "./types";
+export type { DomPort } from "./types";
 export { DEFAULT_SCRIPT_TIMEOUT_MS } from "./scripts";
 
 /** Build one aggregate DOM adapter from the cohesive slices. */
