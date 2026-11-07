@@ -51,6 +51,13 @@ const TINY_PNG = Buffer.from(
 
 const THIRD_PARTY = /instagram\.com|cdninstagram\.com|facebook\.com/i;
 
+/**
+ * GitHub Pages resolves `/404` to `404.html` with status 200, so the not-found
+ * document is asserted on its own route and a genuinely unknown path proves the
+ * 404 response.
+ */
+const UNKNOWN_PATH = "/this-page-does-not-exist";
+
 interface RouteCase {
   path: string;
   status: number;
@@ -91,6 +98,12 @@ const ROUTES: readonly RouteCase[] = [
   },
   {
     path: "/404",
+    status: 200,
+    marker: "[data-not-found]",
+    heading: "找不到頁面",
+  },
+  {
+    path: UNKNOWN_PATH,
     status: 404,
     marker: "[data-not-found]",
     heading: "找不到頁面",
@@ -104,10 +117,11 @@ const ROUTES: readonly RouteCase[] = [
 ] as const;
 
 /**
- * Chromium logs the expected 404 DOCUMENT response as a console error when
- * `/404` is loaded directly. It is the browser reporting the route's status,
- * not an app error: the served document is still the real 404 page. Every
- * other console error (including any 404 subresource) stays fatal.
+ * Chromium logs the expected 404 DOCUMENT response as a console error when an
+ * unknown path is loaded. It is the browser reporting the route's status, not
+ * an app error: the served document is still the real not-found page. `/404`
+ * itself answers 200 on GitHub Pages, so it must produce no console error.
+ * Every other console error (including any 404 subresource) stays fatal.
  */
 const EXPECTED_404_CONSOLE_ERROR =
   "console.error: Failed to load resource: the server responded with a status of 404 (Not Found)";
