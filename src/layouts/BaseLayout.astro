@@ -1,5 +1,8 @@
 ---
 import "../styles/global.css";
+// Print overrides are a separate entry imported after the screen theme so their
+// unlayered rules keep winning. See src/styles/print.css.
+import "../styles/print.css";
 // The two above-the-fold faces: Sora 600 (headings) and Inter 400 (body copy).
 // Vite returns the hashed asset URL, so the preload always matches the file the
 // Fontsource CSS loads — no hard-coded path and no duplicate download.
