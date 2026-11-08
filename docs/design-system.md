@@ -225,13 +225,13 @@ it for a brand change. The set covers:
 [src/components/shared](../src/components/shared) is the one feature-neutral
 kit. It stays presentational: no store, no adapters, no feature hooks.
 
-| Folder          | Contents                                                                                                 |
-| :-------------- | :------------------------------------------------------------------------------------------------------- |
-| `shared/*.tsx`  | `ChipRow`, `ContactRow`, `Cta`, `InterestCard`, `Section`, `HeroView`, `HeroMeta`, `PhotographyMasthead` |
-| `layout/`       | `Stack`, `Cluster`, `Grid`, `Container`, the static class maps and `useLayoutElement`                    |
-| `typography/`   | `Heading`, `Text`, `Prose`, the `cva` variants                                                           |
-| `state/`        | `EmptyState`, `AlertState`, `SkeletonState`, `SpinnerState`, `TooltipState`, `Kbd`                       |
-| `compositions/` | `hasRenderableChildren` in `utils.ts`                                                                    |
+| Folder          | Contents                                                                                                            |
+| :-------------- | :------------------------------------------------------------------------------------------------------------------ |
+| `shared/*.tsx`  | `ChipRow`, `ContactRow`, `Cta`, `FaqList`, `InterestCard`, `Section`, `HeroView`, `HeroMeta`, `PhotographyMasthead` |
+| `layout/`       | `Stack`, `Cluster`, `Grid`, `Container`, the static class maps and `useLayoutElement`                               |
+| `typography/`   | `Heading`, `Text`, `Prose`, the `cva` variants                                                                      |
+| `state/`        | `EmptyState`, `AlertState`, `SkeletonState`, `SpinnerState`, `TooltipState`, `Kbd`                                  |
+| `compositions/` | `hasRenderableChildren` in `utils.ts`                                                                               |
 
 There are no MDX compatibility shims and no second implementation beside the
 kit. Page content imports these components directly.

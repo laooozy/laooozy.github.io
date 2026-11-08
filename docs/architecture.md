@@ -339,8 +339,9 @@ no `@radix-ui/*` dependency and no second UI library.
   generated file.
 - [src/components/shared](../src/components/shared) is the one feature-neutral
   kit: `layout/`, `typography/`, `state/`, `compositions/`, `ChipRow`,
-  `Section`, `InterestCard`, `PhotographyMasthead`, `Cta`, `ContactRow`,
-  `HeroView` and `HeroMeta`. It holds no store, no adapter and no feature hook.
+  `FaqList`, `Section`, `InterestCard`, `PhotographyMasthead`, `Cta`,
+  `ContactRow`, `HeroView` and `HeroMeta`. It holds no store, no adapter and no
+  feature hook.
 - Feature folders own feature state: `site/`, `blog/`, `music/`, `photography/`
   and `links/`.
 
