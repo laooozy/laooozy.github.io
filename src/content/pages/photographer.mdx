@@ -5,6 +5,7 @@ description: 一個突然喜歡拍照的純興趣驅動的新手。
 
 import InstagramWall from "../../components/photography/InstagramWall.astro";
 import Cta from "../../components/shared/Cta";
+import FaqList from "../../components/shared/FaqList";
 import Cluster from "../../components/shared/layout/Cluster";
 import Stack from "../../components/shared/layout/Stack";
 import PhotographyMasthead from "../../components/shared/PhotographyMasthead";
@@ -37,27 +38,17 @@ import { CONTACT } from "../../lib/site";
   </Stack>
 </Section>
 
-{/*
-Placeholder awaiting the owner's copy. The section stays hidden while its
-body is empty; add real Markdown children below and it appears on rebuild.
-
-  <Grid min="16rem" gap={6}>
-    <div class="border-t border-[color-mix(in_oklab,var(--glass-border)_45%,transparent)] pt-[var(--space-4)]">
-      <h3 class="mt-0 mb-[var(--space-2)] text-[length:var(--text-lg)]">
-        傾向保留原始構圖
-      </h3>
-      <p class="text-[var(--text-muted)]">
-        「我的拍攝方式」這段內容還沒決定，之後會補上。
-      </p>
-    </div>
-  </Grid>
-*/}
 <Section
   id="approach"
   className="reveal motion-safe:animate-rise-2 target:animate-none"
   heading="我的拍攝方式"
-  hidden="empty"
-></Section>
+>
+  <Stack gap={4}>
+    <p>拍攝方式嘛嘛，好像蠻隨緣的，喜歡就拍一下，不過不喜歡拍色情或NSFW的或自己覺得不舒服的。</p>
+    <p>喜歡的照片會修一下光影和色調。不會專業PS。</p>
+    <p>場內見到可以直接叫我，不用怕，我不吃人的。</p>
+  </Stack>
+</Section>
 
 {/*
 Placeholder awaiting the owner's copy. The section stays hidden while its
@@ -88,3 +79,35 @@ body is empty; add real Markdown children below and it appears on rebuild.
   heading="委託與合作"
   hidden="empty"
 ></Section>
+
+<Section
+  id="faq"
+  className="reveal motion-safe:animate-rise-4 target:animate-none"
+  heading="FAQ"
+>
+  <FaqList
+    items={[
+      {
+        question: "接委託、私影、約拍嗎？",
+        answer: "陌生私約不接，目前不打算收費。場內見到歡迎直接找我拍。",
+      },
+      {
+        question: "不認識我可以找我拍嗎？",
+        answer:
+          "可以，場內遇到就可以，直接叫我，不用怕，我不吃人的。陌生約拍私影拒絕。",
+      },
+      {
+        question: "你會幫忙修圖嗎？",
+        answer: "喜歡的圖會盡量修。",
+      },
+      {
+        question: "你會返圖嗎？",
+        answer: "原圖會盡量返。",
+      },
+      {
+        question: "你對 AI 的看法是怎麼樣？",
+        answer: "e/acc",
+      },
+    ]}
+  />
+</Section>
