@@ -417,3 +417,44 @@ for (const width of [390, 1440] as const) {
     });
   });
 }
+
+test.describe("photography FAQ", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test("keeps answers closed until a question is opened", async ({ page }) => {
+    await page.goto("/photographer/");
+
+    const items = page.locator("[data-faq-item]");
+    await expect(items).toHaveCount(5);
+
+    const openStates = await items.evaluateAll((elements) =>
+      elements.map((element) => (element as HTMLDetailsElement).open),
+    );
+    expect(openStates).toEqual([false, false, false, false, false]);
+
+    const first = items.first();
+    const summary = first.locator("summary");
+    const answer = first.locator("[data-faq-answer]");
+    const arrow = summary.locator("svg");
+
+    const summaryBox = await summary.boundingBox();
+    expect(summaryBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+    await expect(answer).toBeHidden();
+    expect(
+      await arrow.evaluate((element) => getComputedStyle(element).rotate),
+    ).toBe("none");
+
+    await summary.click();
+
+    await expect(first).toHaveAttribute("open", "");
+    await expect(answer).toBeVisible();
+    await expect
+      .poll(() => arrow.evaluate((element) => getComputedStyle(element).rotate))
+      .toBe("180deg");
+
+    await summary.click();
+
+    await expect(first).not.toHaveAttribute("open", "");
+    await expect(answer).toBeHidden();
+  });
+});
